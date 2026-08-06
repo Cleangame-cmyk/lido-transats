@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Transats">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#42594a">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACpElEQVR42u3dPWoCQRiAYR28VTpLayHY5QxiJVgJqcQz2Aa8Ru6VIk0gmrjLzjrft89TBsP85GXWDYvOl5vVDG4ptgBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDtq0CDTX6/mUY9PX212Iec7b/6jJNE2Eq6Qow+rinRy5swhxhBRlWG+kOKZWRrOrditLnDimeWy0ufZid+yAywriIGUcrimt7YOTA3HQ3SL6Aj4/ji1P7+X1IA5Z/DXJoIkUZZhtqjgi7nXEORe7bObuVsgeR9xjI+L8nRyIA3EgDsSBOBAH4kAciANxgDgQB+JAHIgDcSAOxIE4EAeIA3EgDsSBOBAH4kAciANxgDgQB+JAHIgDcSAOxIE4EAfigPBxhP5um3Dzd3KQKI64h0e4mRe7bM7ZLiux9jroaRf4CwC/d9y3Q4oj7f2LywriQByVrLc7f4+m9sHJgTiIHocrS1M7UOyOtbuskCKOaR4eDa662CnrvWe+3Kxa3rXr+SQLJ8cUj5DGV9f6yZHyFIlSfKQ4cFlBHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAciAPEQScDfHjL/nj5/cP3w1u9SRtxHP2fIb05+6rrMeLIlZSqa+j0SiOOP+LAJ0fvafWO3YjPOkLKOGvo/btGfOIRMsAb0pvxVp20ERt9Q/pzfv+eaZ1ebMQxR6x4t7I/Xh6c1uOvNOL4I9a6lSU9/yFFHIgDcSAOxIE4CMbzHEa8y/McUx9x+MuKpytyjDjwyeHpihwjDn9yeLoix4jjvSH1dEWOEQe+rHi6YuZ5jpvz83RFghFr3cqSnv+QIg7EgTgQB+JAHIgDcSAOxAHiQByIA3HwFF+dqlt5aGSSgQAAAABJRU5ErkJggg==">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACpElEQVR42u3dPWoCQRiAYR28VTpLayHY5QxiJVgJqcQz2Aa8Ru6VIk0gmrjLzjrft89TBsP85GXWDYvOl5vVDG4ptgBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDtq0CDTX6/mUY9PX212Iec7b/6jJNE2Eq6Qow+rinRy5swhxhBRlWG+kOKZWRrOrditLnDimeWy0ufZid+yAywriIGUcrimt7YOTA3HQ3SL6Aj4/ji1P7+X1IA5Z/DXJoIkUZZhtqjgi7nXEORe7bObuVsgeR9xjI+L8nRyIA3EgDsSBOBAH4kAciANxgDgQB+JAHIgDcSAOxIE4EAeIA3EgDsSBOBAH4kAciANxgDgQB+JAHIgDcSAOxIE4EAfigPBxhP5um3Dzd3KQKI64h0e4mRe7bM7ZLiux9jroaRf4CwC/d9y3Q4oj7f2LywriQByVrLc7f4+m9sHJgTiIHocrS1M7UOyOtbuskCKOaR4eDa662CnrvWe+3Kxa3rXr+SQLJ8cUj5DGV9f6yZHyFIlSfKQ4cFlBHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAciAPEQScDfHjL/nj5/cP3w1u9SRtxHP2fIb05+6rrMeLIlZSqa+j0SiOOP+LAJ0fvafWO3YjPOkLKOGvo/btGfOIRMsAb0pvxVp20ERt9Q/pzfv+eaZ1ebMQxR6x4t7I/Xh6c1uOvNOL4I9a6lSU9/yFFHIgDcSAOxIE4CMbzHEa8y/McUx9x+MuKpytyjDjwyeHpihwjDn9yeLoix4jjvSH1dEWOEQe+rHi6YuZ5jpvz83RFghFr3cqSnv+QIg7EgTgQB+JAHIgDcSAOxAHiQByIA3HwFF+dqlt5aGSSgQAAAABJRU5ErkJggg==">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Le Lido — Transats","short_name":"Transats","display":"standalone","background_color":"%23eee7d6","theme_color":"%2342594a","start_url":"."}'>
+<title>Le Lido — Transats</title>
+<style>
+:root{
+  --sand:#eee7d6; --card:#fffdf7; --ink:#2f3a33; --green:#42594a; --green2:#5f7d68;
+  --gold:#b39059; --gold-soft:#e2d3ad; --sea:#3f7f9c;
+  --matin:#e8a33d; --aprem:#5b9bd5; --jour:#5f9c6b; --libre:#faf5e8;
+  --danger:#c0564b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{margin:0;padding:0;background:var(--sand);color:var(--ink);
+  font-family:'Jost',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;overscroll-behavior-y:none}
+button{font-family:inherit}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 8px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.h-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{font-weight:700;font-size:17px;letter-spacing:.5px}
+.brand small{font-weight:400;opacity:.8;font-size:12px;margin-left:6px}
+.sync{display:flex;align-items:center;gap:5px;font-size:11px;opacity:.9}
+.dot{width:9px;height:9px;border-radius:50%;background:#aaa}
+.dot.on{background:#7ee08a;box-shadow:0 0 6px #7ee08a}
+.dot.err{background:#e0807e}
+.datebar{display:flex;align-items:center;gap:6px;margin-top:8px}
+.datebar button{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:9px;
+  padding:11px 15px;font-size:17px;line-height:1;cursor:pointer}
+.datebar .today-btn{font-size:12.5px;padding:11px 11px}
+#dateLabel{flex:1;text-align:center;font-size:15px;font-weight:600;text-transform:capitalize;cursor:pointer;position:relative}
+#dateInput{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.stats{display:flex;gap:6px;margin-top:8px}
+.stat{flex:1;background:rgba(255,255,255,.12);border-radius:9px;padding:5px 4px;text-align:center}
+.stat b{display:block;font-size:14.5px}
+.stat span{font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.4px}
+
+/* ---------- plage ---------- */
+#plage{max-width:640px;margin:0 auto;padding:10px 8px 120px}
+.banner{background:#fff5dd;border:1px solid var(--gold-soft);color:#7a6535;border-radius:10px;
+  padding:8px 12px;font-size:12.5px;margin:2px 2px 8px;display:none}
+.banner.show{display:block}
+.banner.mode{background:#e4efe6;border-color:#b8d0bd;color:#2f5238;display:none;
+  position:sticky;top:118px;z-index:30;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.banner.mode.show{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.banner.mode .b-actions{display:flex;gap:6px}
+.banner.mode button{border:none;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.b-ok{background:var(--green);color:#fff}.b-no{background:#d8d2c2;color:#444}
+
+.batiment{background:linear-gradient(#d8c9a8,#cbbb97);border:1px solid #b3a37c;border-radius:10px;
+  text-align:center;font-size:11px;font-weight:600;color:#6b5d34;padding:7px;letter-spacing:1.5px;margin:0 2px}
+.ligne{margin:14px 2px 0}
+.ligne-tag{font-size:10.5px;font-weight:600;color:#8a7a52;letter-spacing:.6px;margin:0 0 4px 4px;text-transform:uppercase}
+.grid{display:grid;gap:5px}
+.transat{position:relative;border-radius:8px;border:1.5px solid #cfc3a2;background:var(--libre);
+  height:56px;cursor:pointer;overflow:hidden;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;transition:transform .08s}
+.transat:active{transform:scale(.93)}
+.transat .num{position:absolute;top:2px;left:3px;font-size:9.5px;font-weight:700;color:#6b5d34;z-index:3;
+  background:rgba(255,253,247,.78);border-radius:4px;padding:0 3px;line-height:13px}
+.half{flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;
+  color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 2px}
+.half.matin{padding-top:12px}
+.half.matin.occ{background:var(--matin)}
+.half.aprem.occ{background:var(--aprem)}
+.transat.jour .half{background:var(--jour)}
+.transat.jour .half.aprem{border-top:1px dashed rgba(255,255,255,.35)}
+.transat .name{position:absolute;left:0;right:0;bottom:0;top:0;display:flex;align-items:flex-end;
+  justify-content:center;padding:2px;font-size:8.5px;font-weight:600;color:rgba(0,0,0,.0)}
+.transat.sel{outline:3px solid var(--gold);outline-offset:1px}
+.transat .arr{position:absolute;bottom:2px;right:3px;font-size:9px;z-index:3;
+  background:rgba(255,255,255,.85);border-radius:50%;width:13px;height:13px;
+  display:flex;align-items:center;justify-content:center;color:var(--green)}
+.transat .msb{position:absolute;top:2px;right:3px;z-index:3;font-size:8px;font-weight:800;
+  background:#430B14;color:#fff;border-radius:4px;padding:0 3px;line-height:12px}
+.mer{margin:16px 2px 0;background:linear-gradient(#bcdcea,#8fc3d8);border-radius:10px;
+  text-align:center;color:#2c6a85;font-weight:700;letter-spacing:6px;font-size:13px;padding:10px 0 12px}
+.mer .waves{letter-spacing:2px;font-size:11px;opacity:.7}
+
+/* ---------- FABs ---------- */
+.fabs{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:0;right:0;display:flex;
+  justify-content:center;gap:10px;z-index:45;padding:0 14px}
+.fab{border:none;border-radius:28px;padding:15px 20px;font-size:15px;font-weight:700;cursor:pointer;
+  box-shadow:0 5px 16px rgba(0,0,0,.28)}
+.fab.main{background:var(--green);color:#fff;flex:1;max-width:220px}
+.fab.sec{background:#fff;color:var(--green)}
+
+/* ---------- sheet / modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(30,35,30,.45);z-index:50;display:none}
+.overlay.show{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--card);border-radius:18px 18px 0 0;
+  max-height:88vh;overflow-y:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .22s ease;max-width:640px;margin:0 auto}
+.sheet.show{transform:translateY(0)}
+.sheet h3{margin:2px 0 12px;color:var(--green);font-size:17px}
+.grab{width:44px;height:4px;border-radius:2px;background:#d8d2c2;margin:0 auto 10px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11.5px;font-weight:600;color:#8a7a52;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.field input[type=text],.field input[type=tel],.field textarea{width:100%;border:1.5px solid var(--gold-soft);
+  border-radius:10px;padding:11px 12px;font-size:16px;background:#fff;font-family:inherit;color:var(--ink)}
+.field textarea{min-height:52px;resize:vertical}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--gold-soft);background:#fff;border-radius:20px;padding:9px 14px;
+  font-size:13.5px;font-weight:600;color:#6b5d34;cursor:pointer}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.stepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--gold-soft);border-radius:10px;
+  overflow:hidden;width:max-content;background:#fff}
+.stepper button{border:none;background:#f3ecd9;width:46px;height:44px;font-size:20px;color:var(--green);cursor:pointer}
+.stepper output{width:52px;text-align:center;font-size:17px;font-weight:700}
+.row2{display:flex;gap:14px;flex-wrap:wrap}
+.sheet .actions{display:flex;gap:9px;margin-top:16px}
+.btn{flex:1;border:none;border-radius:11px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--green);color:#fff}
+.btn.ghost{background:#eee7d6;color:#5a5340}
+.btn.danger{background:#f6e3e0;color:var(--danger)}
+.btn.danger.confirm{background:var(--danger);color:#fff}
+.hint{font-size:11.5px;color:#9a8a63;margin-top:4px}
+.price-preview{font-size:14px;font-weight:700;color:var(--green);margin-top:2px}
+
+/* détail résa */
+.d-line{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;border-bottom:1px dashed #e7dfc8}
+.d-line b{color:var(--green)}
+.tagslot{display:inline-block;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff}
+.tag-matin{background:var(--matin)}.tag-aprem{background:var(--aprem)}.tag-journee{background:var(--jour)}
+
+/* liste */
+.resa-item{background:#fff;border:1px solid var(--gold-soft);border-radius:11px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.resa-item .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.resa-item .nm{font-weight:700;font-size:14.5px}
+.resa-item .sub{font-size:12px;color:#8a7a52;margin-top:3px}
+.annul-log{font-size:11.5px;color:#a08a52;margin-top:14px;border-top:1px solid var(--gold-soft);padding-top:8px}
+.empty{color:#9a8a63;font-size:13px;text-align:center;padding:18px 0}
+
+/* disposition */
+.dispo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dispo-row .lbl{font-weight:600;font-size:14px;color:var(--green)}
+.total-ok{color:var(--green);font-weight:700}
+.total-bad{color:var(--danger);font-weight:700}
+@media (min-width:520px){ .half{font-size:10.5px} .transat .num{font-size:10.5px} .transat{height:64px} }
+@media (max-width:359px){ .transat{height:50px} .grid{gap:4px} #plage{padding:8px 5px 120px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-top">
+    <div class="brand">LE LIDO <small>transats</small></div>
+    <div class="sync" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncTxt">local</span></div>
+  </div>
+  <div class="datebar">
+    <button id="prevDay" aria-label="Jour précédent">‹</button>
+    <div id="dateLabel">—<input type="date" id="dateInput"></div>
+    <button id="nextDay" aria-label="Jour suivant">›</button>
+    <button class="today-btn" id="todayBtn">Auj.</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="stMatin">0/30</b><span>matin</span></div>
+    <div class="stat"><b id="stAprem">0/30</b><span>après-midi</span></div>
+    <div class="stat"><b id="stResas">0</b><span>résas</span></div>
+    <div class="stat"><b id="stCA">0 €</b><span>CA jour</span></div>
+  </div>
+</header>
+
+<div id="plage">
+  <div class="banner" id="demoBanner">Mode démo (non synchronisé) — les modifs restent sur cet appareil. Pour la sync à 3 téléphones, il faut brancher la base (voir guide).</div>
+  <div class="banner mode" id="modeBanner">
+    <span id="modeTxt"></span>
+    <span class="b-actions"><button class="b-ok" id="modeOk">Valider</button><button class="b-no" id="modeNo">Annuler</button></span>
+  </div>
+  <div class="batiment">TERRASSE · BAR / RESTAURANT · CABANON</div>
+  <div id="lignes"></div>
+  <div class="mer"><div class="waves">〜 〜 〜 〜 〜 〜 〜 〜</div>M E R</div>
+</div>
+
+<div class="fabs">
+  <button class="fab sec" id="listBtn">☰ Résas</button>
+  <button class="fab main" id="newBtn">＋ Nouvelle résa</button>
+  <button class="fab sec" id="dispoBtn">⚙</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- formulaire résa -->
+<div class="sheet" id="formSheet">
+  <div class="grab"></div>
+  <h3 id="formTitle">Nouvelle réservation</h3>
+  <div class="field"><label>Nom du client</label><input type="text" id="fNom" placeholder="Nom" autocomplete="off"></div>
+  <div class="row2">
+    <div class="field"><label>Personnes</label>
+      <div class="stepper"><button data-s="pax" data-d="-1">−</button><output id="fPax">2</output><button data-s="pax" data-d="1">＋</button></div>
+    </div>
+    <div class="field"><label>Transats</label>
+      <div class="stepper"><button data-s="nb" data-d="-1">−</button><output id="fNb">2</output><button data-s="nb" data-d="1">＋</button></div>
+    </div>
+  </div>
+  <div class="field"><label>Créneau</label>
+    <div class="chips" id="fSlot">
+      <button class="chip" data-v="matin">Matin 10h–14h</button>
+      <button class="chip" data-v="aprem">Aprèm 14h–18h</button>
+      <button class="chip on" data-v="journee">Journée 10h–18h</button>
+    </div>
+    <div class="price-preview" id="fPrix"></div>
+  </div>
+  <div class="field"><label>Origine</label>
+    <div class="chips" id="fOrig">
+      <button class="chip on" data-v="tel">Téléphone</button>
+      <button class="chip" data-v="place">Sur place</button>
+      <button class="chip" data-v="mysunbed">MySunbed</button>
+    </div>
+  </div>
+  <div class="field"><label>Téléphone (optionnel)</label><input type="tel" id="fTel" placeholder="06…"></div>
+  <div class="field"><label>Notes (optionnel)</label><textarea id="fNotes" placeholder="Acompte, heure d'arrivée, n° MySunbed…"></textarea></div>
+  <div class="hint" id="fPlaceHint"></div>
+  <div class="actions">
+    <button class="btn ghost" id="fCancel">Annuler</button>
+    <button class="btn primary" id="fSave">Placer sur le plan →</button>
+  </div>
+</div>
+
+<!-- détail résa -->
+<div class="sheet" id="detailSheet">
+  <div class="grab"></div>
+  <div id="detailBody"></div>
+</div>
+
+<!-- liste du jour -->
+<div class="sheet" id="listSheet">
+  <div class="grab"></div>
+  <h3>Réservations du jour</h3>
+  <div id="listBody"></div>
+</div>
+
+<!-- disposition -->
+<div class="sheet" id="dispoSheet">
+  <div class="grab"></div>
+  <h3>Disposition du jour</h3>
+  <p class="hint" style="margin-top:-6px">Ligne 1 = bord de mer. Ajuste le nombre de transats par ligne (total : 30).</p>
+  <div id="dispoRows"></div>
+  <div style="font-size:14px;margin-top:4px">Total : <span id="dispoTotal"></span></div>
+  <div class="actions">
+    <button class="btn ghost" id="dCancel">Annuler</button>
+    <button class="btn primary" id="dSave">Appliquer</button>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG SYNC =================
+   Quand la base Firebase est créée, coller ici l'objet de config :
+   window.FIREBASE_CONFIG = { apiKey:"...", authDomain:"...", databaseURL:"...", projectId:"...", appId:"..." };
+================================================= */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBsocdWNBUchsa9QDcuMmqyj34MbpJpzcw",
+  authDomain: "lido-plage.firebaseapp.com",
+  databaseURL: "https://lido-plage-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lido-plage",
+  storageBucket: "lido-plage.firebasestorage.app",
+  messagingSenderId: "916213642804",
+  appId: "1:916213642804:web:ba2c9413d9323b6e947c61"
+};
+
+const NB_TRANSATS = 30;
+const PRIX = { demi: 20, jour: 30 };
+const SLOT_LABEL = { matin:'Matin 10h–14h', aprem:'Aprèm 14h–18h', journee:'Journée 10h–18h' };
+const ORIG_LABEL = { tel:'Téléphone', place:'Sur place', mysunbed:'MySunbed' };
+
+/* ---------- state ---------- */
+let state = { days:{} };
+let currentDate = todayStr();
+let mode = null;          // null | {type:'place'|'move', booking, need, sel:[]}
+let editingId = null;
+let pendingTransat = null; // transat tapé pour pré-sélection
+
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function uid(){ return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function getDay(dateStr){
+  if(!state.days[dateStr]) state.days[dateStr] = { layout:[10,10,10], bookings:{}, annulations:[] };
+  const d = state.days[dateStr];
+  if(!d.layout) d.layout=[10,10,10];
+  if(!d.bookings) d.bookings={};
+  if(!d.annulations) d.annulations=[];
+  return d;
+}
+function overlaps(a,b){ return a==='journee' || b==='journee' || a===b; }
+function occupant(day, t, slot){
+  for(const id in day.bookings){ const b=day.bookings[id];
+    if(b.transats && b.transats.includes(t) && overlaps(b.slot, slot)) return b; }
+  return null;
+}
+function isFreeFor(day, t, slot, ignoreId){
+  for(const id in day.bookings){ if(id===ignoreId) continue; const b=day.bookings[id];
+    if(b.transats && b.transats.includes(t) && overlaps(b.slot, slot)) return false; }
+  return true;
+}
+function prixResa(b){ return (b.transats?b.transats.length:b.nb||0) * (b.slot==='journee'?PRIX.jour:PRIX.demi); }
+
+/* ---------- transat geometry ---------- */
+function rowsOf(day){ // retourne [[nums ligne1],[ligne2],[ligne3]] — ligne1 = bord de mer
+  const rows=[]; let n=1;
+  for(let i=0;i<day.layout.length;i++){ const r=[]; for(let k=0;k<day.layout[i];k++) r.push(n++); rows.push(r); }
+  return rows;
+}
+function autoPlace(day, need, slot, ignoreId, seed){
+  // cherche 'need' transats libres, contigus si possible, en préférant la ligne du seed puis ligne 1
+  const rows = rowsOf(day);
+  const free = t => isFreeFor(day, t, slot, ignoreId);
+  const tryRow = row => {
+    for(let i=0;i+need<=row.length;i++){
+      const run=row.slice(i,i+need);
+      if(run.every(free)){
+        if(seed && !run.includes(seed)) continue;
+        return run;
+      }
+    }
+    // sans contrainte seed
+    for(let i=0;i+need<=row.length;i++){
+      const run=row.slice(i,i+need);
+      if(run.every(free)) return run;
+    }
+    return null;
+  };
+  let order = rows;
+  if(seed){ const si=rows.findIndex(r=>r.includes(seed)); if(si>=0) order=[rows[si],...rows.filter((_,i)=>i!==si)]; }
+  for(const row of order){ const run=tryRow(row); if(run) return run; }
+  // pas de run contigu : prendre les libres un par un (seed d'abord)
+  const all=[].concat(...order); const picked=[];
+  if(seed && free(seed)) picked.push(seed);
+  for(const t of all){ if(picked.length>=need) break; if(!picked.includes(t) && free(t)) picked.push(t); }
+  return picked.length===need ? picked : null;
+}
+
+/* ---------- rendu plan ---------- */
+const lignesEl = document.getElementById('lignes');
+function initials(n){ return (n||'').trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,3); }
+function shortName(n){ n=(n||'').trim(); return n.length<=7 ? n : initials(n); }
+
+function render(){
+  const day = getDay(currentDate);
+  // date label
+  const d = new Date(currentDate+'T12:00:00');
+  document.getElementById('dateLabel').childNodes[0].nodeValue =
+    d.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('dateInput').value = currentDate;
+
+  // plan — affiché ligne 3 en haut → ligne 1 en bas (bord de mer)
+  const rows = rowsOf(day);
+  lignesEl.innerHTML='';
+  for(let i=rows.length-1;i>=0;i--){
+    const wrap=document.createElement('div'); wrap.className='ligne';
+    const tag=document.createElement('div'); tag.className='ligne-tag';
+    tag.textContent='Ligne '+(i+1)+(i===0?' · bord de mer':'')+' — '+rows[i].length+' transats';
+    const grid=document.createElement('div'); grid.className='grid';
+    grid.style.gridTemplateColumns='repeat('+Math.max(rows[i].length,1)+',1fr)';
+    for(const t of rows[i]){
+      grid.appendChild(transatEl(day,t));
+    }
+    wrap.appendChild(tag); wrap.appendChild(grid); lignesEl.appendChild(wrap);
+  }
+
+  // stats
+  let m=0,a=0,ca=0,nb=0;
+  const total = rows.reduce((s,r)=>s+r.length,0);
+  for(const id in day.bookings){ const b=day.bookings[id]; nb++; ca+=prixResa(b);
+    if(b.slot!=='aprem') m+=b.transats.length;
+    if(b.slot!=='matin') a+=b.transats.length; }
+  document.getElementById('stMatin').textContent=m+'/'+total;
+  document.getElementById('stAprem').textContent=a+'/'+total;
+  document.getElementById('stResas').textContent=nb;
+  document.getElementById('stCA').textContent=ca+' €';
+}
+
+function transatEl(day,t){
+  const el=document.createElement('div'); el.className='transat'; el.dataset.t=t;
+  const bm=occupant(day,t,'matin'), ba=occupant(day,t,'aprem');
+  const num=document.createElement('span'); num.className='num'; num.textContent=t; el.appendChild(num);
+  const hm=document.createElement('div'); hm.className='half matin';
+  const ha=document.createElement('div'); ha.className='half aprem';
+  if(bm && bm===ba){ el.classList.add('jour'); hm.textContent=shortName(bm.nom); ha.textContent=bm.pax+'p'; }
+  else{
+    if(bm){ hm.classList.add('occ'); hm.textContent=shortName(bm.nom); }
+    if(ba){ ha.classList.add('occ'); ha.textContent=shortName(ba.nom); }
+  }
+  el.appendChild(hm); el.appendChild(ha);
+  const anyB = bm||ba;
+  if(anyB && anyB.statut==='arrive'){ const c=document.createElement('span'); c.className='arr'; c.textContent='✓'; el.appendChild(c); }
+  if((bm&&bm.origine==='mysunbed')||(ba&&ba.origine==='mysunbed')){ const s=document.createElement('span'); s.className='msb'; s.textContent='M'; el.appendChild(s); }
+  if(mode && mode.sel.includes(t)) el.classList.add('sel');
+  el.addEventListener('click',()=>onTransatTap(t));
+  return el;
+}
+
+/* ---------- interactions plan ---------- */
+function onTransatTap(t){
+  const day=getDay(currentDate);
+  if(mode){
+    const slot=mode.booking.slot;
+    if(mode.sel.includes(t)){ mode.sel=mode.sel.filter(x=>x!==t); }
+    else{
+      if(!isFreeFor(day,t,slot,mode.booking.id)){ flashMode('Transat '+t+' occupé sur ce créneau'); return; }
+      if(mode.sel.length>=mode.need) mode.sel.shift();
+      mode.sel.push(t);
+    }
+    updateModeBanner(); render(); return;
+  }
+  const bm=occupant(day,t,'matin'), ba=occupant(day,t,'aprem');
+  if(!bm && !ba){ pendingTransat=t; openForm(null); }
+  else openDetail(bm,ba,t);
+}
+
+/* ---------- mode placement ---------- */
+const modeBanner=document.getElementById('modeBanner'), modeTxt=document.getElementById('modeTxt');
+function startMode(type, booking, need, preset){
+  mode={type,booking,need,sel:preset?preset.slice(0,need):[]};
+  closeSheets();
+  modeBanner.classList.add('show'); updateModeBanner(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateModeBanner(){
+  modeTxt.textContent = mode.booking.nom+' — '+mode.sel.length+'/'+mode.need+' transat(s) choisi(s)';
+  document.getElementById('modeOk').disabled = mode.sel.length!==mode.need;
+  document.getElementById('modeOk').style.opacity = mode.sel.length===mode.need?1:.5;
+}
+function flashMode(msg){ modeTxt.textContent=msg; setTimeout(updateModeBanner,1200); }
+document.getElementById('modeOk').addEventListener('click',()=>{
+  if(mode.sel.length!==mode.need) return;
+  const day=getDay(currentDate);
+  mode.booking.transats=mode.sel.slice().sort((a,b)=>a-b);
+  mode.booking.prix=prixResa(mode.booking);
+  day.bookings[mode.booking.id]=mode.booking;
+  mode=null; modeBanner.classList.remove('show');
+  persist(); render();
+});
+document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); render(); });
+
+/* ---------- formulaire ---------- */
+const overlay=document.getElementById('overlay');
+const formSheet=document.getElementById('formSheet');
+let fPax=2,fNb=2,fSlot='journee',fOrig='tel',nbTouched=false;
+
+function openForm(booking){
+  editingId = booking?booking.id:null;
+  document.getElementById('formTitle').textContent = booking?'Modifier la réservation':'Nouvelle réservation';
+  document.getElementById('fNom').value = booking?booking.nom:'';
+  document.getElementById('fTel').value = booking?(booking.tel||''):'';
+  document.getElementById('fNotes').value = booking?(booking.notes||''):'';
+  fPax=booking?booking.pax:2; fNb=booking?booking.transats.length:2;
+  fSlot=booking?booking.slot:'journee'; fOrig=booking?(booking.origine||'tel'):'tel';
+  nbTouched=!!booking;
+  syncFormUI();
+  document.getElementById('fPlaceHint').textContent = pendingTransat?('Départ au transat n°'+pendingTransat+' — placement auto des suivants, ajustable ensuite.'):'';
+  document.getElementById('fSave').textContent = booking?'Enregistrer':'Placer sur le plan →';
+  showSheet(formSheet);
+}
+function syncFormUI(){
+  document.getElementById('fPax').textContent=fPax;
+  document.getElementById('fNb').textContent=fNb;
+  document.querySelectorAll('#fSlot .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===fSlot));
+  document.querySelectorAll('#fOrig .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===fOrig));
+  const p=fNb*(fSlot==='journee'?PRIX.jour:PRIX.demi);
+  document.getElementById('fPrix').textContent='Prix : '+p+' € ('+fNb+' × '+(fSlot==='journee'?PRIX.jour:PRIX.demi)+' €)';
+}
+document.querySelectorAll('.stepper button').forEach(b=>b.addEventListener('click',()=>{
+  const d=+b.dataset.d;
+  if(b.dataset.s==='pax'){ fPax=Math.min(20,Math.max(1,fPax+d)); if(!nbTouched) fNb=Math.min(NB_TRANSATS,fPax); }
+  else { fNb=Math.min(NB_TRANSATS,Math.max(1,fNb+d)); nbTouched=true; }
+  syncFormUI();
+}));
+document.getElementById('fSlot').addEventListener('click',e=>{ if(e.target.dataset.v){ fSlot=e.target.dataset.v; syncFormUI(); }});
+document.getElementById('fOrig').addEventListener('click',e=>{ if(e.target.dataset.v){ fOrig=e.target.dataset.v; syncFormUI(); }});
+document.getElementById('fCancel').addEventListener('click',()=>{ pendingTransat=null; closeSheets(); });
+
+document.getElementById('fSave').addEventListener('click',()=>{
+  const nom=document.getElementById('fNom').value.trim();
+  if(!nom){ document.getElementById('fNom').focus(); return; }
+  const day=getDay(currentDate);
+  const base = editingId ? day.bookings[editingId] : null;
+  const b = {
+    id: editingId || uid(),
+    nom, pax:fPax, slot:fSlot, origine:fOrig,
+    tel:document.getElementById('fTel').value.trim(),
+    notes:document.getElementById('fNotes').value.trim(),
+    statut: base?base.statut:'reserve',
+    transats: base?base.transats.slice():[]
+  };
+  if(base && base.transats.length===fNb && base.transats.every(t=>isFreeFor(day,t,fSlot,b.id))){
+    b.prix=prixResa(b); day.bookings[b.id]=b; pendingTransat=null; closeSheets(); persist(); render(); return;
+  }
+  // placement (nouveau, ou nb/créneau changé)
+  const auto=autoPlace(day,fNb,fSlot,b.id,pendingTransat);
+  pendingTransat=null;
+  if(auto){ startMode('place', b, fNb, auto); }
+  else { startMode('place', b, fNb, []); flashMode('Pas assez de transats libres en auto — choisis à la main'); }
+});
+
+/* ---------- détail ---------- */
+const detailSheet=document.getElementById('detailSheet');
+function openDetail(bm,ba,t){
+  const body=document.getElementById('detailBody');
+  const list=[]; if(bm) list.push(bm); if(ba && ba!==bm) list.push(ba);
+  body.innerHTML = list.map(b=>detailHTML(b)).join('<hr style="border:none;border-top:1px solid #e7dfc8;margin:14px 0">');
+  showSheet(detailSheet);
+  list.forEach(b=>bindDetail(b));
+}
+function detailHTML(b){
+  return `<div data-bid="${b.id}">
+    <h3 style="margin:0 0 8px">${esc(b.nom)} <span class="tagslot tag-${b.slot}">${SLOT_LABEL[b.slot]}</span></h3>
+    <div class="d-line"><span>Personnes</span><b>${b.pax}</b></div>
+    <div class="d-line"><span>Transats</span><b>n° ${b.transats.join(', ')}</b></div>
+    <div class="d-line"><span>Prix</span><b>${prixResa(b)} €</b></div>
+    <div class="d-line"><span>Origine</span><b>${ORIG_LABEL[b.origine]||'—'}</b></div>
+    ${b.tel?`<div class="d-line"><span>Téléphone</span><b><a href="tel:${esc(b.tel)}">${esc(b.tel)}</a></b></div>`:''}
+    ${b.notes?`<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">${esc(b.notes)}</b></div>`:''}
+    <div class="d-line"><span>Statut</span><b>${b.statut==='arrive'?'✓ Arrivé':'Réservé'}</b></div>
+    <div class="actions">
+      <button class="btn primary" data-a="arrive">${b.statut==='arrive'?'↺ Pas arrivé':'✓ Arrivé'}</button>
+      <button class="btn ghost" data-a="edit">Modifier</button>
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button class="btn ghost" data-a="move">Déplacer</button>
+      <button class="btn danger" data-a="del">Annuler la résa</button>
+    </div>
+  </div>`;
+}
+function bindDetail(b){
+  const root=document.querySelector(`[data-bid="${b.id}"]`); if(!root) return;
+  root.querySelector('[data-a=arrive]').addEventListener('click',()=>{
+    b.statut = b.statut==='arrive'?'reserve':'arrive'; persist(); closeSheets(); render();
+  });
+  root.querySelector('[data-a=edit]').addEventListener('click',()=>{ closeSheets(); setTimeout(()=>openForm(b),180); });
+  root.querySelector('[data-a=move]').addEventListener('click',()=>{ startMode('move', b, b.transats.length, []); });
+  const del=root.querySelector('[data-a=del]');
+  del.addEventListener('click',()=>{
+    if(!del.classList.contains('confirm')){ del.classList.add('confirm'); del.textContent='Confirmer l’annulation ?'; return; }
+    const day=getDay(currentDate);
+    delete day.bookings[b.id];
+    day.annulations.push({nom:b.nom,pax:b.pax,slot:b.slot,quand:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+    persist(); closeSheets(); render();
+  });
+}
+
+/* ---------- liste ---------- */
+document.getElementById('listBtn').addEventListener('click',()=>{
+  const day=getDay(currentDate);
+  const body=document.getElementById('listBody');
+  const bs=Object.values(day.bookings).sort((a,b)=>Math.min(...a.transats||[99])-Math.min(...b.transats||[99]));
+  body.innerHTML = bs.length? bs.map(b=>`
+    <div class="resa-item" data-open="${b.id}">
+      <div class="top"><span class="nm">${esc(b.nom)}${b.statut==='arrive'?' ✓':''}</span>
+      <span class="tagslot tag-${b.slot}">${SLOT_LABEL[b.slot].split(' ')[0]}</span></div>
+      <div class="sub">${b.pax} pers · transats ${b.transats.join(', ')} · ${prixResa(b)} € · ${ORIG_LABEL[b.origine]||''}${b.notes?' · '+esc(b.notes):''}</div>
+    </div>`).join('') : '<div class="empty">Aucune réservation ce jour.</div>';
+  if(day.annulations.length){
+    body.innerHTML += `<div class="annul-log"><b>Annulations du jour :</b> ${day.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' · ')}</div>`;
+  }
+  body.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>{
+    const b=day.bookings[el.dataset.open]; if(!b) return;
+    closeSheets(); setTimeout(()=>{ const bm=b.slot!=='aprem'?b:null, ba=b.slot!=='matin'?b:null; openDetail(bm||b, ba, null); },180);
+  }));
+  showSheet(document.getElementById('listSheet'));
+});
+
+/* ---------- disposition ---------- */
+document.getElementById('dispoBtn').addEventListener('click',()=>{
+  const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
+  let tmp=day.layout.slice();
+  const draw=()=>{
+    rows.innerHTML=tmp.map((n,i)=>`
+      <div class="dispo-row"><span class="lbl">Ligne ${i+1}${i===0?' (bord de mer)':''}</span>
+      <span class="stepper"><button data-i="${i}" data-d="-1">−</button><output>${n}</output><button data-i="${i}" data-d="1">＋</button></span></div>`).join('');
+    const tot=tmp.reduce((a,b)=>a+b,0);
+    document.getElementById('dispoTotal').innerHTML='<span class="'+(tot===NB_TRANSATS?'total-ok':'total-bad')+'">'+tot+' / '+NB_TRANSATS+'</span>';
+    rows.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.i; tmp[i]=Math.max(0,Math.min(15,tmp[i]+ +b.dataset.d)); draw();
+    }));
+  };
+  draw();
+  document.getElementById('dSave').onclick=()=>{
+    const maxT=tmp.reduce((a,b)=>a+b,0);
+    const day2=getDay(currentDate);
+    // vérifie qu'aucune résa n'utilise un n° au-delà du nouveau total
+    const over=Object.values(day2.bookings).some(b=>b.transats.some(t=>t>maxT));
+    if(over){ alertHint('Des résas occupent des transats au-delà de cette disposition. Déplace-les d’abord.'); return; }
+    day2.layout=tmp; persist(); closeSheets(); render();
+  };
+  document.getElementById('dCancel').onclick=closeSheets;
+  showSheet(document.getElementById('dispoSheet'));
+});
+function alertHint(msg){ const t=document.getElementById('dispoTotal'); t.innerHTML='<span class="total-bad">'+msg+'</span>'; }
+
+/* ---------- sheets ---------- */
+function showSheet(s){ overlay.classList.add('show'); [formSheet,detailSheet,document.getElementById('listSheet'),document.getElementById('dispoSheet')].forEach(x=>x.classList.remove('show')); s.classList.add('show'); }
+function closeSheets(){ overlay.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); }
+overlay.addEventListener('click',()=>{ pendingTransat=null; closeSheets(); });
+document.getElementById('newBtn').addEventListener('click',()=>{ pendingTransat=null; openForm(null); });
+
+/* ---------- navigation date ---------- */
+function shiftDay(n){ const d=new Date(currentDate+'T12:00:00'); d.setDate(d.getDate()+n);
+  currentDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); render(); }
+document.getElementById('prevDay').addEventListener('click',()=>shiftDay(-1));
+document.getElementById('nextDay').addEventListener('click',()=>shiftDay(1));
+document.getElementById('todayBtn').addEventListener('click',()=>{ currentDate=todayStr(); render(); });
+document.getElementById('dateInput').addEventListener('change',e=>{ if(e.target.value){ currentDate=e.target.value; render(); }});
+
+/* ---------- persistance ---------- */
+const LS_KEY='lido-transats-v2';
+let db=null, applyingRemote=false;
+function persist(){
+  if(db){ pushRemote(); }
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadLocal(){
+  try{ const raw=localStorage.getItem(LS_KEY); if(raw){ state=JSON.parse(raw)||state; return true; } }catch(e){}
+  return false;
+}
+
+/* ---------- Firebase (sync 3 téléphones) ---------- */
+function initFirebase(){
+  const cfg=window.FIREBASE_CONFIG;
+  const dot=document.getElementById('syncDot'), txt=document.getElementById('syncTxt');
+  if(!cfg){ document.getElementById('demoBanner').classList.add('show'); return; }
+  txt.textContent='connexion…';
+  const s1=document.createElement('script'); s1.src='https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js';
+  const s2=document.createElement('script'); s2.src='https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js';
+  s1.onerror=s2.onerror=()=>{ dot.classList.add('err'); txt.textContent='hors ligne'; document.getElementById('demoBanner').classList.add('show'); };
+  s1.onload=()=>document.body.appendChild(s2);
+  s2.onload=()=>{
+    try{
+      firebase.initializeApp(cfg);
+      db=firebase.database().ref('lido-transats');
+      let first=true;
+      db.on('value',snap=>{
+        applyingRemote=true;
+        const v=snap.val();
+        if(v && v.days){ state=v; }
+        else if(first){ db.set(state).catch(()=>{}); } // base vide : on envoie les données locales
+        first=false;
+        applyingRemote=false;
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+        dot.classList.add('on'); dot.classList.remove('err'); txt.textContent='synchronisé';
+        render();
+      },err=>{ dot.classList.add('err'); txt.textContent='erreur sync'; });
+    }catch(e){ dot.classList.add('err'); txt.textContent='erreur config'; }
+  };
+  document.body.appendChild(s1);
+}
+let pushTimer=null;
+function pushRemote(){
+  if(!db||applyingRemote) return;
+  const d=currentDate;
+  clearTimeout(pushTimer);
+  // on ne pousse que le jour modifié → moins de risque d'écraser les modifs des collègues
+  pushTimer=setTimeout(()=>{ db.child('days/'+d).set(getDay(d)).catch(()=>{}); },300);
+}
+
+/* ---------- seed : agenda du 5 août + résas MySunbed relevées dans les mails ---------- */
+function seed(){
+  const s5=getDay('2026-08-05');
+  if(Object.keys(s5.bookings).length===0){
+    const B=(id,o)=>{ o.id=id; o.statut=o.statut||'reserve'; o.prix=(o.transats.length)*(o.slot==='journee'?PRIX.jour:PRIX.demi); s5.bookings[id]=o; };
+    // Ligne 1 (bord de mer)
+    B('a1',{nom:'Joubin-Bagnier',pax:4,slot:'journee',origine:'tel',tel:'',notes:'Agenda : 4 transats 1ère ligne, « les mêmes » qu\'hier',transats:[1,2,3,4]});
+    B('a2',{nom:'Françoise',pax:2,slot:'matin',origine:'tel',tel:'0679699610',notes:'Agenda : 1ère ligne gauche — position à vérifier',transats:[5,6]});
+    B('a3',{nom:'Murray',pax:2,slot:'journee',origine:'tel',tel:'',notes:'',transats:[7,8]});
+    B('a4',{nom:'Salima',pax:1,slot:'matin',origine:'tel',tel:'+41762470748',notes:'',transats:[9]});
+    B('a5',{nom:'Manika',pax:1,slot:'journee',origine:'tel',tel:'',notes:'Créneau à confirmer (agenda : « 1 transat Manika »)',transats:[10]});
+    // Ligne 2
+    B('msb1',{nom:'Hausser',pax:4,slot:'journee',origine:'mysunbed',tel:'+33660106879',notes:'MySunbed SXHBMRJFQH · arrivée 10h · payé 120 €',transats:[11,12,13,14]});
+    B('msb2',{nom:'Choubard',pax:4,slot:'journee',origine:'mysunbed',tel:'+33672951913',notes:'MySunbed TSYEMPJBXY · arrivée 10h · payé 120 €',transats:[15,16,17,18]});
+    B('msb3',{nom:'Damas',pax:1,slot:'journee',origine:'mysunbed',tel:'+33783531783',notes:'MySunbed NJBSXURKHP · durée à confirmer',transats:[19]});
+    B('a6',{nom:'Max',pax:1,slot:'aprem',origine:'tel',tel:'+31624276413',notes:'Agenda : « 13 Max 1/2 J 14h » — nb transats et n°13 à vérifier',transats:[20]});
+    // Ligne 3
+    B('a7',{nom:'Helissy',pax:1,slot:'journee',origine:'tel',tel:'',notes:'Créneau à confirmer (agenda 13h : « 1 pax Helissy »)',transats:[21]});
+    B('a8',{nom:'Bilequin Valérie',pax:2,slot:'aprem',origine:'tel',tel:'0677092153',notes:'Agenda 14h · « Jc »',transats:[22,23]});
+  }
+  if(!s5.note) s5.note='Croisière ⚠ (agenda)';
+  const s11=getDay('2026-08-11');
+  if(Object.keys(s11.bookings).length===0){
+    s11.bookings['msb4']={id:'msb4',nom:'Chiabrera',pax:2,slot:'journee',origine:'mysunbed',tel:'+393662598630',
+      notes:'MySunbed JBPJBJCKEG',statut:'reserve',transats:[1,2],prix:60};
+  }
+}
+
+/* ---------- utils ---------- */
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- init ---------- */
+const had=loadLocal();
+if(!had) seed();
+render();
+initFirebase();
+</script>
+</body>
+</html>
