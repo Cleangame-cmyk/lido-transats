@@ -78,6 +78,11 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .transat .name{position:absolute;left:0;right:0;bottom:0;top:0;display:flex;align-items:flex-end;
   justify-content:center;padding:2px;font-size:8.5px;font-weight:600;color:rgba(0,0,0,.0)}
 .transat.sel{outline:3px solid var(--gold);outline-offset:1px}
+.transat{-webkit-touch-callout:none}
+.transat.carrying{outline:3px dashed var(--gold);outline-offset:2px;opacity:.7;transform:scale(1.06)}
+.addslot{border:2px dashed #b09f6e;border-radius:8px;height:56px;display:flex;align-items:center;justify-content:center;
+  color:#8a7a52;font-size:22px;font-weight:700;background:rgba(255,253,247,.6);cursor:pointer}
+@media (min-width:520px){ .addslot{height:64px} }
 .transat .arr{position:absolute;bottom:2px;right:3px;font-size:9px;z-index:3;
   background:rgba(255,255,255,.85);border-radius:50%;width:13px;height:13px;
   display:flex;align-items:center;justify-content:center;color:var(--green)}
@@ -301,6 +306,8 @@ let currentDate = todayStr();
 let mode = null;          // null | {type:'place'|'move', booking, need, sel:[]}
 let editingId = null;
 let pendingTransat = null; // transat tapé pour pré-sélection
+let carry = null;          // n° du matelas "en main" (appui long)
+let longT = null, suppressClick = false, pressedCarry = false, pdX = 0, pdY = 0;
 
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function uid(){ return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -382,9 +389,16 @@ function render(){
     const tag=document.createElement('div'); tag.className='ligne-tag';
     tag.textContent='Ligne '+(i+1)+(i===0?' · bord de mer':'')+' — '+rows[i].length+' transats';
     const grid=document.createElement('div'); grid.className='grid';
-    grid.style.gridTemplateColumns='repeat('+Math.max(rows[i].length,1)+',1fr)';
+    const carrySrc = carry ? rows.findIndex(r=>r.includes(carry)) : -1;
+    const extra = (carry && i!==carrySrc) ? 1 : 0;
+    grid.style.gridTemplateColumns='repeat('+Math.max(rows[i].length+extra,1)+',1fr)';
     for(const t of rows[i]){
       grid.appendChild(transatEl(day,t));
+    }
+    if(extra){
+      const add=document.createElement('div'); add.className='addslot'; add.textContent='＋';
+      add.addEventListener('click',()=>doLineMove(carry,i));
+      grid.appendChild(add);
     }
     wrap.appendChild(tag); wrap.appendChild(grid); lignesEl.appendChild(wrap);
   }
@@ -417,12 +431,20 @@ function transatEl(day,t){
   if(anyB && anyB.statut==='arrive'){ const c=document.createElement('span'); c.className='arr'; c.textContent='✓'; el.appendChild(c); }
   if((bm&&bm.origine==='mysunbed')||(ba&&ba.origine==='mysunbed')){ const s=document.createElement('span'); s.className='msb'; s.textContent='M'; el.appendChild(s); }
   if(mode && mode.sel.includes(t)) el.classList.add('sel');
+  if(carry===t) el.classList.add('carrying');
+  el.addEventListener('pointerdown',e=>{ if(mode||carry) return; pdX=e.clientX; pdY=e.clientY;
+    clearTimeout(longT); longT=setTimeout(()=>{ pressedCarry=true; startCarry(t); },450); });
+  el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-pdX)+Math.abs(e.clientY-pdY)>12) clearTimeout(longT); });
+  el.addEventListener('pointerup',()=>clearTimeout(longT));
+  el.addEventListener('pointercancel',()=>clearTimeout(longT));
   el.addEventListener('click',()=>onTransatTap(t));
   return el;
 }
 
 /* ---------- interactions plan ---------- */
 function onTransatTap(t){
+  if(suppressClick){ suppressClick=false; return; }
+  if(carry){ if(t!==carry) doSwap(carry,t); endCarry(); return; }
   const day=getDay(currentDate);
   if(mode){
     const slot=mode.booking.slot;
@@ -464,6 +486,44 @@ function updateModeBanner(){
   big.disabled = !okB; big.style.opacity = okB?1:.55;
 }
 function flashMode(msg){ modeTxt.textContent=msg; setTimeout(updateModeBanner,1200); }
+function startCarry(t){
+  carry=t; try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  document.getElementById('modeOk').style.display='none';
+  modeTxt.textContent='Matelas n°'+t+' en main — touche un autre matelas pour échanger, ou un ＋ pour changer de ligne';
+  modeBanner.classList.add('show'); render();
+}
+function endCarry(){
+  carry=null; document.getElementById('modeOk').style.display='';
+  if(!mode) modeBanner.classList.remove('show');
+  render();
+}
+document.addEventListener('pointerup',()=>{ clearTimeout(longT);
+  if(pressedCarry){ pressedCarry=false; suppressClick=true; setTimeout(()=>{ suppressClick=false; },150); } });
+function doSwap(a,b){
+  const day=getDay(currentDate);
+  for(const id in day.bookings){ const bk=day.bookings[id];
+    if(bk.transats) bk.transats=bk.transats.map(x=> x===a?b : (x===b?a:x) ).sort((x,y)=>x-y); }
+  persist();
+}
+function doLineMove(s,dst){
+  const day=getDay(currentDate);
+  const rows=rowsOf(day);
+  const src=rows.findIndex(r=>r.includes(s));
+  if(src===-1||src===dst){ endCarry(); return; }
+  const newLayout=day.layout.slice(); newLayout[src]--; newLayout[dst]++;
+  const newRows=[]; let n=1;
+  for(const c of newLayout){ const r=[]; for(let k=0;k<c;k++) r.push(n++); newRows.push(r); }
+  const map={};
+  for(let li=0;li<rows.length;li++){
+    const olds=rows[li].filter(x=>x!==s);
+    for(let i2=0;i2<olds.length;i2++) map[olds[i2]]=newRows[li][i2];
+  }
+  map[s]=newRows[dst][newRows[dst].length-1];
+  for(const id in day.bookings){ const bk=day.bookings[id];
+    if(bk.transats) bk.transats=bk.transats.map(x=> map[x]!==undefined?map[x]:x ).sort((x,y)=>x-y); }
+  day.layout=newLayout;
+  persist(); endCarry();
+}
 document.getElementById('modeOk').addEventListener('click',()=>{
   if(mode.sel.length!==mode.need) return;
   const day=getDay(currentDate);
@@ -473,7 +533,7 @@ document.getElementById('modeOk').addEventListener('click',()=>{
   mode=null; modeBanner.classList.remove('show'); setModeFabs(false);
   persist(); render();
 });
-document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
+document.getElementById('modeNo').addEventListener('click',()=>{ if(carry){ endCarry(); return; } mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
 document.getElementById('modeOkBig').addEventListener('click',()=>document.getElementById('modeOk').click());
 document.getElementById('modeNoBig').addEventListener('click',()=>document.getElementById('modeNo').click());
 
