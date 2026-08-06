@@ -94,6 +94,16 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   box-shadow:0 5px 16px rgba(0,0,0,.28)}
 .fab.main{background:var(--green);color:#fff;flex:1;max-width:220px}
 .fab.sec{background:#fff;color:var(--green)}
+.fab.ok{background:var(--jour);color:#fff;flex:1;max-width:340px;font-size:17px;padding:18px 20px}
+.fab.no{background:#fff;color:var(--danger)}
+#loginOverlay{position:fixed;inset:0;background:var(--sand);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
+#loginOverlay.show{display:flex}
+.login-card{background:var(--card);border:1px solid var(--gold-soft);border-radius:16px;padding:26px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.login-card h2{color:var(--green);margin:0 0 4px;font-size:20px}
+.login-card p{font-size:13px;color:#8a7a52;margin:0 0 16px}
+.login-card input{width:100%;border:1.5px solid var(--gold-soft);border-radius:10px;padding:13px;font-size:16px;text-align:center;margin-bottom:10px;font-family:inherit}
+.login-card button{width:100%;border:none;border-radius:11px;padding:14px;font-size:15px;font-weight:700;background:var(--green);color:#fff;cursor:pointer}
+.login-err{color:var(--danger);font-size:12.5px;min-height:16px;margin:6px 0 0}
 
 /* ---------- sheet / modal ---------- */
 .overlay{position:fixed;inset:0;background:rgba(30,35,30,.45);z-index:50;display:none}
@@ -186,6 +196,18 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <button class="fab sec" id="listBtn">☰ Résas</button>
   <button class="fab main" id="newBtn">＋ Nouvelle résa</button>
   <button class="fab sec" id="dispoBtn">⚙</button>
+  <button class="fab no" id="modeNoBig" style="display:none">✕ Annuler</button>
+  <button class="fab ok" id="modeOkBig" style="display:none">✓ Valider</button>
+</div>
+
+<div id="loginOverlay">
+  <div class="login-card">
+    <h2>LE LIDO · Transats</h2>
+    <p>Entre le mot de passe de l'équipe</p>
+    <input type="password" id="loginPwd" placeholder="Mot de passe" autocomplete="current-password">
+    <button id="loginBtn">Se connecter</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay"></div>
@@ -419,9 +441,16 @@ function onTransatTap(t){
 
 /* ---------- mode placement ---------- */
 const modeBanner=document.getElementById('modeBanner'), modeTxt=document.getElementById('modeTxt');
+function setModeFabs(on){
+  document.getElementById('modeOkBig').style.display=on?'':'none';
+  document.getElementById('modeNoBig').style.display=on?'':'none';
+  document.getElementById('newBtn').style.display=on?'none':'';
+  document.getElementById('listBtn').style.display=on?'none':'';
+  document.getElementById('dispoBtn').style.display=on?'none':'';
+}
 function startMode(type, booking, need, preset){
   mode={type,booking,need,sel:preset?preset.slice(0,need):[]};
-  closeSheets();
+  closeSheets(); setModeFabs(true);
   modeBanner.classList.add('show'); updateModeBanner(); render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -429,6 +458,10 @@ function updateModeBanner(){
   modeTxt.textContent = mode.booking.nom+' — '+mode.sel.length+'/'+mode.need+' transat(s) choisi(s)';
   document.getElementById('modeOk').disabled = mode.sel.length!==mode.need;
   document.getElementById('modeOk').style.opacity = mode.sel.length===mode.need?1:.5;
+  const big=document.getElementById('modeOkBig');
+  const okB = mode.sel.length===mode.need;
+  big.textContent = okB ? '✓ Valider' : mode.sel.length+'/'+mode.need+' — choisis les transats';
+  big.disabled = !okB; big.style.opacity = okB?1:.55;
 }
 function flashMode(msg){ modeTxt.textContent=msg; setTimeout(updateModeBanner,1200); }
 document.getElementById('modeOk').addEventListener('click',()=>{
@@ -437,10 +470,12 @@ document.getElementById('modeOk').addEventListener('click',()=>{
   mode.booking.transats=mode.sel.slice().sort((a,b)=>a-b);
   mode.booking.prix=prixResa(mode.booking);
   day.bookings[mode.booking.id]=mode.booking;
-  mode=null; modeBanner.classList.remove('show');
+  mode=null; modeBanner.classList.remove('show'); setModeFabs(false);
   persist(); render();
 });
-document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); render(); });
+document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
+document.getElementById('modeOkBig').addEventListener('click',()=>document.getElementById('modeOk').click());
+document.getElementById('modeNoBig').addEventListener('click',()=>document.getElementById('modeNo').click());
 
 /* ---------- formulaire ---------- */
 const overlay=document.getElementById('overlay');
@@ -624,18 +659,34 @@ function loadLocal(){
 }
 
 /* ---------- Firebase (sync 3 téléphones) ---------- */
+const TEAM_EMAIL='equipe@lelidodetoulon.com';
+let syncStarted=false;
+function doLogin(){
+  const err=document.getElementById('loginErr'); err.textContent='';
+  firebase.auth().signInWithEmailAndPassword(TEAM_EMAIL, document.getElementById('loginPwd').value)
+    .then(()=>{ document.getElementById('loginPwd').value=''; })
+    .catch(()=>{ err.textContent='Mot de passe incorrect'; });
+}
 function initFirebase(){
   const cfg=window.FIREBASE_CONFIG;
   const dot=document.getElementById('syncDot'), txt=document.getElementById('syncTxt');
   if(!cfg){ document.getElementById('demoBanner').classList.add('show'); return; }
   txt.textContent='connexion…';
-  const s1=document.createElement('script'); s1.src='https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js';
-  const s2=document.createElement('script'); s2.src='https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js';
-  s1.onerror=s2.onerror=()=>{ dot.classList.add('err'); txt.textContent='hors ligne'; document.getElementById('demoBanner').classList.add('show'); };
-  s1.onload=()=>document.body.appendChild(s2);
-  s2.onload=()=>{
-    try{
-      firebase.initializeApp(cfg);
+  const load=(src)=>new Promise((ok,ko)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=ko; document.body.appendChild(s); });
+  const V='https://www.gstatic.com/firebasejs/10.14.1/';
+  load(V+'firebase-app-compat.js').then(()=>load(V+'firebase-auth-compat.js')).then(()=>load(V+'firebase-database-compat.js')).then(()=>{
+    firebase.initializeApp(cfg);
+    document.getElementById('loginBtn').addEventListener('click',doLogin);
+    document.getElementById('loginPwd').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+    firebase.auth().onAuthStateChanged(u=>{
+      if(u){ document.getElementById('loginOverlay').classList.remove('show'); startSync(dot,txt); }
+      else{ document.getElementById('loginOverlay').classList.add('show'); txt.textContent='connexion requise'; }
+    });
+  }).catch(()=>{ dot.classList.add('err'); txt.textContent='hors ligne'; document.getElementById('demoBanner').classList.add('show'); });
+}
+function startSync(dot,txt){
+  if(syncStarted) return; syncStarted=true;
+  try{
       db=firebase.database().ref('lido-transats');
       let first=true;
       db.on('value',snap=>{
@@ -649,9 +700,7 @@ function initFirebase(){
         dot.classList.add('on'); dot.classList.remove('err'); txt.textContent='synchronisé';
         render();
       },err=>{ dot.classList.add('err'); txt.textContent='erreur sync'; });
-    }catch(e){ dot.classList.add('err'); txt.textContent='erreur config'; }
-  };
-  document.body.appendChild(s1);
+  }catch(e){ dot.classList.add('err'); txt.textContent='erreur config'; }
 }
 let pushTimer=null;
 function pushRemote(){
