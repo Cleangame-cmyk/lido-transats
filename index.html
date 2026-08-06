@@ -44,6 +44,10 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .stat{flex:1;background:rgba(255,255,255,.12);border-radius:9px;padding:5px 4px;text-align:center}
 .stat b{display:block;font-size:14.5px}
 .stat span{font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.4px}
+.stats.r2{margin-top:6px}
+.stat .pt{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+.stat.ok b{color:#9fe7a8}
+.stat.warn b{color:#ffd27f}
 
 /* ---------- plage ---------- */
 #plage{max-width:640px;margin:0 auto;padding:10px 8px 120px}
@@ -189,10 +193,15 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <button class="today-btn" id="todayBtn">Auj.</button>
   </div>
   <div class="stats">
-    <div class="stat"><b id="stMatin">0/30</b><span>matin</span></div>
-    <div class="stat"><b id="stAprem">0/30</b><span>après-midi</span></div>
-    <div class="stat"><b id="stResas">0</b><span>résas</span></div>
+    <div class="stat"><b id="stRes">0</b><span>réservés</span></div>
+    <div class="stat ok"><b id="stArr">0</b><span>✓ arrivés · payés</span></div>
+    <div class="stat warn"><b id="stAtt">0</b><span>non arrivés</span></div>
     <div class="stat"><b id="stCA">0 €</b><span>CA jour</span></div>
+  </div>
+  <div class="stats r2">
+    <div class="stat"><b><span class="pt" style="background:var(--jour)"></span><span id="stLibJour">0</span></b><span>rest. journée</span></div>
+    <div class="stat"><b><span class="pt" style="background:var(--matin)"></span><span id="stLibMat">0</span></b><span>rest. matin</span></div>
+    <div class="stat"><b><span class="pt" style="background:var(--aprem)"></span><span id="stLibApr">0</span></b><span>rest. aprèm</span></div>
   </div>
 </header>
 
@@ -421,15 +430,22 @@ function render(){
   }
 
   // stats
-  let m=0,a=0,ca=0,nb=0;
-  const total = rows.reduce((s,r)=>s+r.length,0);
-  for(const id in day.bookings){ const b=day.bookings[id]; nb++; ca+=prixResa(b);
-    if(b.slot!=='aprem') m+=b.transats.length;
-    if(b.slot!=='matin') a+=b.transats.length; }
-  document.getElementById('stMatin').textContent=m+'/'+total;
-  document.getElementById('stAprem').textContent=a+'/'+total;
-  document.getElementById('stResas').textContent=nb;
+  let ca=0,res=0,arr=0,att=0;
+  const occM=new Set(), occA=new Set();
+  for(const id in day.bookings){ const b=day.bookings[id]; ca+=prixResa(b);
+    const n=(b.transats||[]).length; res+=n;
+    if(b.statut==='arrive') arr+=n; else att+=n;
+    (b.transats||[]).forEach(t=>{ if(b.slot!=='aprem') occM.add(t); if(b.slot!=='matin') occA.add(t); });
+  }
+  let libJ=0,libM=0,libA=0;
+  rows.forEach(r=>r.forEach(t=>{ const fm=!occM.has(t), fa=!occA.has(t); if(fm) libM++; if(fa) libA++; if(fm&&fa) libJ++; }));
+  document.getElementById('stRes').textContent=res;
+  document.getElementById('stArr').textContent=arr;
+  document.getElementById('stAtt').textContent=att;
   document.getElementById('stCA').textContent=ca+' €';
+  document.getElementById('stLibJour').textContent=libJ;
+  document.getElementById('stLibMat').textContent=libM;
+  document.getElementById('stLibApr').textContent=libA;
 }
 
 function transatEl(day,t){
