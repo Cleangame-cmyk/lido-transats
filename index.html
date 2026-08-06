@@ -91,6 +91,13 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   display:flex;align-items:center;justify-content:center;color:var(--green)}
 .transat .msb{position:absolute;top:2px;right:3px;z-index:3;font-size:8px;font-weight:800;
   background:#430B14;color:#fff;border-radius:4px;padding:0 3px;line-height:12px}
+.arrH{position:absolute;right:3px;z-index:3;background:rgba(255,255,255,.92);border-radius:50%;
+  width:13px;height:13px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:9px}
+.arrH.m{top:16px}
+.arrH.a{bottom:2px}
+.rst{position:absolute;bottom:2px;left:3px;z-index:3;width:14px;height:14px;border-radius:50%;
+  background:#fff;border:1.5px solid #b3541e;color:#b3541e;font-size:8.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center}
 .mer{margin:0 2px;background:linear-gradient(#8fc3d8,#bcdcea);border-radius:10px;
   text-align:center;color:#2c6a85;font-weight:700;letter-spacing:6px;font-size:13px;padding:10px 0 12px}
 .mer .waves{letter-spacing:2px;font-size:11px;opacity:.7}
@@ -246,6 +253,11 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
       <button class="chip on" data-v="tel">Téléphone</button>
       <button class="chip" data-v="place">Sur place</button>
       <button class="chip" data-v="mysunbed">MySunbed</button>
+    </div>
+  </div>
+  <div class="field"><label>Restaurant</label>
+    <div class="chips" id="fResto">
+      <button class="chip" data-v="resto">🍽 Déjeunent au resto</button>
     </div>
   </div>
   <div class="field"><label>Téléphone (optionnel)</label><input type="tel" id="fTel" placeholder="06…"></div>
@@ -432,8 +444,13 @@ function transatEl(day,t){
     if(ba){ ha.classList.add('occ'); ha.textContent=shortName(ba.nom); }
   }
   el.appendChild(hm); el.appendChild(ha);
-  const anyB = bm||ba;
-  if(anyB && anyB.statut==='arrive'){ const c=document.createElement('span'); c.className='arr'; c.textContent='✓'; el.appendChild(c); }
+  if(bm && bm===ba){
+    if(bm.statut==='arrive'){ const c=document.createElement('span'); c.className='arr'; c.textContent='✓'; el.appendChild(c); }
+  } else {
+    if(bm && bm.statut==='arrive'){ const c=document.createElement('span'); c.className='arrH m'; c.textContent='✓'; el.appendChild(c); }
+    if(ba && ba.statut==='arrive'){ const c=document.createElement('span'); c.className='arrH a'; c.textContent='✓'; el.appendChild(c); }
+  }
+  if((bm&&bm.resto)||(ba&&ba.resto)){ const rc=document.createElement('span'); rc.className='rst'; rc.textContent='C'; el.appendChild(rc); }
   if((bm&&bm.origine==='mysunbed')||(ba&&ba.origine==='mysunbed')){ const s=document.createElement('span'); s.className='msb'; s.textContent='M'; el.appendChild(s); }
   if(mode && mode.sel.includes(t)) el.classList.add('sel');
   if(carry===t) el.classList.add('carrying');
@@ -632,7 +649,7 @@ document.getElementById('modeNoBig').addEventListener('click',()=>document.getEl
 /* ---------- formulaire ---------- */
 const overlay=document.getElementById('overlay');
 const formSheet=document.getElementById('formSheet');
-let fPax=2,fNb=2,fSlot='journee',fOrig='tel',nbTouched=false;
+let fPax=2,fNb=2,fSlot='journee',fOrig='tel',fResto=false,nbTouched=false;
 
 function openForm(booking){
   editingId = booking?booking.id:null;
@@ -642,6 +659,7 @@ function openForm(booking){
   document.getElementById('fNotes').value = booking?(booking.notes||''):'';
   fPax=booking?booking.pax:2; fNb=booking?booking.transats.length:2;
   fSlot=booking?booking.slot:'journee'; fOrig=booking?(booking.origine||'tel'):'tel';
+  fResto=booking?!!booking.resto:false;
   nbTouched=!!booking;
   syncFormUI();
   document.getElementById('fPlaceHint').textContent = pendingTransat?('Départ au transat n°'+pendingTransat+' — placement auto des suivants, ajustable ensuite.'):'';
@@ -653,6 +671,7 @@ function syncFormUI(){
   document.getElementById('fNb').textContent=fNb;
   document.querySelectorAll('#fSlot .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===fSlot));
   document.querySelectorAll('#fOrig .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===fOrig));
+  document.querySelectorAll('#fResto .chip').forEach(c=>c.classList.toggle('on',fResto));
   const p=fNb*(fSlot==='journee'?PRIX.jour:PRIX.demi);
   document.getElementById('fPrix').textContent='Prix : '+p+' € ('+fNb+' × '+(fSlot==='journee'?PRIX.jour:PRIX.demi)+' €)';
 }
@@ -664,6 +683,7 @@ document.querySelectorAll('.stepper button').forEach(b=>b.addEventListener('clic
 }));
 document.getElementById('fSlot').addEventListener('click',e=>{ if(e.target.dataset.v){ fSlot=e.target.dataset.v; syncFormUI(); }});
 document.getElementById('fOrig').addEventListener('click',e=>{ if(e.target.dataset.v){ fOrig=e.target.dataset.v; syncFormUI(); }});
+document.getElementById('fResto').addEventListener('click',e=>{ if(e.target.dataset.v){ fResto=!fResto; syncFormUI(); }});
 document.getElementById('fCancel').addEventListener('click',()=>{ pendingTransat=null; closeSheets(); });
 
 document.getElementById('fSave').addEventListener('click',()=>{
@@ -673,7 +693,7 @@ document.getElementById('fSave').addEventListener('click',()=>{
   const base = editingId ? day.bookings[editingId] : null;
   const b = {
     id: editingId || uid(),
-    nom, pax:fPax, slot:fSlot, origine:fOrig,
+    nom, pax:fPax, slot:fSlot, origine:fOrig, resto:fResto,
     tel:document.getElementById('fTel').value.trim(),
     notes:document.getElementById('fNotes').value.trim(),
     statut: base?base.statut:'reserve',
@@ -705,6 +725,7 @@ function detailHTML(b){
     <div class="d-line"><span>Transats</span><b>n° ${b.transats.join(', ')}</b></div>
     <div class="d-line"><span>Prix</span><b>${prixResa(b)} €</b></div>
     <div class="d-line"><span>Origine</span><b>${ORIG_LABEL[b.origine]||'—'}</b></div>
+    ${b.resto?`<div class="d-line"><span>Restaurant</span><b>🍽 Oui — prévenir la cuisine</b></div>`:''}
     ${b.tel?`<div class="d-line"><span>Téléphone</span><b><a href="tel:${esc(b.tel)}">${esc(b.tel)}</a></b></div>`:''}
     ${b.notes?`<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">${esc(b.notes)}</b></div>`:''}
     <div class="d-line"><span>Statut</span><b>${b.statut==='arrive'?'✓ Arrivé':'Réservé'}</b></div>
@@ -740,12 +761,13 @@ document.getElementById('listBtn').addEventListener('click',()=>{
   const day=getDay(currentDate);
   const body=document.getElementById('listBody');
   const bs=Object.values(day.bookings).sort((a,b)=>Math.min(...a.transats||[99])-Math.min(...b.transats||[99]));
-  body.innerHTML = bs.length? bs.map(b=>`
+  const rsL=bs.filter(b=>b.resto);
+  body.innerHTML = (rsL.length? '<div class="hint" style="margin:-4px 0 10px;font-size:13px">🍽 Restaurant : '+rsL.length+' résa(s) · '+rsL.reduce((s,b)=>s+b.pax,0)+' pers. à prévoir en cuisine</div>' : '') + (bs.length? bs.map(b=>`
     <div class="resa-item" data-open="${b.id}">
       <div class="top"><span class="nm">${esc(b.nom)}${b.statut==='arrive'?' ✓':''}</span>
       <span class="tagslot tag-${b.slot}">${SLOT_LABEL[b.slot].split(' ')[0]}</span></div>
-      <div class="sub">${b.pax} pers · transats ${b.transats.join(', ')} · ${prixResa(b)} € · ${ORIG_LABEL[b.origine]||''}${b.notes?' · '+esc(b.notes):''}</div>
-    </div>`).join('') : '<div class="empty">Aucune réservation ce jour.</div>';
+      <div class="sub">${b.pax} pers · transats ${b.transats.join(', ')} · ${prixResa(b)} € · ${ORIG_LABEL[b.origine]||''}${b.resto?' · 🍽 resto':''}${b.notes?' · '+esc(b.notes):''}</div>
+    </div>`).join('') : '<div class="empty">Aucune réservation ce jour.</div>');
   if(day.annulations.length){
     body.innerHTML += `<div class="annul-log"><b>Annulations du jour :</b> ${day.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' · ')}</div>`;
   }
