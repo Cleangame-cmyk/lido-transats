@@ -58,7 +58,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .b-ok{background:var(--green);color:#fff}.b-no{background:#d8d2c2;color:#444}
 
 .batiment{background:linear-gradient(#d8c9a8,#cbbb97);border:1px solid #b3a37c;border-radius:10px;
-  text-align:center;font-size:11px;font-weight:600;color:#6b5d34;padding:7px;letter-spacing:1.5px;margin:0 2px}
+  text-align:center;font-size:11px;font-weight:600;color:#6b5d34;padding:7px;letter-spacing:1.5px;margin:16px 2px 0}
 .ligne{margin:14px 2px 0}
 .ligne-tag{font-size:10.5px;font-weight:600;color:#8a7a52;letter-spacing:.6px;margin:0 0 4px 4px;text-transform:uppercase}
 .grid{display:grid;gap:5px}
@@ -80,6 +80,9 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .transat.sel{outline:3px solid var(--gold);outline-offset:1px}
 .transat{-webkit-touch-callout:none}
 .transat.carrying{outline:3px dashed var(--gold);outline-offset:2px;opacity:.7;transform:scale(1.06)}
+.transat.drop-swap{outline:3px solid var(--jour);outline-offset:1px;transform:scale(1.05)}
+.transat.ins-left{box-shadow:inset 5px 0 0 var(--gold)}
+.transat.ins-right{box-shadow:inset -5px 0 0 var(--gold)}
 .addslot{border:2px dashed #b09f6e;border-radius:8px;height:56px;display:flex;align-items:center;justify-content:center;
   color:#8a7a52;font-size:22px;font-weight:700;background:rgba(255,253,247,.6);cursor:pointer}
 @media (min-width:520px){ .addslot{height:64px} }
@@ -88,7 +91,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   display:flex;align-items:center;justify-content:center;color:var(--green)}
 .transat .msb{position:absolute;top:2px;right:3px;z-index:3;font-size:8px;font-weight:800;
   background:#430B14;color:#fff;border-radius:4px;padding:0 3px;line-height:12px}
-.mer{margin:16px 2px 0;background:linear-gradient(#bcdcea,#8fc3d8);border-radius:10px;
+.mer{margin:0 2px;background:linear-gradient(#8fc3d8,#bcdcea);border-radius:10px;
   text-align:center;color:#2c6a85;font-weight:700;letter-spacing:6px;font-size:13px;padding:10px 0 12px}
 .mer .waves{letter-spacing:2px;font-size:11px;opacity:.7}
 
@@ -192,9 +195,9 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <span id="modeTxt"></span>
     <span class="b-actions"><button class="b-ok" id="modeOk">Valider</button><button class="b-no" id="modeNo">Annuler</button></span>
   </div>
-  <div class="batiment">TERRASSE · BAR / RESTAURANT · CABANON</div>
+  <div class="mer">M E R<div class="waves">〜 〜 〜 〜 〜 〜 〜 〜</div></div>
   <div id="lignes"></div>
-  <div class="mer"><div class="waves">〜 〜 〜 〜 〜 〜 〜 〜</div>M E R</div>
+  <div class="batiment">TERRASSE · BAR / RESTAURANT · CABANON</div>
 </div>
 
 <div class="fabs">
@@ -307,6 +310,8 @@ let mode = null;          // null | {type:'place'|'move', booking, need, sel:[]}
 let editingId = null;
 let pendingTransat = null; // transat tapé pour pré-sélection
 let carry = null;          // n° du matelas "en main" (appui long)
+let carryLineMode = false;
+let dragging=false, dragGhost=null, dropTgt=null, pointerIsDown=false;
 let longT = null, suppressClick = false, pressedCarry = false, pdX = 0, pdY = 0;
 
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -381,16 +386,16 @@ function render(){
     d.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
   document.getElementById('dateInput').value = currentDate;
 
-  // plan — affiché ligne 3 en haut → ligne 1 en bas (bord de mer)
+  // plan — mer en haut : ligne 1 (bord de mer) affichée en premier, ligne 3 en bas côté terrasse
   const rows = rowsOf(day);
   lignesEl.innerHTML='';
-  for(let i=rows.length-1;i>=0;i--){
+  for(let i=0;i<rows.length;i++){
     const wrap=document.createElement('div'); wrap.className='ligne';
     const tag=document.createElement('div'); tag.className='ligne-tag';
     tag.textContent='Ligne '+(i+1)+(i===0?' · bord de mer':'')+' — '+rows[i].length+' transats';
     const grid=document.createElement('div'); grid.className='grid';
     const carrySrc = carry ? rows.findIndex(r=>r.includes(carry)) : -1;
-    const extra = (carry && i!==carrySrc) ? 1 : 0;
+    const extra = (carry && carryLineMode && i!==carrySrc) ? 1 : 0;
     grid.style.gridTemplateColumns='repeat('+Math.max(rows[i].length+extra,1)+',1fr)';
     for(const t of rows[i]){
       grid.appendChild(transatEl(day,t));
@@ -487,18 +492,104 @@ function updateModeBanner(){
 }
 function flashMode(msg){ modeTxt.textContent=msg; setTimeout(updateModeBanner,1200); }
 function startCarry(t){
-  carry=t; try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
-  document.getElementById('modeOk').style.display='none';
-  modeTxt.textContent='Matelas n°'+t+' en main — touche un autre matelas pour échanger, ou un ＋ pour changer de ligne';
+  carry=t; carryLineMode=false; try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  updateCarryUI();
   modeBanner.classList.add('show'); render();
 }
+function updateCarryUI(){
+  const ok=document.getElementById('modeOk');
+  ok.style.display=''; ok.disabled=false; ok.style.opacity=1;
+  ok.textContent = carryLineMode ? '↩ Plutôt échanger' : 'Changer de ligne';
+  modeTxt.textContent = carryLineMode
+    ? 'Matelas n°'+carry+' — touche le ＋ au bout de la ligne de destination'
+    : 'Matelas n°'+carry+' en main — glisse-le avec le pouce (sur un matelas = échange, entre deux = insertion)';
+}
 function endCarry(){
-  carry=null; document.getElementById('modeOk').style.display='';
+  carry=null; carryLineMode=false;
+  const ok=document.getElementById('modeOk');
+  ok.style.display=''; ok.textContent='Valider';
   if(!mode) modeBanner.classList.remove('show');
   render();
 }
-document.addEventListener('pointerup',()=>{ clearTimeout(longT);
+document.addEventListener('pointerdown',e=>{ pointerIsDown=true; });
+document.addEventListener('touchmove',e=>{ if(carry&&pointerIsDown) e.preventDefault(); },{passive:false});
+document.addEventListener('pointermove',e=>{
+  if(!carry||!pointerIsDown) return;
+  if(!dragging){
+    if(Math.abs(e.clientX-pdX)+Math.abs(e.clientY-pdY)>15){ dragging=true; makeGhost(); }
+    else return;
+  }
+  moveGhost(e.clientX,e.clientY);
+  updateDrop(e.clientX,e.clientY);
+});
+function makeGhost(){
+  const src=document.querySelector('[data-t="'+carry+'"]');
+  if(!src) return;
+  dragGhost=src.cloneNode(true);
+  const r=src.getBoundingClientRect();
+  Object.assign(dragGhost.style,{position:'fixed',width:r.width+'px',height:r.height+'px',
+    zIndex:90,pointerEvents:'none',opacity:.9,transform:'scale(1.15)',margin:0,left:r.left+'px',top:r.top+'px'});
+  document.body.appendChild(dragGhost);
+}
+function moveGhost(x,y){
+  if(!dragGhost) return;
+  dragGhost.style.left=(x-dragGhost.offsetWidth/2)+'px';
+  dragGhost.style.top=(y-dragGhost.offsetHeight*0.9)+'px';
+}
+function clearDropMarks(){
+  document.querySelectorAll('.drop-swap,.ins-left,.ins-right').forEach(el=>el.classList.remove('drop-swap','ins-left','ins-right'));
+}
+function updateDrop(x,y){
+  clearDropMarks(); dropTgt=null;
+  const el=document.elementFromPoint(x,y);
+  const cell=(el&&el.closest)?el.closest('.transat'):null;
+  if(!cell) return;
+  const t=+cell.dataset.t;
+  if(t===carry) return;
+  const r=cell.getBoundingClientRect();
+  const rel=(x-r.left)/r.width;
+  if(rel<0.3){ dropTgt={type:'ins',t:t,side:'left'}; cell.classList.add('ins-left'); }
+  else if(rel>0.7){ dropTgt={type:'ins',t:t,side:'right'}; cell.classList.add('ins-right'); }
+  else { dropTgt={type:'swap',t:t}; cell.classList.add('drop-swap'); }
+}
+function doInsert(s,tRef,side){
+  const day=getDay(currentDate);
+  const rows=rowsOf(day);
+  const src=rows.findIndex(r=>r.includes(s));
+  const dst=rows.findIndex(r=>r.includes(tRef));
+  if(src===-1||dst===-1) return;
+  const newLayout=day.layout.slice(); newLayout[src]--; newLayout[dst]++;
+  const newRows=[]; let n=1;
+  for(const c of newLayout){ const r=[]; for(let k2=0;k2<c;k2++) r.push(n++); newRows.push(r); }
+  const oldsD=rows[dst].filter(x=>x!==s);
+  let k=oldsD.indexOf(tRef); if(side==='right') k+=1;
+  const map={};
+  for(let li=0;li<rows.length;li++){
+    const olds=rows[li].filter(x=>x!==s);
+    for(let i2=0;i2<olds.length;i2++){
+      map[olds[i2]] = (li===dst) ? newRows[dst][i2<k?i2:i2+1] : newRows[li][i2];
+    }
+  }
+  map[s]=newRows[dst][k];
+  for(const id in day.bookings){ const bk=day.bookings[id];
+    if(bk.transats) bk.transats=bk.transats.map(x=> map[x]!==undefined?map[x]:x ).sort((a,b)=>a-b); }
+  day.layout=newLayout;
+  persist();
+}
+document.addEventListener('pointerup',()=>{ pointerIsDown=false; clearTimeout(longT);
+  if(dragging){
+    const tgt=dropTgt; dropTgt=null; dragging=false;
+    if(dragGhost){ dragGhost.remove(); dragGhost=null; }
+    clearDropMarks();
+    if(tgt&&tgt.type==='swap'){ doSwap(carry,tgt.t); }
+    else if(tgt&&tgt.type==='ins'){ doInsert(carry,tgt.t,tgt.side); }
+    endCarry();
+    pressedCarry=false; suppressClick=true; setTimeout(()=>{ suppressClick=false; },150);
+    return;
+  }
   if(pressedCarry){ pressedCarry=false; suppressClick=true; setTimeout(()=>{ suppressClick=false; },150); } });
+document.addEventListener('pointercancel',()=>{ pointerIsDown=false; clearTimeout(longT);
+  if(dragging){ dragging=false; dropTgt=null; if(dragGhost){ dragGhost.remove(); dragGhost=null; } clearDropMarks(); endCarry(); } });
 function doSwap(a,b){
   const day=getDay(currentDate);
   for(const id in day.bookings){ const bk=day.bookings[id];
@@ -525,6 +616,7 @@ function doLineMove(s,dst){
   persist(); endCarry();
 }
 document.getElementById('modeOk').addEventListener('click',()=>{
+  if(carry){ carryLineMode=!carryLineMode; updateCarryUI(); render(); return; }
   if(mode.sel.length!==mode.need) return;
   const day=getDay(currentDate);
   mode.booking.transats=mode.sel.slice().sort((a,b)=>a-b);
