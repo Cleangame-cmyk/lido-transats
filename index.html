@@ -67,14 +67,24 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .ligne-tag{font-size:10.5px;font-weight:600;color:#8a7a52;letter-spacing:.6px;margin:0 0 4px 4px;text-transform:uppercase}
 .grid{display:grid;gap:5px}
 .transat{position:relative;border-radius:8px;border:1.5px solid #cfc3a2;background:var(--libre);
-  height:56px;cursor:pointer;overflow:hidden;user-select:none;-webkit-user-select:none;
+  height:78px;cursor:pointer;overflow:hidden;user-select:none;-webkit-user-select:none;
   display:flex;flex-direction:column;transition:transform .08s}
 .transat:active{transform:scale(.93)}
 .transat .num{position:absolute;top:2px;left:3px;font-size:9.5px;font-weight:700;color:#6b5d34;z-index:3;
   background:rgba(255,253,247,.78);border-radius:4px;padding:0 3px;line-height:13px}
-.half{flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;
-  color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 2px}
-.half.matin{padding-top:12px}
+.half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;
+  color:#fff;overflow:hidden;padding:0 2px;gap:1px}
+.half.matin{padding-top:11px}
+.hnm{max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;line-height:1.05}
+.hbg{display:flex;align-items:center;gap:2px;height:13px}
+.hbg .hpx{font-style:normal;font-size:8.5px;opacity:.95}
+.bg{font-style:normal;display:inline-flex;width:13px;height:13px;border-radius:50%;background:#fff;
+  align-items:center;justify-content:center;font-size:8.5px;font-weight:800;flex:none}
+.bg.c{color:#b3541e;box-shadow:inset 0 0 0 1.5px #b3541e}
+.bg.v{color:var(--green)}
+.transat.jour{background:var(--jour)}
+.jwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:9.5px;font-weight:700;color:#fff;overflow:hidden;padding:10px 2px 0}
 .half.matin.occ{background:var(--matin)}
 .half.aprem.occ{background:var(--aprem)}
 .transat.jour .half{background:var(--jour)}
@@ -229,7 +239,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .total-ok{color:var(--green);font-weight:700}
 .total-bad{color:var(--danger);font-weight:700}
 @media (min-width:520px){ .half{font-size:10.5px} .transat .num{font-size:10.5px} .transat{height:64px} }
-@media (max-width:359px){ .transat{height:50px} .grid{gap:4px} #plage{padding:8px 5px 120px} }
+@media (max-width:359px){ .transat{height:70px} .grid{gap:4px} #plage{padding:8px 5px 120px} }
 </style>
 </head>
 <body>
@@ -418,8 +428,21 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <h4>Que veux-tu faire ?</h4>
     <button class="hc-b" id="rcMove">📍 Déplacer la table</button>
     <button class="hc-m" id="rcResa">👤 Déplacer la résa</button>
+    <button class="hc-b" id="rcCap" style="background:var(--gold)">👥 Couverts / taille de la table</button>
     <button class="hc-a" id="rcDel" style="background:#c0564b">🗑 Retirer la table du plan</button>
     <button class="hc-x" id="rcCancel">Annuler</button>
+  </div>
+</div>
+
+<!-- resto : couverts d'une table -->
+<div class="sheet" id="rCapSheet">
+  <div class="grab"></div>
+  <h3 id="rcapTitle">Couverts de la table</h3>
+  <div class="field"><label>Couverts</label><div class="rstepper"><button id="rcapM">−</button><output id="rcapOut">2</output><button id="rcapP">＋</button></div></div>
+  <p class="hint">La table s'agrandit ou se réduit selon le nombre de couverts — c'est comme fusionner ou séparer des tables.</p>
+  <div class="actions">
+    <button class="btn ghost" id="rcapCancel">Annuler</button>
+    <button class="btn primary" id="rcapGo">Appliquer</button>
   </div>
 </div>
 
@@ -493,10 +516,10 @@ const RESTO_TABLES = [
   {n:32,z:'i',x:5, y:10,w:16,h:24,cap:8,round:1},
   {n:31,z:'i',x:8, y:44,w:9, h:11,cap:2},
   {n:30,z:'i',x:8, y:57,w:9, h:11,cap:2},
-  {n:27,z:'i',x:26,y:6, w:10,h:12,cap:2},
+  {n:27,z:'t',x:31,y:62,w:10,h:24,cap:2},
   {n:28,z:'i',x:26,y:20,w:10,h:12,cap:2},
   {n:29,z:'i',x:26,y:44,w:12,h:16,cap:4,round:1},
-  {n:26,z:'i',x:43,y:4, w:10,h:12,cap:2},
+  {n:26,z:'t',x:45,y:62,w:10,h:24,cap:2},
   {n:25,z:'i',x:43,y:18,w:10,h:12,cap:2},
   {n:24,z:'i',x:40,y:38,w:9, h:11,cap:2},
   {n:23,z:'i',x:40,y:51,w:9, h:11,cap:2},
@@ -504,8 +527,8 @@ const RESTO_TABLES = [
   {n:22,z:'i',x:50,y:66,w:8, h:10,cap:2},
   {n:21,z:'i',x:59,y:66,w:8, h:10,cap:2},
   {n:20,z:'i',x:68,y:64,w:8, h:10,cap:2},
-  {n:18,z:'i',x:58,y:8, w:9, h:11,cap:2},
-  {n:17,z:'i',x:70,y:4, w:9, h:11,cap:2},
+  {n:18,z:'t',x:59,y:62,w:10,h:24,cap:2},
+  {n:17,z:'t',x:73,y:62,w:10,h:24,cap:2},
   {n:16,z:'i',x:70,y:17,w:9, h:11,cap:2},
   {n:15,z:'i',x:67,y:32,w:9, h:11,cap:2},
   {n:10,z:'i',x:83,y:6, w:14,h:22,cap:8,round:1},
@@ -651,21 +674,32 @@ function transatEl(day,t){
   const el=document.createElement('div'); el.className='transat'; el.dataset.t=t;
   const bm=occupant(day,t,'matin'), ba=occupant(day,t,'aprem');
   const num=document.createElement('span'); num.className='num'; num.textContent=t; el.appendChild(num);
-  const hm=document.createElement('div'); hm.className='half matin';
-  const ha=document.createElement('div'); ha.className='half aprem';
-  if(bm && bm===ba){ el.classList.add('jour'); hm.textContent=shortName(bm.nom); ha.textContent=bm.pax+'p'; }
-  else{
-    if(bm){ hm.classList.add('occ'); hm.textContent=shortName(bm.nom); }
-    if(ba){ ha.classList.add('occ'); ha.textContent=shortName(ba.nom); }
-  }
-  el.appendChild(hm); el.appendChild(ha);
+  const mkBadges=(b,withPax)=>{
+    const bg=document.createElement('span'); bg.className='hbg';
+    if(withPax && !(b.resto && b.statut==='arrive')){ const px=document.createElement('i'); px.className='hpx'; px.textContent=b.pax+'p'; bg.appendChild(px); }
+    if(b.resto){ const c=document.createElement('i'); c.className='bg c'; c.textContent='C'; bg.appendChild(c); }
+    if(b.statut==='arrive'){ const v=document.createElement('i'); v.className='bg v'; v.textContent='✓'; bg.appendChild(v); }
+    return bg;
+  };
   if(bm && bm===ba){
-    if(bm.statut==='arrive'){ const c=document.createElement('span'); c.className='arr'; c.textContent='✓'; el.appendChild(c); }
+    el.classList.add('jour');
+    const w=document.createElement('div'); w.className='jwrap';
+    const nm=document.createElement('span'); nm.className='hnm'; nm.textContent=shortName(bm.nom); w.appendChild(nm);
+    w.appendChild(mkBadges(bm,true));
+    el.appendChild(w);
   } else {
-    if(bm && bm.statut==='arrive'){ const c=document.createElement('span'); c.className='arrH m'; c.textContent='✓'; el.appendChild(c); }
-    if(ba && ba.statut==='arrive'){ const c=document.createElement('span'); c.className='arrH a'; c.textContent='✓'; el.appendChild(c); }
+    const mk=(cls,b)=>{
+      const h=document.createElement('div'); h.className='half '+cls;
+      if(b){
+        h.classList.add('occ');
+        const nm=document.createElement('span'); nm.className='hnm'; nm.textContent=shortName(b.nom); h.appendChild(nm);
+        h.appendChild(mkBadges(b,false));
+      }
+      return h;
+    };
+    el.appendChild(mk('matin',bm));
+    el.appendChild(mk('aprem',ba));
   }
-  if((bm&&bm.resto)||(ba&&ba.resto)){ const rc=document.createElement('span'); rc.className='rst'; rc.textContent='C'; el.appendChild(rc); }
   if((bm&&bm.origine==='mysunbed')||(ba&&ba.origine==='mysunbed')){ const s=document.createElement('span'); s.className='msb'; s.textContent='M'; el.appendChild(s); }
   if(mode && mode.sel.includes(t)) el.classList.add('sel');
   if(carry===t) el.classList.add('carrying');
@@ -1216,6 +1250,26 @@ document.getElementById('rcDel').addEventListener('click',()=>{
   persist(); render();
 });
 document.getElementById('rcCancel').addEventListener('click',rCloseChooser);
+let rcapT=null, rcapV=2;
+document.getElementById('rcCap').addEventListener('click',()=>{ const t=rChooserT; rCloseChooser(); openRCap(t); });
+function openRCap(t){
+  const rd=getRestoDay(currentDate);
+  const tb=rd.tables.find(o=>o.n===t); if(!tb) return;
+  rcapT=t; rcapV=tb.cap||2;
+  document.getElementById('rcapTitle').textContent='Table n°'+t+' — couverts';
+  document.getElementById('rcapOut').textContent=rcapV;
+  showSheet(document.getElementById('rCapSheet'));
+}
+document.getElementById('rcapM').addEventListener('click',()=>{ rcapV=Math.max(1,rcapV-1); document.getElementById('rcapOut').textContent=rcapV; });
+document.getElementById('rcapP').addEventListener('click',()=>{ rcapV=Math.min(20,rcapV+1); document.getElementById('rcapOut').textContent=rcapV; });
+document.getElementById('rcapCancel').addEventListener('click',closeSheets);
+document.getElementById('rcapGo').addEventListener('click',()=>{
+  const rd=getRestoDay(currentDate);
+  const tb=rd.tables.find(o=>o.n===rcapT); if(!tb){ closeSheets(); return; }
+  tb.cap=rcapV;
+  rSizeFor(tb,tb.z);
+  persist(); closeSheets(); render();
+});
 document.getElementById('rChooser').addEventListener('click',e=>{ if(e.target.id==='rChooser') rCloseChooser(); });
 function rStartResaCarry(t){
   const rd=getRestoDay(currentDate);
@@ -1235,6 +1289,16 @@ function rStartTblCarry(t){
   document.getElementById('carryTxt').textContent='Table '+t+' en main \u2014 pose le doigt sur le plan et gl\u00edsse, ou touche sa nouvelle place';
 }
 function rEndTblCarry(){ rTblCarry=null; rTblPointer=null; if(rTblGhost){ rTblGhost.remove(); rTblGhost=null; } document.getElementById('carryBar').classList.remove('show'); render(); }
+function rSizeFor(tb,z){
+  const cap=tb.cap||2;
+  if(z==='t'){
+    if(tb.round){ const s=Math.sqrt(cap/4); tb.w=Math.min(26,Math.max(8,Math.round(11*s))); tb.h=Math.min(80,Math.max(18,Math.round(28*s))); }
+    else { tb.w=10; tb.h=Math.max(22,Math.min(90,Math.round(42*cap/4))); }
+  } else {
+    if(tb.round){ const s=Math.sqrt(cap/4); tb.w=Math.min(30,Math.max(8,Math.round(12*s))); tb.h=Math.min(30,Math.max(10,Math.round(16*s))); }
+    else { tb.w=Math.max(7,Math.min(45,Math.round(9*cap/2))); tb.h=12; }
+  }
+}
 function rZoneAt(x,y){
   const zs={t:document.getElementById('rplanT'), i:document.getElementById('rplanI')};
   for(const k in zs){ const r=zs[k].getBoundingClientRect();
@@ -1246,7 +1310,9 @@ function rPlaceTable(x,y){
   if(!hit){ document.getElementById('carryTxt').textContent='Pose-la sur un des deux plans (terrasse ou int\u00e9rieur)'; return; }
   const rd=getRestoDay(currentDate);
   const tb=rd.tables.find(o=>o.n===rTblCarry); if(!tb){ rEndTblCarry(); return; }
+  const zoneChange = tb.z!==hit.z;
   tb.z=hit.z;
+  if(zoneChange) rSizeFor(tb,hit.z); // taille adaptée à la zone (plus de déformation)
   tb.x=Math.round(Math.max(0,Math.min(100-tb.w,(x-hit.rect.left)/hit.rect.width*100 - tb.w/2)));
   tb.y=Math.round(Math.max(0,Math.min(100-tb.h,(y-hit.rect.top)/hit.rect.height*100 - tb.h/2)));
   const others=rd.tables.filter(o=>o.n!==tb.n && o.z===tb.z);
@@ -1306,7 +1372,8 @@ document.getElementById('raGo').addEventListener('click',()=>{
   const tb = raZoneV==='t'
     ? {n:n,z:'t',x:44,y:20,w:10,h:42,cap:raCapV}
     : {n:n,z:'i',x:44,y:40,w:9,h:12,cap:raCapV};
-  if(raShapeV==='round'){ tb.round=1; tb.w+=2; tb.h+=3; }
+  if(raShapeV==='round') tb.round=1;
+  rSizeFor(tb,tb.z);
   rd.tables.push(tb);
   persist(); closeSheets(); render();
   setTimeout(()=>rStartTblCarry(n),250);
@@ -1541,5 +1608,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v12 resto -->
+<!-- v14 tables -->
 </html>
