@@ -97,8 +97,8 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 #carryBar button{border:none;border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 #carryLine{background:rgba(255,255,255,.18);color:#fff}
 #carryCancel{background:#fff;color:var(--danger)}
-#halfChooser{position:fixed;inset:0;background:rgba(20,25,20,.45);z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
-#halfChooser.show{display:flex}
+#halfChooser,#rChooser{position:fixed;inset:0;background:rgba(20,25,20,.45);z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
+#halfChooser.show,#rChooser.show{display:flex}
 .hc-card{background:var(--card);border-radius:16px;padding:16px;max-width:330px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 .hc-card h4{margin:0 0 10px;color:var(--green);font-size:15px;text-align:center}
 .hc-card button{display:block;width:100%;border:none;border-radius:11px;padding:13px;font-size:14.5px;font-weight:700;
@@ -125,6 +125,39 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .mer{margin:0 2px;background:linear-gradient(#8fc3d8,#bcdcea);border-radius:10px;
   text-align:center;color:#2c6a85;font-weight:700;letter-spacing:6px;font-size:13px;padding:10px 0 12px}
 .mer .waves{letter-spacing:2px;font-size:11px;opacity:.7}
+
+/* ---------- resto ---------- */
+.seg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.10);border-radius:11px;padding:3px}
+.seg button{flex:1;border:none;border-radius:9px;padding:9px;font-size:13.5px;font-weight:700;background:transparent;color:#fff;opacity:.75;cursor:pointer;font-family:inherit}
+.seg button.on{background:#fff;color:var(--green);opacity:1}
+#resto{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
+.svc{display:flex;gap:6px;margin:2px 2px 10px}
+.svc button{flex:1;border:1.5px solid var(--gold-soft);border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:#fff;color:#8a7a52}
+.svc button.on.midi{background:var(--matin);color:#fff;border-color:var(--matin)}
+.svc button.on.soir{background:#4a5f8a;color:#fff;border-color:#4a5f8a}
+.zone-tag{font-size:10.5px;font-weight:600;color:#8a7a52;letter-spacing:.6px;margin:12px 0 4px 4px;text-transform:uppercase}
+.rplan{position:relative;background:var(--card);border:1px solid var(--gold-soft);border-radius:12px}
+.rplan.terr{height:150px}
+.rplan.inte{height:280px}
+.rtable{position:absolute;border:1.5px solid #cfc3a2;background:var(--libre);border-radius:7px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+  font-size:9px;font-weight:700;color:#8a7a52;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  transition:transform .08s;padding:1px}
+.rtable:active{transform:scale(.93)}
+.rtable.round{border-radius:50%}
+.rtable .rnum{position:absolute;top:1px;left:3px;font-size:8.5px;font-weight:800;color:#6b5d34;background:rgba(255,253,247,.85);border-radius:3px;padding:0 2px;line-height:11px;z-index:2}
+.rtable .rnm{font-size:9.5px;font-weight:700;max-width:96%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.rtable .rpx{font-size:8.5px;opacity:.85}
+.rtable.occ.midi{background:var(--matin);border-color:#c9882c;color:#fff}
+.rtable.occ.soir{background:#4a5f8a;border-color:#3a4c70;color:#fff}
+.rtable.occ .rpx{opacity:.95}
+.rtable .rarr{position:absolute;bottom:1px;right:2px;background:rgba(255,255,255,.92);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:8px;z-index:2}
+.rtable .rz{position:absolute;top:1px;right:2px;background:#0e2a47;color:#fff;border-radius:3px;font-size:7.5px;font-weight:800;padding:0 2px;line-height:11px;z-index:2}
+.rtable.sel{outline:3px solid var(--gold);outline-offset:1px}
+.rtable.carrying{outline:3px dashed var(--gold);opacity:.65}
+.rstepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--gold-soft);border-radius:10px;overflow:hidden;width:max-content}
+.rstepper button{border:none;background:#f3ecd9;width:46px;height:44px;font-size:20px;color:var(--green);cursor:pointer}
+.rstepper output{width:52px;text-align:center;font-size:17px;font-weight:700}
 
 /* ---------- FABs ---------- */
 .fabs{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:0;right:0;display:flex;
@@ -203,8 +236,12 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 
 <header>
   <div class="h-top">
-    <div class="brand">LE LIDO <small>transats</small></div>
+    <div class="brand">LE LIDO <small>plage · resto</small></div>
     <div class="sync" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncTxt">local</span></div>
+  </div>
+  <div class="seg">
+    <button id="segPlage" class="on">🏖 Plage</button>
+    <button id="segResto">🍽 Resto</button>
   </div>
   <div class="datebar">
     <button id="prevDay" aria-label="Jour précédent">‹</button>
@@ -223,6 +260,12 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <div class="stat"><b><span class="pt" style="background:var(--matin)"></span><span id="stLibMat">0</span></b><span>rest. matin</span></div>
     <div class="stat"><b><span class="pt" style="background:var(--aprem)"></span><span id="stLibApr">0</span></b><span>rest. aprèm</span></div>
   </div>
+  <div class="stats" id="statsResto" style="display:none">
+    <div class="stat"><b id="rsMidi">0</b><span>couverts midi</span></div>
+    <div class="stat"><b id="rsSoir">0</b><span>couverts soir</span></div>
+    <div class="stat ok"><b id="rsArr">0</b><span>✓ arrivés</span></div>
+    <div class="stat"><b id="rsTbl">0</b><span>tables libres</span></div>
+  </div>
 </header>
 
 <div id="plage">
@@ -234,6 +277,18 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <div class="mer">M E R<div class="waves">〜 〜 〜 〜 〜 〜 〜 〜</div></div>
   <div id="lignes"></div>
   <div class="batiment">TERRASSE · BAR / RESTAURANT · CABANON</div>
+</div>
+
+<div id="resto">
+  <div class="svc">
+    <button class="midi" id="svcMidi">☀️ Midi</button>
+    <button class="soir" id="svcSoir">🌙 Soir</button>
+  </div>
+  <div class="mer" style="padding:5px 0 7px;font-size:11px;letter-spacing:4px">M E R<div class="waves">〜 〜 〜 〜 〜</div></div>
+  <div class="zone-tag">Terrasse</div>
+  <div class="rplan terr" id="rplanT"></div>
+  <div class="zone-tag">Intérieur ouvert</div>
+  <div class="rplan inte" id="rplanI"></div>
 </div>
 
 <div class="fabs">
@@ -326,6 +381,72 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <div id="listBody"></div>
 </div>
 
+<!-- resto : formulaire -->
+<div class="sheet" id="rFormSheet">
+  <div class="grab"></div>
+  <h3 id="rfTitle">Nouvelle résa restaurant</h3>
+  <div class="field"><label>Nom du client</label><input type="text" id="rfNom" placeholder="Nom" autocomplete="off"></div>
+  <div class="row2">
+    <div class="field"><label>Couverts</label>
+      <div class="rstepper"><button id="rfPaxM">−</button><output id="rfPaxOut">2</output><button id="rfPaxP">＋</button></div>
+    </div>
+    <div class="field"><label>Heure (optionnel)</label><input type="text" id="rfHeure" placeholder="12h30" style="width:100%;border:1.5px solid var(--gold-soft);border-radius:10px;padding:11px 12px;font-size:16px;background:#fff;font-family:inherit"></div>
+  </div>
+  <div class="field"><label>Service</label>
+    <div class="chips" id="rfSvc">
+      <button class="chip" data-v="midi">☀️ Midi</button>
+      <button class="chip" data-v="soir">🌙 Soir</button>
+    </div>
+  </div>
+  <div class="field"><label>Origine</label>
+    <div class="chips" id="rfOrig">
+      <button class="chip on" data-v="tel">Téléphone</button>
+      <button class="chip" data-v="place">Sur place</button>
+      <button class="chip" data-v="zenchef">Zenchef</button>
+    </div>
+  </div>
+  <div class="field"><label>Notes (optionnel)</label><textarea id="rfNotes" placeholder="Allergies, anniversaire, transats n°…"></textarea></div>
+  <div class="actions">
+    <button class="btn ghost" id="rfCancel">Annuler</button>
+    <button class="btn primary" id="rfGo">Choisir les tables →</button>
+  </div>
+</div>
+
+<!-- resto : choix appui long -->
+<div id="rChooser">
+  <div class="hc-card">
+    <h4>Que veux-tu faire ?</h4>
+    <button class="hc-b" id="rcMove">📍 Déplacer la table</button>
+    <button class="hc-m" id="rcResa">👤 Déplacer la résa</button>
+    <button class="hc-a" id="rcDel" style="background:#c0564b">🗑 Retirer la table du plan</button>
+    <button class="hc-x" id="rcCancel">Annuler</button>
+  </div>
+</div>
+
+<!-- resto : gestion des tables -->
+<div class="sheet" id="rAddSheet">
+  <div class="grab"></div>
+  <h3>Tables du restaurant</h3>
+  <div class="field"><label>Numéro de la nouvelle table</label><input type="tel" id="raNum" placeholder="ex. 33"></div>
+  <div class="row2">
+    <div class="field"><label>Couverts</label><div class="rstepper"><button id="raCapM">−</button><output id="raCapOut">2</output><button id="raCapP">＋</button></div></div>
+    <div class="field"><label>Forme</label><div class="chips" id="raShape"><button class="chip on" data-v="rect">Carrée</button><button class="chip" data-v="round">Ronde</button></div></div>
+  </div>
+  <div class="field"><label>Zone</label><div class="chips" id="raZone"><button class="chip" data-v="t">Terrasse</button><button class="chip on" data-v="i">Intérieur</button></div></div>
+  <div class="actions">
+    <button class="btn ghost" id="raCancel">Fermer</button>
+    <button class="btn primary" id="raGo">Ajouter la table</button>
+  </div>
+  <p class="hint" style="margin-top:10px">La nouvelle table apparaît au centre de la zone, déjà « en main » : glisse-la à sa place. Pour déplacer ou retirer une table existante : appui long dessus.</p>
+  <button id="raReset" class="btn ghost" style="width:100%;margin-top:8px">↺ Remettre le plan d'origine (ce jour)</button>
+</div>
+
+<!-- resto : détail -->
+<div class="sheet" id="rDetailSheet">
+  <div class="grab"></div>
+  <div id="rdBody"></div>
+</div>
+
 <!-- disposition -->
 <div class="sheet" id="dispoSheet">
   <div class="grab"></div>
@@ -358,6 +479,40 @@ const NB_TRANSATS = 30;
 const PRIX = { demi: 20, jour: 30 };
 const SLOT_LABEL = { matin:'Matin 10h–14h', aprem:'Aprèm 14h–18h', journee:'Journée 10h–18h' };
 const ORIG_LABEL = { tel:'Téléphone', place:'Sur place', mysunbed:'MySunbed' };
+const RORIG_LABEL = { tel:'Téléphone', place:'Sur place', zenchef:'Zenchef' };
+const SVC_LABEL = { midi:'☀️ Midi', soir:'🌙 Soir' };
+// Plan du restaurant — positions en % (x,y,largeur,hauteur), cap = couverts par défaut
+const RESTO_TABLES = [
+  {n:40,z:'t',x:3, y:12,w:10,h:42,cap:4},
+  {n:50,z:'t',x:17,y:12,w:10,h:42,cap:4},
+  {n:60,z:'t',x:31,y:12,w:10,h:42,cap:4},
+  {n:70,z:'t',x:45,y:12,w:10,h:42,cap:4},
+  {n:80,z:'t',x:59,y:12,w:10,h:42,cap:4},
+  {n:90,z:'t',x:73,y:12,w:10,h:42,cap:4},
+  {n:92,z:'t',x:87,y:8, w:10,h:84,cap:8},
+  {n:32,z:'i',x:5, y:10,w:16,h:24,cap:8,round:1},
+  {n:31,z:'i',x:8, y:44,w:9, h:11,cap:2},
+  {n:30,z:'i',x:8, y:57,w:9, h:11,cap:2},
+  {n:27,z:'i',x:26,y:6, w:10,h:12,cap:2},
+  {n:28,z:'i',x:26,y:20,w:10,h:12,cap:2},
+  {n:29,z:'i',x:26,y:44,w:12,h:16,cap:4,round:1},
+  {n:26,z:'i',x:43,y:4, w:10,h:12,cap:2},
+  {n:25,z:'i',x:43,y:18,w:10,h:12,cap:2},
+  {n:24,z:'i',x:40,y:38,w:9, h:11,cap:2},
+  {n:23,z:'i',x:40,y:51,w:9, h:11,cap:2},
+  {n:19,z:'i',x:53,y:44,w:9, h:12,cap:4,round:1},
+  {n:22,z:'i',x:50,y:66,w:8, h:10,cap:2},
+  {n:21,z:'i',x:59,y:66,w:8, h:10,cap:2},
+  {n:20,z:'i',x:68,y:64,w:8, h:10,cap:2},
+  {n:18,z:'i',x:58,y:8, w:9, h:11,cap:2},
+  {n:17,z:'i',x:70,y:4, w:9, h:11,cap:2},
+  {n:16,z:'i',x:70,y:17,w:9, h:11,cap:2},
+  {n:15,z:'i',x:67,y:32,w:9, h:11,cap:2},
+  {n:10,z:'i',x:83,y:6, w:14,h:22,cap:8,round:1},
+  {n:13,z:'i',x:76,y:52,w:7, h:10,cap:2},
+  {n:12,z:'i',x:84,y:52,w:7, h:10,cap:2},
+  {n:11,z:'i',x:92,y:52,w:7, h:10,cap:2}
+];
 
 /* ---------- state ---------- */
 let state = { days:{} };
@@ -369,6 +524,11 @@ let carry = null;          // n° du matelas "en main" (appui long)
 let carryPart = 'both';    // 'both' | 'matin' | 'aprem'
 let carryPointer = null;   // pointerId autorisé à glisser
 let chooserT = null;
+let view='plage', rService='midi';
+let rMode=null, rEditing=null, rPendingTable=null;
+let rCarry=null, rLongT=null, rpdX=0, rpdY=0;
+let rTblCarry=null, rTblPointer=null, rTblGhost=null, rChooserT=null;
+let raCapV=2, raShapeV='rect', raZoneV='i';
 let carryLineMode = false;
 let dragging=false, dragGhost=null, dropTgt=null, pointerIsDown=false;
 let longT = null, suppressClick = false, pressedCarry = false, pdX = 0, pdY = 0;
@@ -484,6 +644,7 @@ function render(){
   document.getElementById('stLibJour').textContent=libJ;
   document.getElementById('stLibMat').textContent=libM;
   document.getElementById('stLibApr').textContent=libA;
+  renderResto();
 }
 
 function transatEl(day,t){
@@ -630,7 +791,7 @@ function moveHalf(slot,fromT,toT){
   persist(); endCarry();
 }
 document.getElementById('carryLine').addEventListener('click',()=>{ if(!carry) return; carryLineMode=!carryLineMode; updateCarryUI(); render(); });
-document.getElementById('carryCancel').addEventListener('click',endCarry);
+document.getElementById('carryCancel').addEventListener('click',()=>{ if(rMode){ rCancelMode(); return; } if(rTblCarry){ rEndTblCarry(); return; } if(rCarry){ rEndCarry(); return; } endCarry(); });
 document.addEventListener('pointerdown',e=>{ pointerIsDown=true; });
 document.addEventListener('touchmove',e=>{ if(carry&&dragging) e.preventDefault(); },{passive:false});
 document.addEventListener('pointermove',e=>{
@@ -762,8 +923,8 @@ document.getElementById('modeOk').addEventListener('click',()=>{
   persist(); render();
 });
 document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
-document.getElementById('modeOkBig').addEventListener('click',()=>document.getElementById('modeOk').click());
-document.getElementById('modeNoBig').addEventListener('click',()=>document.getElementById('modeNo').click());
+document.getElementById('modeOkBig').addEventListener('click',()=>{ if(rMode){ if(rMode.sel.length) rConfirm(); return; } document.getElementById('modeOk').click(); });
+document.getElementById('modeNoBig').addEventListener('click',()=>{ if(rMode){ rCancelMode(); return; } document.getElementById('modeNo').click(); });
 
 /* ---------- formulaire ---------- */
 const overlay=document.getElementById('overlay');
@@ -877,6 +1038,7 @@ function bindDetail(b){
 
 /* ---------- liste ---------- */
 document.getElementById('listBtn').addEventListener('click',()=>{
+  if(view==='resto'){ renderRList(); return; }
   const day=getDay(currentDate);
   const body=document.getElementById('listBody');
   const bs=Object.values(day.bookings).sort((a,b)=>Math.min(...a.transats||[99])-Math.min(...b.transats||[99]));
@@ -899,6 +1061,7 @@ document.getElementById('listBtn').addEventListener('click',()=>{
 
 /* ---------- disposition ---------- */
 document.getElementById('dispoBtn').addEventListener('click',()=>{
+  if(view==='resto'){ openRAdd(); return; }
   const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
   let tmp=day.layout.slice();
   const draw=()=>{
@@ -926,10 +1089,10 @@ document.getElementById('dispoBtn').addEventListener('click',()=>{
 function alertHint(msg){ const t=document.getElementById('dispoTotal'); t.innerHTML='<span class="total-bad">'+msg+'</span>'; }
 
 /* ---------- sheets ---------- */
-function showSheet(s){ overlay.classList.add('show'); [formSheet,detailSheet,document.getElementById('listSheet'),document.getElementById('dispoSheet')].forEach(x=>x.classList.remove('show')); s.classList.add('show'); }
+function showSheet(s){ overlay.classList.add('show'); document.querySelectorAll('.sheet').forEach(x=>x.classList.remove('show')); s.classList.add('show'); }
 function closeSheets(){ overlay.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); }
-overlay.addEventListener('click',()=>{ pendingTransat=null; closeSheets(); });
-document.getElementById('newBtn').addEventListener('click',()=>{ pendingTransat=null; openForm(null); });
+overlay.addEventListener('click',()=>{ pendingTransat=null; rPendingTable=null; closeSheets(); });
+document.getElementById('newBtn').addEventListener('click',()=>{ if(view==='resto'){ rPendingTable=null; openRForm(null); return; } pendingTransat=null; openForm(null); });
 
 /* ---------- navigation date ---------- */
 function shiftDay(n){ const d=new Date(currentDate+'T12:00:00'); d.setDate(d.getDate()+n);
@@ -938,6 +1101,342 @@ document.getElementById('prevDay').addEventListener('click',()=>shiftDay(-1));
 document.getElementById('nextDay').addEventListener('click',()=>shiftDay(1));
 document.getElementById('todayBtn').addEventListener('click',()=>{ currentDate=todayStr(); render(); });
 document.getElementById('dateInput').addEventListener('change',e=>{ if(e.target.value){ currentDate=e.target.value; render(); }});
+
+/* ---------- RESTO ---------- */
+function getRestoDay(dateStr){
+  const d=getDay(dateStr);
+  if(!d.resto) d.resto={bookings:{},annulations:[]};
+  if(!d.resto.bookings) d.resto.bookings={};
+  if(!d.resto.annulations) d.resto.annulations=[];
+  if(!d.resto.tables || !d.resto.tables.length) d.resto.tables=JSON.parse(JSON.stringify(RESTO_TABLES));
+  return d.resto;
+}
+function occupantR(rd,t,svc){
+  for(const id in rd.bookings){ const b=rd.bookings[id];
+    if(b && b.tables && b.tables.includes(t) && b.service===svc) return b; }
+  return null;
+}
+function setView(v){
+  view=v; try{ localStorage.setItem('lido-view',v); }catch(e){}
+  document.getElementById('segPlage').classList.toggle('on',v==='plage');
+  document.getElementById('segResto').classList.toggle('on',v==='resto');
+  document.getElementById('plage').style.display = v==='plage'?'':'none';
+  document.getElementById('resto').style.display = v==='resto'?'block':'none';
+  document.querySelectorAll('header .stats').forEach(s=>{
+    if(s.id==='statsResto') s.style.display = v==='resto'?'flex':'none';
+    else s.style.display = v==='plage'?'flex':'none';
+  });
+  // gestion : dispo transats en vue plage, tables en vue resto
+  render();
+}
+function renderResto(){
+  if(view!=='resto') return;
+  const rd=getRestoDay(currentDate);
+  document.getElementById('svcMidi').classList.toggle('on',rService==='midi');
+  document.getElementById('svcSoir').classList.toggle('on',rService==='soir');
+  const zones={t:document.getElementById('rplanT'), i:document.getElementById('rplanI')};
+  zones.t.innerHTML=''; zones.i.innerHTML='';
+  rd.tables.forEach(tb=>{
+    const el=document.createElement('div');
+    el.className='rtable'+(tb.round?' round':'');
+    el.style.left=tb.x+'%'; el.style.top=tb.y+'%'; el.style.width=tb.w+'%'; el.style.height=tb.h+'%';
+    el.dataset.rt=tb.n;
+    const b=occupantR(rd,tb.n,rService);
+    const num=document.createElement('span'); num.className='rnum'; num.textContent=tb.n; el.appendChild(num);
+    if(b){
+      el.classList.add('occ',rService);
+      const nm=document.createElement('span'); nm.className='rnm'; nm.textContent=shortName(b.nom); el.appendChild(nm);
+      const px=document.createElement('span'); px.className='rpx'; px.textContent=b.pax+'p'+(b.heure?' \u00b7 '+b.heure:''); el.appendChild(px);
+      if(b.statut==='arrive'){ const c=document.createElement('span'); c.className='rarr'; c.textContent='\u2713'; el.appendChild(c); }
+      if(b.origine==='zenchef'){ const z=document.createElement('span'); z.className='rz'; z.textContent='Z'; el.appendChild(z); }
+    } else {
+      const cp=document.createElement('span'); cp.className='rpx'; cp.textContent=tb.cap+' cv'; el.appendChild(cp);
+    }
+    if(rMode && rMode.sel.includes(tb.n)) el.classList.add('sel');
+    if(rCarry===tb.n) el.classList.add('carrying');
+    el.addEventListener('pointerdown',e=>{ if(rMode||rCarry||rTblCarry) return; rpdX=e.clientX; rpdY=e.clientY;
+      clearTimeout(rLongT); rLongT=setTimeout(()=>{ pressedCarry=true; rOpenChooser(tb.n); },380); });
+    el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-rpdX)+Math.abs(e.clientY-rpdY)>12) clearTimeout(rLongT); });
+    el.addEventListener('pointerup',()=>clearTimeout(rLongT));
+    el.addEventListener('pointercancel',()=>clearTimeout(rLongT));
+    el.addEventListener('click',()=>rOnTap(tb.n));
+    zones[tb.z].appendChild(el);
+  });
+  const bs=Object.values(rd.bookings);
+  const cvM=bs.filter(b=>b.service==='midi').reduce((s,b)=>s+(+b.pax||0),0);
+  const cvS=bs.filter(b=>b.service==='soir').reduce((s,b)=>s+(+b.pax||0),0);
+  const arr=bs.filter(b=>b.service===rService&&b.statut==='arrive').reduce((s,b)=>s+(+b.pax||0),0);
+  const freeT=rd.tables.filter(tb=>!occupantR(rd,tb.n,rService)).length;
+  document.getElementById('rsMidi').textContent=cvM;
+  document.getElementById('rsSoir').textContent=cvS;
+  document.getElementById('rsArr').textContent=arr;
+  document.getElementById('rsTbl').textContent=freeT;
+}
+function rOnTap(t){
+  if(suppressClick){ suppressClick=false; return; }
+  if(rTblCarry) return;
+  const rd=getRestoDay(currentDate);
+  if(rCarry){ if(t!==rCarry) rMoveOrSwap(rCarry,t); else rEndCarry(); return; }
+  if(rMode){
+    if(rMode.sel.includes(t)) rMode.sel=rMode.sel.filter(x=>x!==t);
+    else{
+      const occ=occupantR(rd,t,rMode.booking.service);
+      if(occ && occ.id!==rMode.booking.id){
+        document.getElementById('carryTxt').textContent='Table '+t+' d\u00e9j\u00e0 prise ('+occ.nom+')';
+        setTimeout(updateRModeUI,1400); return;
+      }
+      rMode.sel.push(t);
+    }
+    updateRModeUI(); renderResto(); return;
+  }
+  const b=occupantR(rd,t,rService);
+  if(!b){ rPendingTable=t; openRForm(null); }
+  else openRDetail(b);
+}
+function rOpenChooser(t){
+  rChooserT=t;
+  const rd=getRestoDay(currentDate);
+  const b=occupantR(rd,t,rService);
+  try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  const rcR=document.getElementById('rcResa');
+  rcR.style.display = b? '' : 'none';
+  if(b) rcR.textContent='\ud83d\udc64 D\u00e9placer la r\u00e9sa ('+b.nom+')';
+  const used = Object.values(rd.bookings).some(x=>x&&x.tables&&x.tables.includes(t));
+  document.getElementById('rcDel').style.display = used? 'none':'';
+  document.getElementById('rcMove').textContent='\ud83d\udccd D\u00e9placer la table n\u00b0'+t;
+  document.getElementById('rChooser').classList.add('show');
+}
+function rCloseChooser(){ document.getElementById('rChooser').classList.remove('show'); }
+document.getElementById('rcMove').addEventListener('click',()=>{ const t=rChooserT; rCloseChooser(); rStartTblCarry(t); });
+document.getElementById('rcResa').addEventListener('click',()=>{ const t=rChooserT; rCloseChooser(); rStartResaCarry(t); });
+document.getElementById('rcDel').addEventListener('click',()=>{
+  const t=rChooserT; rCloseChooser();
+  const rd=getRestoDay(currentDate);
+  rd.tables=rd.tables.filter(x=>x.n!==t);
+  persist(); render();
+});
+document.getElementById('rcCancel').addEventListener('click',rCloseChooser);
+document.getElementById('rChooser').addEventListener('click',e=>{ if(e.target.id==='rChooser') rCloseChooser(); });
+function rStartResaCarry(t){
+  const rd=getRestoDay(currentDate);
+  const b=occupantR(rd,t,rService);
+  if(!b) return;
+  rCarry=t;
+  const el=document.querySelector('[data-rt="'+t+'"]'); if(el) el.classList.add('carrying');
+  document.getElementById('carryBar').classList.add('show');
+  document.getElementById('carryLine').style.display='none';
+  document.getElementById('carryTxt').textContent='R\u00e9sa '+b.nom+' en main \u2014 touche la table de destination';
+}
+function rStartTblCarry(t){
+  rTblCarry=t; rTblPointer=null;
+  const el=document.querySelector('[data-rt="'+t+'"]'); if(el) el.classList.add('carrying');
+  document.getElementById('carryBar').classList.add('show');
+  document.getElementById('carryLine').style.display='none';
+  document.getElementById('carryTxt').textContent='Table '+t+' en main \u2014 pose le doigt sur le plan et gl\u00edsse, ou touche sa nouvelle place';
+}
+function rEndTblCarry(){ rTblCarry=null; rTblPointer=null; if(rTblGhost){ rTblGhost.remove(); rTblGhost=null; } document.getElementById('carryBar').classList.remove('show'); render(); }
+function rZoneAt(x,y){
+  const zs={t:document.getElementById('rplanT'), i:document.getElementById('rplanI')};
+  for(const k in zs){ const r=zs[k].getBoundingClientRect();
+    if(x>=r.left-30&&x<=r.right+30&&y>=r.top-30&&y<=r.bottom+30) return {z:k, rect:r}; }
+  return null;
+}
+function rPlaceTable(x,y){
+  const hit=rZoneAt(x,y);
+  if(!hit){ document.getElementById('carryTxt').textContent='Pose-la sur un des deux plans (terrasse ou int\u00e9rieur)'; return; }
+  const rd=getRestoDay(currentDate);
+  const tb=rd.tables.find(o=>o.n===rTblCarry); if(!tb){ rEndTblCarry(); return; }
+  tb.z=hit.z;
+  tb.x=Math.round(Math.max(0,Math.min(100-tb.w,(x-hit.rect.left)/hit.rect.width*100 - tb.w/2)));
+  tb.y=Math.round(Math.max(0,Math.min(100-tb.h,(y-hit.rect.top)/hit.rect.height*100 - tb.h/2)));
+  const others=rd.tables.filter(o=>o.n!==tb.n && o.z===tb.z);
+  for(const o of others){
+    const overX = tb.x < o.x+o.w && o.x < tb.x+tb.w;
+    const overY = tb.y < o.y+o.h && o.y < tb.y+tb.h;
+    if(overX&&overY){
+      if(o.x+o.w+tb.w+1<=100){ tb.x=o.x+o.w+1; }
+      else if(o.y+o.h+tb.h+2<=100){ tb.y=o.y+o.h+2; tb.x=o.x; }
+    }
+  }
+  persist(); rEndTblCarry();
+}
+document.addEventListener('pointerdown',e=>{
+  if(!rTblCarry) return;
+  rTblPointer=e.pointerId;
+});
+document.addEventListener('pointermove',e=>{
+  if(!rTblCarry||rTblPointer===null||e.pointerId!==rTblPointer) return;
+  if(!rTblGhost){
+    const src=document.querySelector('[data-rt="'+rTblCarry+'"]');
+    if(src){ rTblGhost=src.cloneNode(true); const r=src.getBoundingClientRect();
+      Object.assign(rTblGhost.style,{position:'fixed',width:r.width+'px',height:r.height+'px',zIndex:90,pointerEvents:'none',opacity:.9,margin:0,left:r.left+'px',top:r.top+'px'});
+      document.body.appendChild(rTblGhost); }
+  }
+  if(rTblGhost){ rTblGhost.style.left=(e.clientX-rTblGhost.offsetWidth/2)+'px'; rTblGhost.style.top=(e.clientY-rTblGhost.offsetHeight*0.9)+'px'; }
+  autoScroll(e.clientY);
+});
+document.addEventListener('pointerup',e=>{
+  if(!rTblCarry||rTblPointer===null||e.pointerId!==rTblPointer) return;
+  rTblPointer=null;
+  if(rTblGhost){ rTblGhost.remove(); rTblGhost=null; }
+  suppressClick=true; setTimeout(()=>{ suppressClick=false; },150);
+  rPlaceTable(e.clientX,e.clientY);
+});
+document.addEventListener('touchmove',e=>{ if(rTblCarry&&rTblPointer!==null) e.preventDefault(); },{passive:false});
+function openRAdd(){
+  document.getElementById('raNum').value='';
+  raCapV=2; raShapeV='rect'; raZoneV='i'; syncRAdd();
+  showSheet(document.getElementById('rAddSheet'));
+}
+function syncRAdd(){
+  document.getElementById('raCapOut').textContent=raCapV;
+  document.querySelectorAll('#raShape .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===raShapeV));
+  document.querySelectorAll('#raZone .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===raZoneV));
+}
+document.getElementById('raCapM').addEventListener('click',()=>{ raCapV=Math.max(1,raCapV-1); syncRAdd(); });
+document.getElementById('raCapP').addEventListener('click',()=>{ raCapV=Math.min(20,raCapV+1); syncRAdd(); });
+document.getElementById('raShape').addEventListener('click',e=>{ if(e.target.dataset.v){ raShapeV=e.target.dataset.v; syncRAdd(); }});
+document.getElementById('raZone').addEventListener('click',e=>{ if(e.target.dataset.v){ raZoneV=e.target.dataset.v; syncRAdd(); }});
+document.getElementById('raCancel').addEventListener('click',closeSheets);
+document.getElementById('raGo').addEventListener('click',()=>{
+  const n=parseInt(document.getElementById('raNum').value,10);
+  if(!n){ document.getElementById('raNum').focus(); return; }
+  const rd=getRestoDay(currentDate);
+  if(rd.tables.some(t=>t.n===n)){ document.getElementById('raNum').value=''; document.getElementById('raNum').placeholder='n\u00b0 '+n+' d\u00e9j\u00e0 pris !'; return; }
+  const tb = raZoneV==='t'
+    ? {n:n,z:'t',x:44,y:20,w:10,h:42,cap:raCapV}
+    : {n:n,z:'i',x:44,y:40,w:9,h:12,cap:raCapV};
+  if(raShapeV==='round'){ tb.round=1; tb.w+=2; tb.h+=3; }
+  rd.tables.push(tb);
+  persist(); closeSheets(); render();
+  setTimeout(()=>rStartTblCarry(n),250);
+});
+document.getElementById('raReset').addEventListener('click',()=>{
+  const rd=getRestoDay(currentDate);
+  rd.tables=JSON.parse(JSON.stringify(RESTO_TABLES));
+  persist(); closeSheets(); render();
+});
+function rEndCarry(){ rCarry=null; document.getElementById('carryBar').classList.remove('show'); renderResto(); }
+function rMoveOrSwap(fromT,toT){
+  const rd=getRestoDay(currentDate);
+  const bFrom=occupantR(rd,fromT,rService); if(!bFrom){ rEndCarry(); return; }
+  const bTo=occupantR(rd,toT,rService);
+  if(bTo===bFrom){ rEndCarry(); return; }
+  if(bTo){ bTo.tables=bTo.tables.map(x=>x===toT?fromT:x).sort((a,b)=>a-b); }
+  bFrom.tables=bFrom.tables.map(x=>x===fromT?toT:x).sort((a,b)=>a-b);
+  persist(); rEndCarry();
+}
+/* formulaire resto */
+let rfPaxV=2, rfSvcV='midi', rfOrigV='tel';
+function openRForm(b){
+  rEditing=b||null;
+  document.getElementById('rfTitle').textContent=b?'Modifier la r\u00e9sa':'Nouvelle r\u00e9sa restaurant';
+  document.getElementById('rfNom').value=b?b.nom:'';
+  rfPaxV=b?b.pax:2; rfSvcV=b?b.service:rService; rfOrigV=b?(b.origine||'tel'):'tel';
+  document.getElementById('rfHeure').value=b?(b.heure||''):'';
+  document.getElementById('rfNotes').value=b?(b.notes||''):'';
+  syncRForm();
+  showSheet(document.getElementById('rFormSheet'));
+}
+function syncRForm(){
+  document.getElementById('rfPaxOut').textContent=rfPaxV;
+  document.querySelectorAll('#rfSvc .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===rfSvcV));
+  document.querySelectorAll('#rfOrig .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===rfOrigV));
+}
+document.getElementById('rfPaxM').addEventListener('click',()=>{ rfPaxV=Math.max(1,rfPaxV-1); syncRForm(); });
+document.getElementById('rfPaxP').addEventListener('click',()=>{ rfPaxV=Math.min(40,rfPaxV+1); syncRForm(); });
+document.getElementById('rfSvc').addEventListener('click',e=>{ if(e.target.dataset.v){ rfSvcV=e.target.dataset.v; syncRForm(); }});
+document.getElementById('rfOrig').addEventListener('click',e=>{ if(e.target.dataset.v){ rfOrigV=e.target.dataset.v; syncRForm(); }});
+document.getElementById('rfCancel').addEventListener('click',()=>{ rPendingTable=null; closeSheets(); });
+document.getElementById('rfGo').addEventListener('click',()=>{
+  const nom=document.getElementById('rfNom').value.trim();
+  if(!nom){ document.getElementById('rfNom').focus(); return; }
+  const b = rEditing || { id:uid(), statut:'reserve', tables:[] };
+  b.nom=nom; b.pax=rfPaxV; b.service=rfSvcV; b.origine=rfOrigV;
+  b.heure=document.getElementById('rfHeure').value.trim();
+  b.notes=document.getElementById('rfNotes').value.trim();
+  closeSheets();
+  rService=b.service;
+  rMode={ booking:b, sel: (rEditing&&rEditing.tables&&rEditing.tables.length)? rEditing.tables.slice() : (rPendingTable?[rPendingTable]:[]) };
+  rPendingTable=null; rEditing=null;
+  setModeFabs(true); updateRModeUI(); renderResto();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+function updateRModeUI(){
+  document.getElementById('carryBar').classList.add('show');
+  document.getElementById('carryLine').style.display='none';
+  document.getElementById('carryTxt').textContent=rMode.booking.nom+' ('+rMode.booking.pax+' cv, '+(rMode.booking.service==='midi'?'midi':'soir')+') \u2014 touche les tables du plan';
+  const big=document.getElementById('modeOkBig');
+  big.disabled=rMode.sel.length===0; big.style.opacity=rMode.sel.length?1:.55;
+  big.textContent=rMode.sel.length? '\u2713 Valider \u2014 table '+rMode.sel.join(' + ') : 'Choisis une table sur le plan';
+}
+function rConfirm(){
+  const rd=getRestoDay(currentDate);
+  rMode.booking.tables=rMode.sel.slice().sort((a,b)=>a-b);
+  rd.bookings[rMode.booking.id]=rMode.booking;
+  rMode=null; setModeFabs(false); document.getElementById('carryBar').classList.remove('show');
+  persist(); render();
+}
+function rCancelMode(){ rMode=null; setModeFabs(false); document.getElementById('carryBar').classList.remove('show'); renderResto(); }
+/* detail resto */
+function openRDetail(b){
+  const body=document.getElementById('rdBody');
+  body.innerHTML='<div>'+
+    '<h3 style="margin:0 0 8px">'+esc(b.nom)+' <span class="tagslot tag-'+(b.service==='midi'?'matin':'aprem')+'">'+SVC_LABEL[b.service]+'</span></h3>'+
+    '<div class="d-line"><span>Couverts</span><b>'+b.pax+'</b></div>'+
+    (b.heure?'<div class="d-line"><span>Heure</span><b>'+esc(b.heure)+'</b></div>':'')+
+    '<div class="d-line"><span>Table(s)</span><b>n\u00b0 '+((b.tables||[]).join(', ')||'\u2014')+'</b></div>'+
+    '<div class="d-line"><span>Origine</span><b>'+(RORIG_LABEL[b.origine]||'\u2014')+'</b></div>'+
+    (b.notes?'<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">'+esc(b.notes)+'</b></div>':'')+
+    '<div class="d-line"><span>Statut</span><b>'+(b.statut==='arrive'?'\u2713 Arriv\u00e9s':'R\u00e9serv\u00e9')+'</b></div>'+
+    '<div class="actions">'+
+      '<button class="btn primary" id="rdArr">'+(b.statut==='arrive'?'\u21ba Pas arriv\u00e9s':'\u2713 Arriv\u00e9s')+'</button>'+
+      '<button class="btn ghost" id="rdEdit">Modifier</button>'+
+    '</div>'+
+    '<div class="actions" style="margin-top:8px">'+
+      '<button class="btn danger" id="rdDel">Annuler la r\u00e9sa</button>'+
+    '</div>'+
+    '<p class="hint" style="margin:10px 2px 0">Pour d\u00e9placer : appui long sur la table, puis touche la destination.</p>'+
+  '</div>';
+  document.getElementById('rdArr').addEventListener('click',()=>{ b.statut=b.statut==='arrive'?'reserve':'arrive'; persist(); closeSheets(); render(); });
+  document.getElementById('rdEdit').addEventListener('click',()=>{ closeSheets(); setTimeout(()=>openRForm(b),180); });
+  const del=document.getElementById('rdDel');
+  del.addEventListener('click',()=>{
+    if(!del.classList.contains('confirm')){ del.classList.add('confirm'); del.textContent='Confirmer l\u2019annulation ?'; return; }
+    const rd=getRestoDay(currentDate);
+    delete rd.bookings[b.id];
+    rd.annulations.push({nom:b.nom,pax:b.pax,service:b.service,quand:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+    persist(); closeSheets(); render();
+  });
+  showSheet(document.getElementById('rDetailSheet'));
+}
+/* liste resto */
+function renderRList(){
+  const rd=getRestoDay(currentDate);
+  const body=document.getElementById('listBody');
+  const bs=Object.values(rd.bookings);
+  const part=svc=>bs.filter(b=>b.service===svc).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
+  const bloc=(svc)=>{
+    const l=part(svc);
+    return '<div class="zone-tag" style="margin-top:6px">'+SVC_LABEL[svc]+' \u2014 '+l.reduce((s,b)=>s+(+b.pax||0),0)+' couverts</div>'+
+      (l.length? l.map(b=>'<div class="resa-item" data-ropen="'+b.id+'">'+
+        '<div class="top"><span class="nm">'+esc(b.nom)+(b.statut==='arrive'?' \u2713':'')+'</span>'+
+        '<span class="tagslot tag-'+(svc==='midi'?'matin':'aprem')+'">'+(b.heure?esc(b.heure):(svc==='midi'?'Midi':'Soir'))+'</span></div>'+
+        '<div class="sub">'+b.pax+' couverts \u00b7 table '+((b.tables||[]).join(', ')||'\u2014')+' \u00b7 '+(RORIG_LABEL[b.origine]||'')+(b.notes?' \u00b7 '+esc(b.notes):'')+'</div>'+
+      '</div>').join('') : '<div class="empty">Aucune r\u00e9sa.</div>');
+  };
+  body.innerHTML = bloc('midi') + bloc('soir') +
+    (rd.annulations.length? '<div class="annul-log"><b>Annulations du jour :</b> '+rd.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' \u00b7 ')+'</div>' : '');
+  body.querySelectorAll('[data-ropen]').forEach(el=>el.addEventListener('click',()=>{
+    const b=rd.bookings[el.dataset.ropen]; if(!b) return;
+    closeSheets(); setTimeout(()=>openRDetail(b),180);
+  }));
+  showSheet(document.getElementById('listSheet'));
+}
+document.getElementById('segPlage').addEventListener('click',()=>setView('plage'));
+document.getElementById('segResto').addEventListener('click',()=>setView('resto'));
+document.getElementById('svcMidi').addEventListener('click',()=>{ rService='midi'; renderResto(); });
+document.getElementById('svcSoir').addEventListener('click',()=>{ rService='soir'; renderResto(); });
 
 /* ---------- persistance ---------- */
 const LS_KEY='lido-transats-v2';
@@ -1038,9 +1537,9 @@ function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 /* ---------- init ---------- */
 const had=loadLocal();
 if(!had) seed();
-render();
+setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }catch(e){ return 'plage'; } })());
 initFirebase();
 </script>
 </body>
-<!-- v11 drag -->
+<!-- v12 resto -->
 </html>
