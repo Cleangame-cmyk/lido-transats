@@ -83,10 +83,30 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   justify-content:center;padding:2px;font-size:8.5px;font-weight:600;color:rgba(0,0,0,.0)}
 .transat.sel{outline:3px solid var(--gold);outline-offset:1px}
 .transat{-webkit-touch-callout:none}
-.transat.carrying{outline:3px dashed var(--gold);outline-offset:2px;opacity:.7;transform:scale(1.06)}
-.transat.drop-swap{outline:3px solid var(--jour);outline-offset:1px;transform:scale(1.05)}
-.transat.ins-left{box-shadow:inset 5px 0 0 var(--gold)}
-.transat.ins-right{box-shadow:inset -5px 0 0 var(--gold)}
+.transat{-webkit-touch-callout:none}
+.transat.carrying{outline:3px dashed var(--gold);outline-offset:2px;opacity:.65;transform:scale(1.06)}
+.transat.drop-swap{outline:4px solid var(--jour);outline-offset:1px;transform:scale(1.12);z-index:4}
+.transat.ins-left{box-shadow:inset 6px 0 0 var(--gold);transform:scale(1.05)}
+.transat.ins-right{box-shadow:inset -6px 0 0 var(--gold);transform:scale(1.05)}
+#carryBar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;
+  background:#2f5238;color:#fff;border-radius:14px;padding:10px 12px;display:none;
+  align-items:center;justify-content:space-between;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:13px;
+  max-width:620px;margin:0 auto}
+#carryBar.show{display:flex}
+#carryBar .cb-txt{flex:1;line-height:1.25}
+#carryBar button{border:none;border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+#carryLine{background:rgba(255,255,255,.18);color:#fff}
+#carryCancel{background:#fff;color:var(--danger)}
+#halfChooser{position:fixed;inset:0;background:rgba(20,25,20,.45);z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
+#halfChooser.show{display:flex}
+.hc-card{background:var(--card);border-radius:16px;padding:16px;max-width:330px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.hc-card h4{margin:0 0 10px;color:var(--green);font-size:15px;text-align:center}
+.hc-card button{display:block;width:100%;border:none;border-radius:11px;padding:13px;font-size:14.5px;font-weight:700;
+  cursor:pointer;margin-bottom:8px;text-align:left;font-family:inherit}
+.hc-m{background:var(--matin);color:#fff}
+.hc-a{background:var(--aprem);color:#fff}
+.hc-b{background:var(--jour);color:#fff}
+.hc-x{background:#eee7d6;color:#666;text-align:center !important;margin-bottom:0 !important}
 .addslot{border:2px dashed #b09f6e;border-radius:8px;height:56px;display:flex;align-items:center;justify-content:center;
   color:#8a7a52;font-size:22px;font-weight:700;background:rgba(255,253,247,.6);cursor:pointer}
 @media (min-width:520px){ .addslot{height:64px} }
@@ -224,6 +244,21 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <button class="fab ok" id="modeOkBig" style="display:none">✓ Valider</button>
 </div>
 
+<div id="carryBar">
+  <div class="cb-txt" id="carryTxt"></div>
+  <button id="carryLine">Changer de ligne</button>
+  <button id="carryCancel">✕ Lâcher</button>
+</div>
+<div id="halfChooser">
+  <div class="hc-card">
+    <h4>Qui veux-tu déplacer ?</h4>
+    <button class="hc-m" id="hcM"></button>
+    <button class="hc-a" id="hcA"></button>
+    <button class="hc-b" id="hcB">🔁 Tout le transat (les deux)</button>
+    <button class="hc-x" id="hcX">Annuler</button>
+  </div>
+</div>
+
 <div id="loginOverlay">
   <div class="login-card">
     <h2>LE LIDO · Transats</h2>
@@ -331,6 +366,9 @@ let mode = null;          // null | {type:'place'|'move', booking, need, sel:[]}
 let editingId = null;
 let pendingTransat = null; // transat tapé pour pré-sélection
 let carry = null;          // n° du matelas "en main" (appui long)
+let carryPart = 'both';    // 'both' | 'matin' | 'aprem'
+let carryPointer = null;   // pointerId autorisé à glisser
+let chooserT = null;
 let carryLineMode = false;
 let dragging=false, dragGhost=null, dropTgt=null, pointerIsDown=false;
 let longT = null, suppressClick = false, pressedCarry = false, pdX = 0, pdY = 0;
@@ -471,7 +509,8 @@ function transatEl(day,t){
   if(mode && mode.sel.includes(t)) el.classList.add('sel');
   if(carry===t) el.classList.add('carrying');
   el.addEventListener('pointerdown',e=>{ if(mode||carry) return; pdX=e.clientX; pdY=e.clientY;
-    clearTimeout(longT); longT=setTimeout(()=>{ pressedCarry=true; startCarry(t); },450); });
+    const pid=e.pointerId;
+    clearTimeout(longT); longT=setTimeout(()=>{ pressedCarry=true; pickUp(t,pid); },380); });
   el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-pdX)+Math.abs(e.clientY-pdY)>12) clearTimeout(longT); });
   el.addEventListener('pointerup',()=>clearTimeout(longT));
   el.addEventListener('pointercancel',()=>clearTimeout(longT));
@@ -482,7 +521,12 @@ function transatEl(day,t){
 /* ---------- interactions plan ---------- */
 function onTransatTap(t){
   if(suppressClick){ suppressClick=false; return; }
-  if(carry){ if(t!==carry) doSwap(carry,t); endCarry(); return; }
+  if(carry){
+    if(t===carry){ endCarry(); return; }
+    if(carryPart==='both'){ doSwap(carry,t); endCarry(); }
+    else moveHalf(carryPart,carry,t);
+    return;
+  }
   const day=getDay(currentDate);
   if(mode){
     const slot=mode.booking.slot;
@@ -524,37 +568,84 @@ function updateModeBanner(){
   big.disabled = !okB; big.style.opacity = okB?1:.55;
 }
 function flashMode(msg){ modeTxt.textContent=msg; setTimeout(updateModeBanner,1200); }
-function startCarry(t){
-  carry=t; carryLineMode=false; try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+function pickUp(t,pid){
+  const day=getDay(currentDate);
+  const bm=occupant(day,t,'matin'), ba=occupant(day,t,'aprem');
+  if(bm && ba && bm!==ba){ openHalfChooser(t,bm,ba); return; }
+  startCarry(t,'both',pid);
+}
+function openHalfChooser(t,bm,ba){
+  chooserT=t;
+  document.getElementById('hcM').textContent='🌅 '+bm.nom+' (matin) seulement';
+  document.getElementById('hcA').textContent='☀️ '+ba.nom+' (aprèm) seulement';
+  document.getElementById('halfChooser').classList.add('show');
+  try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+}
+function closeHalfChooser(){ document.getElementById('halfChooser').classList.remove('show'); chooserT=null; }
+document.getElementById('hcM').addEventListener('click',()=>{ const t=chooserT; closeHalfChooser(); startCarry(t,'matin',null); });
+document.getElementById('hcA').addEventListener('click',()=>{ const t=chooserT; closeHalfChooser(); startCarry(t,'aprem',null); });
+document.getElementById('hcB').addEventListener('click',()=>{ const t=chooserT; closeHalfChooser(); startCarry(t,'both',null); });
+document.getElementById('hcX').addEventListener('click',closeHalfChooser);
+document.getElementById('halfChooser').addEventListener('click',e=>{ if(e.target.id==='halfChooser') closeHalfChooser(); });
+function startCarry(t,part,pid){
+  carry=t; carryPart=part||'both'; carryPointer=(pid===undefined||pid===null)?null:pid; carryLineMode=false;
+  try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  // Pas de re-render ici : l'écran ne doit surtout pas bouger sous le doigt.
+  const el=document.querySelector('[data-t="'+t+'"]');
+  if(el) el.classList.add('carrying');
+  if(carryPointer!==null && pointerIsDown && carryPart==='both'){ dragging=true; makeGhost(); }
   updateCarryUI();
-  modeBanner.classList.add('show'); render();
 }
 function updateCarryUI(){
-  const ok=document.getElementById('modeOk');
-  ok.style.display=''; ok.disabled=false; ok.style.opacity=1;
-  ok.textContent = carryLineMode ? '↩ Plutôt échanger' : 'Changer de ligne';
-  modeTxt.textContent = carryLineMode
-    ? 'Matelas n°'+carry+' — touche le ＋ au bout de la ligne de destination'
-    : 'Matelas n°'+carry+' en main — glisse-le avec le pouce (sur un matelas = échange, entre deux = insertion)';
+  document.getElementById('carryBar').classList.add('show');
+  const lineBtn=document.getElementById('carryLine');
+  lineBtn.style.display = carryPart==='both' ? '' : 'none';
+  lineBtn.textContent = carryLineMode ? '↩ Plutôt échanger' : 'Changer de ligne';
+  document.getElementById('carryTxt').textContent = carryLineMode
+    ? 'N°'+carry+' — touche le ＋ au bout de la ligne voulue'
+    : (carryPart==='both'
+       ? 'N°'+carry+' en main — glisse-le, ou touche sa destination'
+       : 'N°'+carry+' ('+(carryPart==='matin'?'client du matin':'client de l’aprèm')+') — touche le transat de destination');
 }
 function endCarry(){
-  carry=null; carryLineMode=false;
-  const ok=document.getElementById('modeOk');
-  ok.style.display=''; ok.textContent='Valider';
-  if(!mode) modeBanner.classList.remove('show');
+  carry=null; carryPart='both'; carryPointer=null; carryLineMode=false;
+  document.getElementById('carryBar').classList.remove('show');
   render();
 }
+function moveHalf(slot,fromT,toT){
+  const day=getDay(currentDate);
+  const bFrom=occupant(day,fromT,slot);
+  if(!bFrom){ endCarry(); return; }
+  const bTo=occupant(day,toT,slot);
+  if(bTo===bFrom){ endCarry(); return; }
+  if(bTo){
+    if(bTo.slot==='journee'){
+      document.getElementById('carryTxt').textContent='N°'+toT+' est pris en journée — choisis un autre transat';
+      try{ if(navigator.vibrate) navigator.vibrate([40,60,40]); }catch(e){}
+      return; // on garde le client en main
+    }
+    bTo.transats=bTo.transats.map(x=> x===toT?fromT:x).sort((a,b)=>a-b);
+  }
+  bFrom.transats=bFrom.transats.map(x=> x===fromT?toT:x).sort((a,b)=>a-b);
+  persist(); endCarry();
+}
+document.getElementById('carryLine').addEventListener('click',()=>{ if(!carry) return; carryLineMode=!carryLineMode; updateCarryUI(); render(); });
+document.getElementById('carryCancel').addEventListener('click',endCarry);
 document.addEventListener('pointerdown',e=>{ pointerIsDown=true; });
-document.addEventListener('touchmove',e=>{ if(carry&&pointerIsDown) e.preventDefault(); },{passive:false});
+document.addEventListener('touchmove',e=>{ if(carry&&dragging) e.preventDefault(); },{passive:false});
 document.addEventListener('pointermove',e=>{
   if(!carry||!pointerIsDown) return;
-  if(!dragging){
-    if(Math.abs(e.clientX-pdX)+Math.abs(e.clientY-pdY)>15){ dragging=true; makeGhost(); }
-    else return;
-  }
+  if(carryPointer===null || e.pointerId!==carryPointer) return;
+  if(carryPart!=='both') return;
+  if(!dragging){ dragging=true; makeGhost(); }
   moveGhost(e.clientX,e.clientY);
   updateDrop(e.clientX,e.clientY);
+  autoScroll(e.clientY);
 });
+function autoScroll(y){
+  if(y<135) window.scrollBy(0,-9);
+  else if(y>window.innerHeight-150) window.scrollBy(0,9);
+}
 function makeGhost(){
   const src=document.querySelector('[data-t="'+carry+'"]');
   if(!src) return;
@@ -572,17 +663,29 @@ function moveGhost(x,y){
 function clearDropMarks(){
   document.querySelectorAll('.drop-swap,.ins-left,.ins-right').forEach(el=>el.classList.remove('drop-swap','ins-left','ins-right'));
 }
+function nearestCell(x,y){
+  const el=document.elementFromPoint(x,y);
+  const direct=(el&&el.closest)?el.closest('.transat'):null;
+  if(direct) return direct;
+  let best=null,bd=3100; // ~55px de tolérance
+  document.querySelectorAll('.transat').forEach(c=>{
+    const r=c.getBoundingClientRect();
+    const cx=Math.max(r.left,Math.min(x,r.right)), cy=Math.max(r.top,Math.min(y,r.bottom));
+    const d=(x-cx)*(x-cx)+(y-cy)*(y-cy);
+    if(d<bd){ bd=d; best=c; }
+  });
+  return best;
+}
 function updateDrop(x,y){
   clearDropMarks(); dropTgt=null;
-  const el=document.elementFromPoint(x,y);
-  const cell=(el&&el.closest)?el.closest('.transat'):null;
+  const cell=nearestCell(x,y);
   if(!cell) return;
   const t=+cell.dataset.t;
   if(t===carry) return;
   const r=cell.getBoundingClientRect();
   const rel=(x-r.left)/r.width;
-  if(rel<0.3){ dropTgt={type:'ins',t:t,side:'left'}; cell.classList.add('ins-left'); }
-  else if(rel>0.7){ dropTgt={type:'ins',t:t,side:'right'}; cell.classList.add('ins-right'); }
+  if(rel<0.25){ dropTgt={type:'ins',t:t,side:'left'}; cell.classList.add('ins-left'); }
+  else if(rel>0.75){ dropTgt={type:'ins',t:t,side:'right'}; cell.classList.add('ins-right'); }
   else { dropTgt={type:'swap',t:t}; cell.classList.add('drop-swap'); }
 }
 function doInsert(s,tRef,side){
@@ -609,20 +712,21 @@ function doInsert(s,tRef,side){
   day.layout=newLayout;
   persist();
 }
-document.addEventListener('pointerup',()=>{ pointerIsDown=false; clearTimeout(longT);
-  if(dragging){
-    const tgt=dropTgt; dropTgt=null; dragging=false;
+document.addEventListener('pointerup',e=>{ pointerIsDown=false; clearTimeout(longT);
+  if(dragging && carryPointer!==null && e.pointerId===carryPointer){
+    const tgt=dropTgt; dropTgt=null; dragging=false; carryPointer=null;
     if(dragGhost){ dragGhost.remove(); dragGhost=null; }
     clearDropMarks();
-    if(tgt&&tgt.type==='swap'){ doSwap(carry,tgt.t); }
-    else if(tgt&&tgt.type==='ins'){ doInsert(carry,tgt.t,tgt.side); }
-    endCarry();
+    if(tgt&&tgt.type==='swap'){ doSwap(carry,tgt.t); endCarry(); }
+    else if(tgt&&tgt.type==='ins'){ doInsert(carry,tgt.t,tgt.side); endCarry(); }
+    // sinon : dépose ratée -> le matelas reste en main, il suffit de toucher la destination
     pressedCarry=false; suppressClick=true; setTimeout(()=>{ suppressClick=false; },150);
     return;
   }
   if(pressedCarry){ pressedCarry=false; suppressClick=true; setTimeout(()=>{ suppressClick=false; },150); } });
 document.addEventListener('pointercancel',()=>{ pointerIsDown=false; clearTimeout(longT);
-  if(dragging){ dragging=false; dropTgt=null; if(dragGhost){ dragGhost.remove(); dragGhost=null; } clearDropMarks(); endCarry(); } });
+  // si le navigateur interrompt le geste, on GARDE le matelas en main (toucher la destination suffit)
+  if(dragging){ dragging=false; dropTgt=null; carryPointer=null; if(dragGhost){ dragGhost.remove(); dragGhost=null; } clearDropMarks(); } });
 function doSwap(a,b){
   const day=getDay(currentDate);
   for(const id in day.bookings){ const bk=day.bookings[id];
@@ -649,7 +753,6 @@ function doLineMove(s,dst){
   persist(); endCarry();
 }
 document.getElementById('modeOk').addEventListener('click',()=>{
-  if(carry){ carryLineMode=!carryLineMode; updateCarryUI(); render(); return; }
   if(mode.sel.length!==mode.need) return;
   const day=getDay(currentDate);
   mode.booking.transats=mode.sel.slice().sort((a,b)=>a-b);
@@ -658,7 +761,7 @@ document.getElementById('modeOk').addEventListener('click',()=>{
   mode=null; modeBanner.classList.remove('show'); setModeFabs(false);
   persist(); render();
 });
-document.getElementById('modeNo').addEventListener('click',()=>{ if(carry){ endCarry(); return; } mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
+document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
 document.getElementById('modeOkBig').addEventListener('click',()=>document.getElementById('modeOk').click());
 document.getElementById('modeNoBig').addEventListener('click',()=>document.getElementById('modeNo').click());
 
@@ -939,5 +1042,5 @@ render();
 initFirebase();
 </script>
 </body>
-<!-- v10 -->
+<!-- v11 drag -->
 </html>
