@@ -141,6 +141,25 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .seg button{flex:1;border:none;border-radius:9px;padding:9px;font-size:13.5px;font-weight:700;background:transparent;color:#fff;opacity:.75;cursor:pointer;font-family:inherit}
 .seg button.on{background:#fff;color:var(--green);opacity:1}
 #resto{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
+#event{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
+.evhead{background:#5b3d6e;color:#fff;border-radius:12px;text-align:center;padding:9px;font-weight:700;letter-spacing:1px;margin:2px 2px 12px;font-size:13px}
+.evgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:0 2px}
+@media (max-width:420px){ .evgrid{grid-template-columns:repeat(4,1fr)} }
+.md{position:relative;border:1.5px solid #cfc3a2;background:var(--libre);border-radius:50%;
+  aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;font-size:9px;font-weight:700;color:#8a7a52;overflow:hidden;user-select:none;
+  -webkit-user-select:none;-webkit-touch-callout:none;transition:transform .08s;padding:2px;text-align:center}
+.md:active{transform:scale(.93)}
+.md .mdn{position:absolute;top:3px;left:0;right:0;font-size:8px;font-weight:800;color:#6b5d34;opacity:.75}
+.md.occ{background:#7d5a97;border-color:#5b3d6e;color:#fff}
+.md .mdnm{font-size:9.5px;font-weight:700;max-width:96%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin-top:6px}
+.md .mdpx{font-size:8.5px;opacity:.9}
+.md .mdopt{font-size:8px;font-weight:700;opacity:.95;margin-top:1px;max-width:96%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.md.champ{background:#9c6bae;border-color:#6e3d80}
+.md .mdarr{position:absolute;bottom:2px;left:0;right:0;font-size:9px;color:#fff}
+.md.sel{outline:3px solid var(--gold);outline-offset:1px}
+.md.carrying{outline:3px dashed var(--gold);opacity:.6}
+.md .mdemph{font-size:12px;opacity:.5;margin-top:4px}
 .svc{display:flex;gap:6px;margin:2px 2px 10px}
 .svc button{flex:1;border:1.5px solid var(--gold-soft);border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:#fff;color:#8a7a52}
 .svc button.on.midi{background:var(--matin);color:#fff;border-color:var(--matin)}
@@ -246,12 +265,13 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 
 <header>
   <div class="h-top">
-    <div class="brand">LE LIDO <small>plage · resto</small></div>
+    <div class="brand">LE LIDO <small>plage · resto · événement</small></div>
     <div class="sync" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncTxt">local</span></div>
   </div>
   <div class="seg">
     <button id="segPlage" class="on">🏖 Plage</button>
     <button id="segResto">🍽 Resto</button>
+    <button id="segEvent">🍸 Événement</button>
   </div>
   <div class="datebar">
     <button id="prevDay" aria-label="Jour précédent">‹</button>
@@ -276,6 +296,18 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <div class="stat ok"><b id="rsArr">0</b><span>✓ arrivés</span></div>
     <div class="stat"><b id="rsTbl">0</b><span>tables libres</span></div>
   </div>
+  <div class="stats" id="statsEvent" style="display:none">
+    <div class="stat"><b id="evPlaces">0</b><span>places (× 4)</span></div>
+    <div class="stat"><b id="evRes">0</b><span>réservés</span></div>
+    <div class="stat ok"><b id="evArr">0</b><span>✓ arrivés</span></div>
+    <div class="stat"><b id="evLibres">0</b><span>MD libres</span></div>
+  </div>
+  <div class="stats r2" id="statsEvent2" style="display:none">
+    <div class="stat"><b id="evCA">0 €</b><span>CA formules</span></div>
+    <div class="stat"><b id="evNbT">0</b><span>tables seules</span></div>
+    <div class="stat"><b id="evNbC">0</b><span>Clos Réal</span></div>
+    <div class="stat"><b id="evNbCh">0</b><span>+ champagne 🍾</span></div>
+  </div>
 </header>
 
 <div id="plage">
@@ -299,6 +331,11 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <div class="rplan terr" id="rplanT"></div>
   <div class="zone-tag">Intérieur ouvert</div>
   <div class="rplan inte" id="rplanI"></div>
+</div>
+
+<div id="event">
+  <div class="evhead">🍸 15 AOÛT · MANGE-DEBOUTS <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
+  <div class="evgrid" id="evGrid"></div>
 </div>
 
 <div class="fabs">
@@ -434,6 +471,48 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   </div>
 </div>
 
+<!-- événement : formulaire -->
+<div class="sheet" id="evFormSheet">
+  <div class="grab"></div>
+  <h3 id="evfTitle">Nouvelle résa · mange-debout</h3>
+  <div class="field"><label>Nom du client</label><input type="text" id="evfNom" placeholder="Nom" autocomplete="off"></div>
+  <div class="row2">
+    <div class="field"><label>Personnes</label><div class="rstepper"><button id="evfPaxM">−</button><output id="evfPaxOut">4</output><button id="evfPaxP">＋</button></div></div>
+    <div class="field"><label>Heure (optionnel)</label><input type="text" id="evfHeure" placeholder="21h" style="width:100%;border:1.5px solid var(--gold-soft);border-radius:10px;padding:11px 12px;font-size:16px;background:#fff;font-family:inherit"></div>
+  </div>
+  <div class="field"><label>Formule (par mange-debout)</label>
+    <div class="chips" id="evfOpt">
+      <button class="chip on" data-v="table">Table seule · 50 €</button>
+      <button class="chip" data-v="clos">Clos Réal + table · 70 €</button>
+      <button class="chip" data-v="champ">Table + champagne · 150 €</button>
+    </div>
+  </div>
+  <div class="field"><label>Notes (optionnel)</label><textarea id="evfNotes" placeholder="Table VIP, feu d'artifice, etc."></textarea></div>
+  <div class="hint" id="evfHint" style="margin-top:2px"></div>
+  <div class="actions">
+    <button class="btn ghost" id="evfCancel">Annuler</button>
+    <button class="btn primary" id="evfGo">Choisir les mange-debouts →</button>
+  </div>
+</div>
+
+<!-- événement : détail -->
+<div class="sheet" id="evDetailSheet">
+  <div class="grab"></div>
+  <div id="evdBody"></div>
+</div>
+
+<!-- événement : nombre de mange-debouts -->
+<div class="sheet" id="evCountSheet">
+  <div class="grab"></div>
+  <h3>Mange-debouts en stock</h3>
+  <div class="field"><label>Nombre (chacun = 4 personnes)</label><div class="rstepper"><button id="evcM">−</button><output id="evcOut">23</output><button id="evcP">＋</button></div></div>
+  <p class="hint" id="evcHint">Capacité totale : <b id="evcCap">92</b> personnes.</p>
+  <div class="actions">
+    <button class="btn ghost" id="evcCancel">Annuler</button>
+    <button class="btn primary" id="evcGo">Appliquer</button>
+  </div>
+</div>
+
 <!-- resto : couverts d'une table -->
 <div class="sheet" id="rCapSheet">
   <div class="grab"></div>
@@ -504,6 +583,12 @@ const SLOT_LABEL = { matin:'Matin 10h–14h', aprem:'Aprèm 14h–18h', journee:
 const ORIG_LABEL = { tel:'Téléphone', place:'Sur place', mysunbed:'MySunbed' };
 const RORIG_LABEL = { tel:'Téléphone', place:'Sur place', zenchef:'Zenchef' };
 const SVC_LABEL = { midi:'☀️ Midi', soir:'🌙 Soir' };
+const EV_OPTS = {
+  table: { label:'Table seule', short:'Table', px:50 },
+  clos:  { label:'Clos Réal + table', short:'Clos Réal', px:70 },
+  champ: { label:'Table + champagne', short:'Table + 🍾', px:150 }
+};
+function evPrix(b){ return ((b.mds&&b.mds.length)||0) * (EV_OPTS[b.option]?EV_OPTS[b.option].px:0); }
 // Plan du restaurant — positions en % (x,y,largeur,hauteur), cap = couverts par défaut
 const RESTO_TABLES = [
   {n:40,z:'t',x:3, y:12,w:10,h:42,cap:4},
@@ -548,11 +633,12 @@ let carryPart = 'both';    // 'both' | 'matin' | 'aprem'
 let carryPointer = null;   // pointerId autorisé à glisser
 let chooserT = null;
 let view='plage', rService='midi';
+let evMode=null, evEditing=null, evPendingMD=null, evCarry=null, evLongT=null, evpdX=0, evpdY=0, evfPaxV=4, evcV=23, evfOptV='table';
 let rMode=null, rEditing=null, rPendingTable=null;
 let rCarry=null, rLongT=null, rpdX=0, rpdY=0;
 let rTblCarry=null, rTblPointer=null, rTblGhost=null, rChooserT=null;
 let raCapV=2, raShapeV='rect', raZoneV='i';
-let carryLineMode = false;
+let carryLineMode = false; // les ＋ ne s'affichent qu'en mode « changer de ligne »
 let dragging=false, dragGhost=null, dropTgt=null, pointerIsDown=false;
 let longT = null, suppressClick = false, pressedCarry = false, pdX = 0, pdY = 0;
 
@@ -668,6 +754,7 @@ function render(){
   document.getElementById('stLibMat').textContent=libM;
   document.getElementById('stLibApr').textContent=libA;
   renderResto();
+  renderEvent();
 }
 
 function transatEl(day,t){
@@ -825,7 +912,7 @@ function moveHalf(slot,fromT,toT){
   persist(); endCarry();
 }
 document.getElementById('carryLine').addEventListener('click',()=>{ if(!carry) return; carryLineMode=!carryLineMode; updateCarryUI(); render(); });
-document.getElementById('carryCancel').addEventListener('click',()=>{ if(rMode){ rCancelMode(); return; } if(rTblCarry){ rEndTblCarry(); return; } if(rCarry){ rEndCarry(); return; } endCarry(); });
+document.getElementById('carryCancel').addEventListener('click',()=>{ if(evMode){ evCancelMode(); return; } if(evCarry){ evEndCarry(); return; } if(rMode){ rCancelMode(); return; } if(rTblCarry){ rEndTblCarry(); return; } if(rCarry){ rEndCarry(); return; } endCarry(); });
 document.addEventListener('pointerdown',e=>{ pointerIsDown=true; });
 document.addEventListener('touchmove',e=>{ if(carry&&dragging) e.preventDefault(); },{passive:false});
 document.addEventListener('pointermove',e=>{
@@ -957,8 +1044,8 @@ document.getElementById('modeOk').addEventListener('click',()=>{
   persist(); render();
 });
 document.getElementById('modeNo').addEventListener('click',()=>{ mode=null; modeBanner.classList.remove('show'); setModeFabs(false); render(); });
-document.getElementById('modeOkBig').addEventListener('click',()=>{ if(rMode){ if(rMode.sel.length) rConfirm(); return; } document.getElementById('modeOk').click(); });
-document.getElementById('modeNoBig').addEventListener('click',()=>{ if(rMode){ rCancelMode(); return; } document.getElementById('modeNo').click(); });
+document.getElementById('modeOkBig').addEventListener('click',()=>{ if(evMode){ if(evMode.sel.length) evConfirm(); return; } if(rMode){ if(rMode.sel.length) rConfirm(); return; } document.getElementById('modeOk').click(); });
+document.getElementById('modeNoBig').addEventListener('click',()=>{ if(evMode){ evCancelMode(); return; } if(rMode){ rCancelMode(); return; } document.getElementById('modeNo').click(); });
 
 /* ---------- formulaire ---------- */
 const overlay=document.getElementById('overlay');
@@ -1072,6 +1159,7 @@ function bindDetail(b){
 
 /* ---------- liste ---------- */
 document.getElementById('listBtn').addEventListener('click',()=>{
+  if(view==='event'){ renderEvList(); return; }
   if(view==='resto'){ renderRList(); return; }
   const day=getDay(currentDate);
   const body=document.getElementById('listBody');
@@ -1095,6 +1183,7 @@ document.getElementById('listBtn').addEventListener('click',()=>{
 
 /* ---------- disposition ---------- */
 document.getElementById('dispoBtn').addEventListener('click',()=>{
+  if(view==='event'){ openEvCount(); return; }
   if(view==='resto'){ openRAdd(); return; }
   const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
   let tmp=day.layout.slice();
@@ -1126,7 +1215,7 @@ function alertHint(msg){ const t=document.getElementById('dispoTotal'); t.innerH
 function showSheet(s){ overlay.classList.add('show'); document.querySelectorAll('.sheet').forEach(x=>x.classList.remove('show')); s.classList.add('show'); }
 function closeSheets(){ overlay.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); }
 overlay.addEventListener('click',()=>{ pendingTransat=null; rPendingTable=null; closeSheets(); });
-document.getElementById('newBtn').addEventListener('click',()=>{ if(view==='resto'){ rPendingTable=null; openRForm(null); return; } pendingTransat=null; openForm(null); });
+document.getElementById('newBtn').addEventListener('click',()=>{ if(view==='event'){ evPendingMD=null; openEvForm(null); return; } if(view==='resto'){ rPendingTable=null; openRForm(null); return; } pendingTransat=null; openForm(null); });
 
 /* ---------- navigation date ---------- */
 function shiftDay(n){ const d=new Date(currentDate+'T12:00:00'); d.setDate(d.getDate()+n);
@@ -1154,13 +1243,16 @@ function setView(v){
   view=v; try{ localStorage.setItem('lido-view',v); }catch(e){}
   document.getElementById('segPlage').classList.toggle('on',v==='plage');
   document.getElementById('segResto').classList.toggle('on',v==='resto');
+  document.getElementById('segEvent').classList.toggle('on',v==='event');
   document.getElementById('plage').style.display = v==='plage'?'':'none';
   document.getElementById('resto').style.display = v==='resto'?'block':'none';
+  document.getElementById('event').style.display = v==='event'?'block':'none';
   document.querySelectorAll('header .stats').forEach(s=>{
     if(s.id==='statsResto') s.style.display = v==='resto'?'flex':'none';
+    else if(s.id&&s.id.indexOf('statsEvent')===0) s.style.display = v==='event'?'flex':'none';
     else s.style.display = v==='plage'?'flex':'none';
   });
-  // gestion : dispo transats en vue plage, tables en vue resto
+  // \u2699 : dispo transats en vue plage, gestion des tables en vue resto
   render();
 }
 function renderResto(){
@@ -1315,6 +1407,7 @@ function rPlaceTable(x,y){
   if(zoneChange) rSizeFor(tb,hit.z); // taille adaptée à la zone (plus de déformation)
   tb.x=Math.round(Math.max(0,Math.min(100-tb.w,(x-hit.rect.left)/hit.rect.width*100 - tb.w/2)));
   tb.y=Math.round(Math.max(0,Math.min(100-tb.h,(y-hit.rect.top)/hit.rect.height*100 - tb.h/2)));
+  // nudge : si le centre tombe sur une autre table, on la colle juste \u00e0 c\u00f4t\u00e9
   const others=rd.tables.filter(o=>o.n!==tb.n && o.z===tb.z);
   for(const o of others){
     const overX = tb.x < o.x+o.w && o.x < tb.x+tb.w;
@@ -1349,6 +1442,7 @@ document.addEventListener('pointerup',e=>{
   rPlaceTable(e.clientX,e.clientY);
 });
 document.addEventListener('touchmove',e=>{ if(rTblCarry&&rTblPointer!==null) e.preventDefault(); },{passive:false});
+/* ajout / retrait de tables */
 function openRAdd(){
   document.getElementById('raNum').value='';
   raCapV=2; raShapeV='rect'; raZoneV='i'; syncRAdd();
@@ -1445,7 +1539,7 @@ function rConfirm(){
   persist(); render();
 }
 function rCancelMode(){ rMode=null; setModeFabs(false); document.getElementById('carryBar').classList.remove('show'); renderResto(); }
-/* detail resto */
+/* d\u00e9tail resto */
 function openRDetail(b){
   const body=document.getElementById('rdBody');
   body.innerHTML='<div>'+
@@ -1504,6 +1598,232 @@ document.getElementById('segPlage').addEventListener('click',()=>setView('plage'
 document.getElementById('segResto').addEventListener('click',()=>setView('resto'));
 document.getElementById('svcMidi').addEventListener('click',()=>{ rService='midi'; renderResto(); });
 document.getElementById('svcSoir').addEventListener('click',()=>{ rService='soir'; renderResto(); });
+
+/* ---------- événement : mange-debouts (15 août) ---------- */
+function getEventDay(dateStr){
+  const d=getDay(dateStr);
+  if(!d.event) d.event={bookings:{},annulations:[],count:23};
+  if(!d.event.bookings) d.event.bookings={};
+  if(!d.event.annulations) d.event.annulations=[];
+  if(typeof d.event.count!=='number') d.event.count=23;
+  return d.event;
+}
+function occupantEV(ev,n){
+  for(const id in ev.bookings){ const b=ev.bookings[id];
+    if(b && b.mds && b.mds.includes(n)) return b; }
+  return null;
+}
+function renderEvent(){
+  if(view!=='event') return;
+  const ev=getEventDay(currentDate);
+  const grid=document.getElementById('evGrid');
+  grid.innerHTML='';
+  for(let n=1;n<=ev.count;n++){
+    const el=document.createElement('div'); el.className='md'; el.dataset.md=n;
+    const num=document.createElement('span'); num.className='mdn'; num.textContent=n; el.appendChild(num);
+    const b=occupantEV(ev,n);
+    if(b){
+      el.classList.add('occ');
+      const nm=document.createElement('span'); nm.className='mdnm'; nm.textContent=shortName(b.nom); el.appendChild(nm);
+      const px=document.createElement('span'); px.className='mdpx'; px.textContent=b.pax+'p'+(b.heure?' · '+b.heure:''); el.appendChild(px);
+      const op=document.createElement('span'); op.className='mdopt';
+      const o=EV_OPTS[b.option]||EV_OPTS.table; op.textContent=o.short+' · '+o.px+'€'; el.appendChild(op);
+      if(b.option==='champ') el.classList.add('champ');
+      if(b.statut==='arrive'){ const c=document.createElement('span'); c.className='mdarr'; c.textContent='✓'; el.appendChild(c); }
+    } else {
+      const e2=document.createElement('span'); e2.className='mdemph'; e2.textContent='🍸'; el.appendChild(e2);
+    }
+    if(evMode && evMode.sel.includes(n)) el.classList.add('sel');
+    if(evCarry===n) el.classList.add('carrying');
+    el.addEventListener('pointerdown',e=>{ if(evMode||evCarry) return; evpdX=e.clientX; evpdY=e.clientY;
+      clearTimeout(evLongT); evLongT=setTimeout(()=>{ if(occupantEV(getEventDay(currentDate),n)){ pressedCarry=true; evPickUp(n); } },380); });
+    el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-evpdX)+Math.abs(e.clientY-evpdY)>12) clearTimeout(evLongT); });
+    el.addEventListener('pointerup',()=>clearTimeout(evLongT));
+    el.addEventListener('pointercancel',()=>clearTimeout(evLongT));
+    el.addEventListener('click',()=>evOnTap(n));
+    grid.appendChild(el);
+  }
+  const bs=Object.values(ev.bookings);
+  const usedMD = bs.reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
+  const res = bs.reduce((s,b)=>s+(+b.pax||0),0);
+  const arr = bs.filter(b=>b.statut==='arrive').reduce((s,b)=>s+(+b.pax||0),0);
+  const mdOf=(opt)=>bs.filter(b=>(b.option||'table')===opt).reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
+  const ca=bs.reduce((s,b)=>s+evPrix(b),0);
+  document.getElementById('evPlaces').textContent=ev.count*4;
+  document.getElementById('evRes').textContent=res;
+  document.getElementById('evArr').textContent=arr;
+  document.getElementById('evLibres').textContent=Math.max(0,ev.count-usedMD);
+  document.getElementById('evCA').textContent=ca+' €';
+  document.getElementById('evNbT').textContent=mdOf('table');
+  document.getElementById('evNbC').textContent=mdOf('clos');
+  document.getElementById('evNbCh').textContent=mdOf('champ');
+}
+function evOnTap(n){
+  if(suppressClick){ suppressClick=false; return; }
+  const ev=getEventDay(currentDate);
+  if(evCarry){ if(n!==evCarry) evMoveOrSwap(evCarry,n); else evEndCarry(); return; }
+  if(evMode){
+    if(evMode.sel.includes(n)) evMode.sel=evMode.sel.filter(x=>x!==n);
+    else{
+      const occ=occupantEV(ev,n);
+      if(occ && occ.id!==evMode.booking.id){
+        document.getElementById('carryTxt').textContent='Mange-debout '+n+' déjà pris ('+occ.nom+')';
+        setTimeout(updateEvModeUI,1400); return;
+      }
+      evMode.sel.push(n);
+    }
+    updateEvModeUI(); renderEvent(); return;
+  }
+  const b=occupantEV(ev,n);
+  if(!b){ evPendingMD=n; openEvForm(null); }
+  else openEvDetail(b);
+}
+function evPickUp(n){
+  const ev=getEventDay(currentDate);
+  const b=occupantEV(ev,n); if(!b) return;
+  try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  evCarry=n;
+  const el=document.querySelector('[data-md="'+n+'"]'); if(el) el.classList.add('carrying');
+  document.getElementById('carryBar').classList.add('show');
+  document.getElementById('carryLine').style.display='none';
+  document.getElementById('carryTxt').textContent=b.nom+' en main — touche le mange-debout de destination';
+}
+function evEndCarry(){ evCarry=null; document.getElementById('carryBar').classList.remove('show'); renderEvent(); }
+function evMoveOrSwap(from,to){
+  const ev=getEventDay(currentDate);
+  const bFrom=occupantEV(ev,from); if(!bFrom){ evEndCarry(); return; }
+  const bTo=occupantEV(ev,to);
+  if(bTo===bFrom){ evEndCarry(); return; }
+  if(bTo){ bTo.mds=bTo.mds.map(x=>x===to?from:x).sort((a,b)=>a-b); }
+  bFrom.mds=bFrom.mds.map(x=>x===from?to:x).sort((a,b)=>a-b);
+  persist(); evEndCarry();
+}
+function openEvForm(b){
+  evEditing=b||null;
+  document.getElementById('evfTitle').textContent=b?'Modifier la résa':'Nouvelle résa · mange-debout';
+  document.getElementById('evfNom').value=b?b.nom:'';
+  evfPaxV=b?b.pax:4;
+  evfOptV=b?(b.option||'table'):'table';
+  document.getElementById('evfHeure').value=b?(b.heure||''):'';
+  document.getElementById('evfNotes').value=b?(b.notes||''):'';
+  syncEvForm();
+  showSheet(document.getElementById('evFormSheet'));
+}
+function syncEvForm(){
+  document.getElementById('evfPaxOut').textContent=evfPaxV;
+  const md=Math.ceil(evfPaxV/4);
+  const opt=EV_OPTS[evfOptV]||EV_OPTS.table;
+  document.querySelectorAll('#evfOpt .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===evfOptV));
+  document.getElementById('evfHint').textContent='≈ '+md+' mange-debout'+(md>1?'s':'')+' · '+opt.label+' → '+(md*opt.px)+' €';
+}
+document.getElementById('evfOpt').addEventListener('click',e=>{ if(e.target.dataset.v){ evfOptV=e.target.dataset.v; syncEvForm(); }});
+document.getElementById('evfPaxM').addEventListener('click',()=>{ evfPaxV=Math.max(1,evfPaxV-1); syncEvForm(); });
+document.getElementById('evfPaxP').addEventListener('click',()=>{ evfPaxV=Math.min(80,evfPaxV+1); syncEvForm(); });
+document.getElementById('evfCancel').addEventListener('click',()=>{ evPendingMD=null; closeSheets(); });
+document.getElementById('evfGo').addEventListener('click',()=>{
+  const nom=document.getElementById('evfNom').value.trim();
+  if(!nom){ document.getElementById('evfNom').focus(); return; }
+  const b = evEditing || { id:uid(), statut:'reserve', mds:[] };
+  b.nom=nom; b.pax=evfPaxV; b.origine='place'; b.option=evfOptV;
+  b.heure=document.getElementById('evfHeure').value.trim();
+  b.notes=document.getElementById('evfNotes').value.trim();
+  const ev=getEventDay(currentDate);
+  const need=Math.ceil(b.pax/4);
+  let preset = (evEditing&&evEditing.mds&&evEditing.mds.length)? evEditing.mds.slice() : (evPendingMD?[evPendingMD]:[]);
+  for(let n=1;n<=ev.count && preset.length<need;n++){
+    const occ=occupantEV(ev,n);
+    if((!occ || occ.id===b.id) && !preset.includes(n)) preset.push(n);
+  }
+  evMode={ booking:b, need, sel:preset };
+  evPendingMD=null; evEditing=null;
+  closeSheets();
+  setModeFabs(true); updateEvModeUI(); renderEvent();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+function updateEvModeUI(){
+  document.getElementById('carryBar').classList.add('show');
+  document.getElementById('carryLine').style.display='none';
+  document.getElementById('carryTxt').textContent=evMode.booking.nom+' ('+evMode.booking.pax+' pers, ≈'+evMode.need+' MD) — touche les mange-debouts';
+  const big=document.getElementById('modeOkBig');
+  big.disabled=evMode.sel.length===0; big.style.opacity=evMode.sel.length?1:.55;
+  big.textContent=evMode.sel.length? '✓ Valider — MD '+evMode.sel.join(' + ') : 'Choisis les mange-debouts';
+}
+function evConfirm(){
+  const ev=getEventDay(currentDate);
+  evMode.booking.mds=evMode.sel.slice().sort((a,b)=>a-b);
+  ev.bookings[evMode.booking.id]=evMode.booking;
+  evMode=null; setModeFabs(false); document.getElementById('carryBar').classList.remove('show');
+  persist(); render();
+}
+function evCancelMode(){ evMode=null; setModeFabs(false); document.getElementById('carryBar').classList.remove('show'); renderEvent(); }
+function openEvDetail(b){
+  const body=document.getElementById('evdBody');
+  body.innerHTML='<div>'+
+    '<h3 style="margin:0 0 8px">'+esc(b.nom)+'</h3>'+
+    '<div class="d-line"><span>Personnes</span><b>'+b.pax+'</b></div>'+
+    (b.heure?'<div class="d-line"><span>Heure</span><b>'+esc(b.heure)+'</b></div>':'')+
+    '<div class="d-line"><span>Mange-debout(s)</span><b>n° '+((b.mds||[]).join(', ')||'—')+'</b></div>'+
+    '<div class="d-line"><span>Formule</span><b>'+(EV_OPTS[b.option]?EV_OPTS[b.option].label:'Table seule')+'</b></div>'+
+    '<div class="d-line"><span>Total</span><b>'+evPrix(b)+' € <span style="font-weight:400;opacity:.7">('+((b.mds&&b.mds.length)||0)+' × '+(EV_OPTS[b.option]?EV_OPTS[b.option].px:50)+' €)</span></b></div>'+
+    (b.notes?'<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">'+esc(b.notes)+'</b></div>':'')+
+    '<div class="d-line"><span>Statut</span><b>'+(b.statut==='arrive'?'✓ Arrivés':'Réservé')+'</b></div>'+
+    '<div class="actions">'+
+      '<button class="btn primary" id="evdArr">'+(b.statut==='arrive'?'↺ Pas arrivés':'✓ Arrivés')+'</button>'+
+      '<button class="btn ghost" id="evdEdit">Modifier</button>'+
+    '</div>'+
+    '<div class="actions" style="margin-top:8px">'+
+      '<button class="btn danger" id="evdDel">Annuler la résa</button>'+
+    '</div>'+
+    '<p class="hint" style="margin:10px 2px 0">Pour déplacer : appui long sur le mange-debout, puis touche la destination.</p>'+
+  '</div>';
+  document.getElementById('evdArr').addEventListener('click',()=>{ b.statut=b.statut==='arrive'?'reserve':'arrive'; persist(); closeSheets(); render(); });
+  document.getElementById('evdEdit').addEventListener('click',()=>{ closeSheets(); setTimeout(()=>openEvForm(b),180); });
+  const del=document.getElementById('evdDel');
+  del.addEventListener('click',()=>{
+    if(!del.classList.contains('confirm')){ del.classList.add('confirm'); del.textContent='Confirmer l’annulation ?'; return; }
+    const ev=getEventDay(currentDate);
+    delete ev.bookings[b.id];
+    ev.annulations.push({nom:b.nom,pax:b.pax,quand:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+    persist(); closeSheets(); render();
+  });
+  showSheet(document.getElementById('evDetailSheet'));
+}
+function renderEvList(){
+  const ev=getEventDay(currentDate);
+  const body=document.getElementById('listBody');
+  const bs=Object.values(ev.bookings).sort((a,b)=>(a.heure||'').localeCompare(b.heure||'')|| (Math.min.apply(null,a.mds||[99])-Math.min.apply(null,b.mds||[99])));
+  const tot=bs.reduce((s,b)=>s+(+b.pax||0),0);
+  const caTot=bs.reduce((s,b)=>s+evPrix(b),0);
+  body.innerHTML='<div class="zone-tag" style="margin-top:6px">🍸 15 août — '+tot+' pers. · '+bs.length+' résa(s) · '+caTot+' €</div>'+
+    (bs.length? bs.map(b=>'<div class="resa-item" data-evopen="'+b.id+'">'+
+      '<div class="top"><span class="nm">'+esc(b.nom)+(b.statut==='arrive'?' ✓':'')+'</span>'+
+      '<span class="tagslot tag-jour">'+(b.heure?esc(b.heure):b.pax+'p')+'</span></div>'+
+      '<div class="sub">'+b.pax+' pers · MD '+((b.mds||[]).join(', ')||'—')+' · '+(EV_OPTS[b.option]?EV_OPTS[b.option].short:'Table')+' · '+evPrix(b)+' €'+(b.notes?' · '+esc(b.notes):'')+'</div>'+
+    '</div>').join('') : '<div class="empty">Aucune réservation.</div>')+
+    (ev.annulations.length? '<div class="annul-log"><b>Annulations du jour :</b> '+ev.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' · ')+'</div>' : '');
+  body.querySelectorAll('[data-evopen]').forEach(el=>el.addEventListener('click',()=>{
+    const b=ev.bookings[el.dataset.evopen]; if(!b) return;
+    closeSheets(); setTimeout(()=>openEvDetail(b),180);
+  }));
+  showSheet(document.getElementById('listSheet'));
+}
+function openEvCount(){
+  const ev=getEventDay(currentDate);
+  evcV=ev.count;
+  document.getElementById('evcOut').textContent=evcV;
+  document.getElementById('evcCap').textContent=evcV*4;
+  showSheet(document.getElementById('evCountSheet'));
+}
+document.getElementById('evcM').addEventListener('click',()=>{ evcV=Math.max(1,evcV-1); document.getElementById('evcOut').textContent=evcV; document.getElementById('evcCap').textContent=evcV*4; });
+document.getElementById('evcP').addEventListener('click',()=>{ evcV=Math.min(60,evcV+1); document.getElementById('evcOut').textContent=evcV; document.getElementById('evcCap').textContent=evcV*4; });
+document.getElementById('evcCancel').addEventListener('click',closeSheets);
+document.getElementById('evcGo').addEventListener('click',()=>{
+  const ev=getEventDay(currentDate);
+  const maxUsed=Object.values(ev.bookings).reduce((m,b)=>Math.max(m,(b.mds&&b.mds.length)?Math.max.apply(null,b.mds):0),0);
+  if(evcV<maxUsed){ document.getElementById('evcHint').innerHTML='<span style="color:var(--danger)">Des résas occupent le mange-debout n°'+maxUsed+'. Déplace-les d’abord.</span>'; return; }
+  ev.count=evcV; persist(); closeSheets(); render();
+});
+document.getElementById('segEvent').addEventListener('click',()=>setView('event'));
 
 /* ---------- persistance ---------- */
 const LS_KEY='lido-transats-v2';
@@ -1608,5 +1928,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v14 tables -->
+<!-- v15 event -->
 </html>
