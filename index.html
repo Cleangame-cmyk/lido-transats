@@ -581,6 +581,13 @@ window.FIREBASE_CONFIG = {
 
 const NB_TRANSATS = 30;
 const PRIX = { demi: 20, jour: 30 };
+// tarifs spéciaux transats par jour (ex. 15 août feu d'artifice) : matin/aprem/journee
+const PRIX_JOUR = { '2026-08-15': { matin:20, aprem:50, journee:60 } };
+function slotPrix(date, slot){
+  const o=PRIX_JOUR[date];
+  if(o && o[slot]!=null) return o[slot];
+  return slot==='journee'?PRIX.jour:PRIX.demi;
+}
 const SLOT_LABEL = { matin:'Matin 10h–14h', aprem:'Aprèm 14h–18h', journee:'Journée 10h–18h' };
 const ORIG_LABEL = { tel:'Téléphone', place:'Sur place', mysunbed:'MySunbed' };
 const RORIG_LABEL = { tel:'Téléphone', place:'Sur place', zenchef:'Zenchef' };
@@ -666,7 +673,7 @@ function isFreeFor(day, t, slot, ignoreId){
     if(b.transats && b.transats.includes(t) && overlaps(b.slot, slot)) return false; }
   return true;
 }
-function prixResa(b){ return (b.transats?b.transats.length:b.nb||0) * (b.slot==='journee'?PRIX.jour:PRIX.demi); }
+function prixResa(b){ return (b.transats?b.transats.length:b.nb||0) * slotPrix(currentDate, b.slot); }
 
 /* ---------- transat geometry ---------- */
 function rowsOf(day){ // retourne [[nums ligne1],[ligne2],[ligne3]] — ligne1 = bord de mer
@@ -1654,7 +1661,10 @@ function renderEvent(){
   const res = bs.reduce((s,b)=>s+(+b.pax||0),0);
   const arr = bs.filter(b=>b.statut==='arrive').reduce((s,b)=>s+(+b.pax||0),0);
   const mdOf=(opt)=>bs.filter(b=>(b.option||'table')===opt).reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
-  const ca=bs.reduce((s,b)=>s+evPrix(b),0);
+  // CA journée = événement (soir) + transats plage de la journée (tarif spécial du jour)
+  const day=getDay(currentDate);
+  const plageCA=Object.values(day.bookings).reduce((s,b)=>s+prixResa(b),0);
+  const ca=bs.reduce((s,b)=>s+evPrix(b),0)+plageCA;
   const totalU=ev.count+ev.tbCount;
   document.getElementById('evPlaces').textContent=totalU*4;
   document.getElementById('evRes').textContent=res;
@@ -1938,5 +1948,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v16 tables-basses -->
+<!-- v17 prix-15aout -->
 </html>
