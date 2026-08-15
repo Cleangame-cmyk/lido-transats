@@ -300,10 +300,10 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <div class="stat"><b id="evPlaces">0</b><span>places (× 4)</span></div>
     <div class="stat"><b id="evRes">0</b><span>réservés</span></div>
     <div class="stat ok"><b id="evArr">0</b><span>✓ arrivés</span></div>
-    <div class="stat"><b id="evLibres">0</b><span>MD libres</span></div>
+    <div class="stat"><b id="evLibres">0</b><span>empl. libres</span></div>
   </div>
   <div class="stats r2" id="statsEvent2" style="display:none">
-    <div class="stat"><b id="evCA">0 €</b><span>CA formules</span></div>
+    <div class="stat"><b id="evCA">0 €</b><span>CA journée</span></div>
     <div class="stat"><b id="evNbT">0</b><span>tables seules</span></div>
     <div class="stat"><b id="evNbC">0</b><span>Clos Réal</span></div>
     <div class="stat"><b id="evNbCh">0</b><span>+ champagne 🍾</span></div>
@@ -336,6 +336,8 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 <div id="event">
   <div class="evhead">🍸 15 AOÛT · MANGE-DEBOUTS <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
   <div class="evgrid" id="evGrid"></div>
+  <div class="evhead" style="margin-top:16px;background:#6e5a3d">🪑 TABLES BASSES <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
+  <div class="evgrid" id="evGridTB"></div>
 </div>
 
 <div class="fabs">
@@ -1602,10 +1604,11 @@ document.getElementById('svcSoir').addEventListener('click',()=>{ rService='soir
 /* ---------- événement : mange-debouts (15 août) ---------- */
 function getEventDay(dateStr){
   const d=getDay(dateStr);
-  if(!d.event) d.event={bookings:{},annulations:[],count:23};
+  if(!d.event) d.event={bookings:{},annulations:[],count:23,tbCount:6};
   if(!d.event.bookings) d.event.bookings={};
   if(!d.event.annulations) d.event.annulations=[];
   if(typeof d.event.count!=='number') d.event.count=23;
+  if(typeof d.event.tbCount!=='number') d.event.tbCount=6;
   return d.event;
 }
 function occupantEV(ev,n){
@@ -1613,46 +1616,50 @@ function occupantEV(ev,n){
     if(b && b.mds && b.mds.includes(n)) return b; }
   return null;
 }
+function evUnitLabel(n){ return n>=100 ? 'T'+(n-100) : n; }
+function evBuildCell(ev,n){
+  const el=document.createElement('div'); el.className='md'; el.dataset.md=n;
+  const num=document.createElement('span'); num.className='mdn'; num.textContent=evUnitLabel(n); el.appendChild(num);
+  const b=occupantEV(ev,n);
+  if(b){
+    el.classList.add('occ');
+    const nm=document.createElement('span'); nm.className='mdnm'; nm.textContent=shortName(b.nom); el.appendChild(nm);
+    const px=document.createElement('span'); px.className='mdpx'; px.textContent=b.pax+'p'+(b.heure?' · '+b.heure:''); el.appendChild(px);
+    const op=document.createElement('span'); op.className='mdopt';
+    const o=EV_OPTS[b.option]||EV_OPTS.table; op.textContent=o.short+' · '+o.px+'€'; el.appendChild(op);
+    if(b.option==='champ') el.classList.add('champ');
+    if(b.statut==='arrive'){ const c=document.createElement('span'); c.className='mdarr'; c.textContent='✓'; el.appendChild(c); }
+  } else {
+    const e2=document.createElement('span'); e2.className='mdemph'; e2.textContent= n>=100?'🪑':'🍸'; el.appendChild(e2);
+  }
+  if(evMode && evMode.sel.includes(n)) el.classList.add('sel');
+  if(evCarry===n) el.classList.add('carrying');
+  el.addEventListener('pointerdown',e=>{ if(evMode||evCarry) return; evpdX=e.clientX; evpdY=e.clientY;
+    clearTimeout(evLongT); evLongT=setTimeout(()=>{ if(occupantEV(getEventDay(currentDate),n)){ pressedCarry=true; evPickUp(n); } },380); });
+  el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-evpdX)+Math.abs(e.clientY-evpdY)>12) clearTimeout(evLongT); });
+  el.addEventListener('pointerup',()=>clearTimeout(evLongT));
+  el.addEventListener('pointercancel',()=>clearTimeout(evLongT));
+  el.addEventListener('click',()=>evOnTap(n));
+  return el;
+}
 function renderEvent(){
   if(view!=='event') return;
   const ev=getEventDay(currentDate);
-  const grid=document.getElementById('evGrid');
-  grid.innerHTML='';
-  for(let n=1;n<=ev.count;n++){
-    const el=document.createElement('div'); el.className='md'; el.dataset.md=n;
-    const num=document.createElement('span'); num.className='mdn'; num.textContent=n; el.appendChild(num);
-    const b=occupantEV(ev,n);
-    if(b){
-      el.classList.add('occ');
-      const nm=document.createElement('span'); nm.className='mdnm'; nm.textContent=shortName(b.nom); el.appendChild(nm);
-      const px=document.createElement('span'); px.className='mdpx'; px.textContent=b.pax+'p'+(b.heure?' · '+b.heure:''); el.appendChild(px);
-      const op=document.createElement('span'); op.className='mdopt';
-      const o=EV_OPTS[b.option]||EV_OPTS.table; op.textContent=o.short+' · '+o.px+'€'; el.appendChild(op);
-      if(b.option==='champ') el.classList.add('champ');
-      if(b.statut==='arrive'){ const c=document.createElement('span'); c.className='mdarr'; c.textContent='✓'; el.appendChild(c); }
-    } else {
-      const e2=document.createElement('span'); e2.className='mdemph'; e2.textContent='🍸'; el.appendChild(e2);
-    }
-    if(evMode && evMode.sel.includes(n)) el.classList.add('sel');
-    if(evCarry===n) el.classList.add('carrying');
-    el.addEventListener('pointerdown',e=>{ if(evMode||evCarry) return; evpdX=e.clientX; evpdY=e.clientY;
-      clearTimeout(evLongT); evLongT=setTimeout(()=>{ if(occupantEV(getEventDay(currentDate),n)){ pressedCarry=true; evPickUp(n); } },380); });
-    el.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-evpdX)+Math.abs(e.clientY-evpdY)>12) clearTimeout(evLongT); });
-    el.addEventListener('pointerup',()=>clearTimeout(evLongT));
-    el.addEventListener('pointercancel',()=>clearTimeout(evLongT));
-    el.addEventListener('click',()=>evOnTap(n));
-    grid.appendChild(el);
-  }
+  const grid=document.getElementById('evGrid'); grid.innerHTML='';
+  for(let n=1;n<=ev.count;n++) grid.appendChild(evBuildCell(ev,n));
+  const gridTB=document.getElementById('evGridTB'); gridTB.innerHTML='';
+  for(let n=1;n<=ev.tbCount;n++) gridTB.appendChild(evBuildCell(ev,100+n));
   const bs=Object.values(ev.bookings);
-  const usedMD = bs.reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
+  const usedU = bs.reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
   const res = bs.reduce((s,b)=>s+(+b.pax||0),0);
   const arr = bs.filter(b=>b.statut==='arrive').reduce((s,b)=>s+(+b.pax||0),0);
   const mdOf=(opt)=>bs.filter(b=>(b.option||'table')===opt).reduce((s,b)=>s+((b.mds&&b.mds.length)||0),0);
   const ca=bs.reduce((s,b)=>s+evPrix(b),0);
-  document.getElementById('evPlaces').textContent=ev.count*4;
+  const totalU=ev.count+ev.tbCount;
+  document.getElementById('evPlaces').textContent=totalU*4;
   document.getElementById('evRes').textContent=res;
   document.getElementById('evArr').textContent=arr;
-  document.getElementById('evLibres').textContent=Math.max(0,ev.count-usedMD);
+  document.getElementById('evLibres').textContent=Math.max(0,totalU-usedU);
   document.getElementById('evCA').textContent=ca+' €';
   document.getElementById('evNbT').textContent=mdOf('table');
   document.getElementById('evNbC').textContent=mdOf('clos');
@@ -1714,7 +1721,7 @@ function syncEvForm(){
   const md=Math.ceil(evfPaxV/4);
   const opt=EV_OPTS[evfOptV]||EV_OPTS.table;
   document.querySelectorAll('#evfOpt .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===evfOptV));
-  document.getElementById('evfHint').textContent='≈ '+md+' mange-debout'+(md>1?'s':'')+' · '+opt.label+' → '+(md*opt.px)+' €';
+  document.getElementById('evfHint').textContent='≈ '+md+' emplacement'+(md>1?'s':'')+' · '+opt.label+' → '+(md*opt.px)+' €';
 }
 document.getElementById('evfOpt').addEventListener('click',e=>{ if(e.target.dataset.v){ evfOptV=e.target.dataset.v; syncEvForm(); }});
 document.getElementById('evfPaxM').addEventListener('click',()=>{ evfPaxV=Math.max(1,evfPaxV-1); syncEvForm(); });
@@ -1730,7 +1737,10 @@ document.getElementById('evfGo').addEventListener('click',()=>{
   const ev=getEventDay(currentDate);
   const need=Math.ceil(b.pax/4);
   let preset = (evEditing&&evEditing.mds&&evEditing.mds.length)? evEditing.mds.slice() : (evPendingMD?[evPendingMD]:[]);
-  for(let n=1;n<=ev.count && preset.length<need;n++){
+  // zone du 1er emplacement choisi : mange-debouts (1..count) ou tables basses (101..)
+  const zoneTB = (preset.length? preset[0] : (evPendingMD||1)) >= 100;
+  const rStart = zoneTB?101:1, rEnd = zoneTB?100+ev.tbCount:ev.count;
+  for(let n=rStart;n<=rEnd && preset.length<need;n++){
     const occ=occupantEV(ev,n);
     if((!occ || occ.id===b.id) && !preset.includes(n)) preset.push(n);
   }
@@ -1743,10 +1753,10 @@ document.getElementById('evfGo').addEventListener('click',()=>{
 function updateEvModeUI(){
   document.getElementById('carryBar').classList.add('show');
   document.getElementById('carryLine').style.display='none';
-  document.getElementById('carryTxt').textContent=evMode.booking.nom+' ('+evMode.booking.pax+' pers, ≈'+evMode.need+' MD) — touche les mange-debouts';
+  document.getElementById('carryTxt').textContent=evMode.booking.nom+' ('+evMode.booking.pax+' pers, ≈'+evMode.need+' empl.) — touche les emplacements libres';
   const big=document.getElementById('modeOkBig');
   big.disabled=evMode.sel.length===0; big.style.opacity=evMode.sel.length?1:.55;
-  big.textContent=evMode.sel.length? '✓ Valider — MD '+evMode.sel.join(' + ') : 'Choisis les mange-debouts';
+  big.textContent=evMode.sel.length? '✓ Valider — '+evMode.sel.map(evUnitLabel).join(' + ') : 'Choisis les emplacements';
 }
 function evConfirm(){
   const ev=getEventDay(currentDate);
@@ -1762,7 +1772,7 @@ function openEvDetail(b){
     '<h3 style="margin:0 0 8px">'+esc(b.nom)+'</h3>'+
     '<div class="d-line"><span>Personnes</span><b>'+b.pax+'</b></div>'+
     (b.heure?'<div class="d-line"><span>Heure</span><b>'+esc(b.heure)+'</b></div>':'')+
-    '<div class="d-line"><span>Mange-debout(s)</span><b>n° '+((b.mds||[]).join(', ')||'—')+'</b></div>'+
+    '<div class="d-line"><span>Emplacement(s)</span><b>'+((b.mds||[]).map(evUnitLabel).join(', ')||'—')+'</b></div>'+
     '<div class="d-line"><span>Formule</span><b>'+(EV_OPTS[b.option]?EV_OPTS[b.option].label:'Table seule')+'</b></div>'+
     '<div class="d-line"><span>Total</span><b>'+evPrix(b)+' € <span style="font-weight:400;opacity:.7">('+((b.mds&&b.mds.length)||0)+' × '+(EV_OPTS[b.option]?EV_OPTS[b.option].px:50)+' €)</span></b></div>'+
     (b.notes?'<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">'+esc(b.notes)+'</b></div>':'')+
@@ -1798,7 +1808,7 @@ function renderEvList(){
     (bs.length? bs.map(b=>'<div class="resa-item" data-evopen="'+b.id+'">'+
       '<div class="top"><span class="nm">'+esc(b.nom)+(b.statut==='arrive'?' ✓':'')+'</span>'+
       '<span class="tagslot tag-jour">'+(b.heure?esc(b.heure):b.pax+'p')+'</span></div>'+
-      '<div class="sub">'+b.pax+' pers · MD '+((b.mds||[]).join(', ')||'—')+' · '+(EV_OPTS[b.option]?EV_OPTS[b.option].short:'Table')+' · '+evPrix(b)+' €'+(b.notes?' · '+esc(b.notes):'')+'</div>'+
+      '<div class="sub">'+b.pax+' pers · '+((b.mds||[]).map(evUnitLabel).join(', ')||'—')+' · '+(EV_OPTS[b.option]?EV_OPTS[b.option].short:'Table')+' · '+evPrix(b)+' €'+(b.notes?' · '+esc(b.notes):'')+'</div>'+
     '</div>').join('') : '<div class="empty">Aucune réservation.</div>')+
     (ev.annulations.length? '<div class="annul-log"><b>Annulations du jour :</b> '+ev.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' · ')+'</div>' : '');
   body.querySelectorAll('[data-evopen]').forEach(el=>el.addEventListener('click',()=>{
@@ -1819,7 +1829,7 @@ document.getElementById('evcP').addEventListener('click',()=>{ evcV=Math.min(60,
 document.getElementById('evcCancel').addEventListener('click',closeSheets);
 document.getElementById('evcGo').addEventListener('click',()=>{
   const ev=getEventDay(currentDate);
-  const maxUsed=Object.values(ev.bookings).reduce((m,b)=>Math.max(m,(b.mds&&b.mds.length)?Math.max.apply(null,b.mds):0),0);
+  const maxUsed=Object.values(ev.bookings).reduce((m,b)=>Math.max(m,(b.mds&&b.mds.length)?Math.max.apply(null,b.mds.filter(x=>x<100).concat(0)):0),0);
   if(evcV<maxUsed){ document.getElementById('evcHint').innerHTML='<span style="color:var(--danger)">Des résas occupent le mange-debout n°'+maxUsed+'. Déplace-les d’abord.</span>'; return; }
   ev.count=evcV; persist(); closeSheets(); render();
 });
@@ -1928,5 +1938,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v15 event -->
+<!-- v16 tables-basses -->
 </html>
