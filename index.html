@@ -138,7 +138,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 
 /* ---------- resto ---------- */
 .seg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.10);border-radius:11px;padding:3px}
-.seg button{flex:1;border:none;border-radius:9px;padding:9px;font-size:13.5px;font-weight:700;background:transparent;color:#fff;opacity:.75;cursor:pointer;font-family:inherit}
+.seg button{flex:1;border:none;border-radius:9px;padding:9px 3px;font-size:12.5px;font-weight:700;background:transparent;color:#fff;opacity:.75;cursor:pointer;font-family:inherit}
 .seg button.on{background:#fff;color:var(--green);opacity:1}
 #resto{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
 #event{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
@@ -258,6 +258,64 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 .dispo-row .lbl{font-weight:600;font-size:14px;color:var(--green)}
 .total-ok{color:var(--green);font-weight:700}
 .total-bad{color:var(--danger);font-weight:700}
+
+/* ---------- agenda événements ---------- */
+#cal{max-width:640px;margin:0 auto;padding:10px 8px 150px;display:none}
+.sec{background:var(--card);border:1px solid var(--gold-soft);border-radius:14px;padding:12px 13px;margin:0 2px 10px}
+.sec h4{margin:0 0 10px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #efe8d5}
+.frow:last-child{border-bottom:none}
+.frow>span{font-size:13px;color:#6b5d34;flex:1;line-height:1.2}
+.frow input,.frow select{border:1.5px solid var(--gold-soft);border-radius:9px;padding:9px 10px;font-size:15px;
+  background:#fff;font-family:inherit;color:var(--ink);width:132px;text-align:right}
+.frow input.wide{width:180px;text-align:left}
+.frow input[type=date]{width:160px;text-align:left}
+.sec textarea{width:100%;border:1.5px solid var(--gold-soft);border-radius:10px;padding:10px;font-size:15px;
+  background:#fff;font-family:inherit;color:var(--ink);min-height:56px;resize:vertical}
+.tot{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-top:1px solid var(--gold-soft);margin-top:6px;font-weight:700;color:var(--green)}
+.tot.big{font-size:16px}
+.tot.neg b{color:var(--danger)}
+.subline{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:#6b5d34}
+.subline b{color:var(--ink);font-weight:700}
+.cal-card{background:var(--card);border:1px solid var(--gold-soft);border-left:5px solid var(--green2);
+  border-radius:12px;padding:11px 12px;margin:0 2px 9px;cursor:pointer}
+.cal-card.option{border-left-color:var(--matin)}
+.cal-card.annule{border-left-color:#bbb;opacity:.6}
+.cal-card.realise{border-left-color:var(--gold)}
+.cal-card .cc-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cal-card .cc-d{font-weight:800;font-size:13px;color:var(--green);text-transform:capitalize;white-space:nowrap}
+.cal-card .cc-n{font-weight:700;font-size:15px;flex:1}
+.cal-card .cc-s{font-size:12px;color:#8a7a52;margin-top:4px}
+.cal-card .cc-b{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;color:#fff;background:var(--green2);white-space:nowrap}
+.cal-card .cc-b.option{background:var(--matin)}
+.cal-card .cc-b.annule{background:#aaa}
+.cal-card .cc-b.realise{background:var(--gold)}
+.month-tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7a52;margin:16px 6px 7px}
+.rem-box{background:#fff5dd;border:1px solid var(--gold-soft);border-radius:12px;padding:10px 12px;margin:2px 2px 12px;display:none}
+.rem-box.show{display:block}
+.rem-box h5{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:#a5762b}
+.rem-line{display:flex;align-items:flex-start;gap:9px;font-size:13px;padding:5px 0;color:#6b4f18;line-height:1.25}
+.rem-line .rk{border:none;background:#fff;border:1.5px solid var(--gold-soft);border-radius:7px;width:30px;height:30px;
+  font-size:14px;cursor:pointer;color:var(--green);flex:none}
+.rem-line.late{color:var(--danger);font-weight:600}
+.fiche-head{display:flex;align-items:center;gap:9px;margin:2px 2px 12px}
+.fiche-head button{border:none;background:var(--card);border:1px solid var(--gold-soft);border-radius:10px;
+  padding:10px 12px;font-size:15px;cursor:pointer;color:var(--green);font-family:inherit;font-weight:700}
+.fiche-head .fh-t{flex:1;font-weight:800;font-size:16px;color:var(--green);line-height:1.15}
+.fiche-head .fh-t small{display:block;font-weight:400;font-size:12px;color:#8a7a52;text-transform:capitalize}
+.mini{font-size:11.5px;color:#9a8a63;margin:2px 0 0}
+.staff-row{display:grid;grid-template-columns:1fr 54px 54px auto;gap:6px;align-items:center;padding:5px 0}
+.staff-row span{font-size:12.5px;color:#6b5d34}
+.staff-row input{width:100%;text-align:center;border:1.5px solid var(--gold-soft);border-radius:8px;padding:7px 4px;font-size:15px;font-family:inherit;background:#fff}
+.staff-row b{font-size:12.5px;color:var(--green);text-align:right;min-width:52px}
+.staff-head{display:grid;grid-template-columns:1fr 54px 54px auto;gap:6px;font-size:10px;text-transform:uppercase;
+  letter-spacing:.4px;color:#a5946a;margin-bottom:2px}
+.plan-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.plan-btns button{flex:1;min-width:140px;border:none;border-radius:11px;padding:12px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;background:var(--green);color:#fff}
+.plan-btns button.alt{background:#eee7d6;color:#5a5340}
+.badge-warn{background:#f6e3e0;color:var(--danger);border-radius:7px;padding:2px 7px;font-size:11px;font-weight:700}
+
 @media (min-width:520px){ .half{font-size:10.5px} .transat .num{font-size:10.5px} .transat{height:64px} }
 @media (max-width:359px){ .transat{height:70px} .grid{gap:4px} #plage{padding:8px 5px 120px} }
 </style>
@@ -266,10 +324,11 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 
 <header>
   <div class="h-top">
-    <div class="brand">LE LIDO <small>plage · resto · événement</small></div>
+    <div class="brand">LE LIDO <small>agenda · plage · resto · événement</small></div>
     <div class="sync" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncTxt">local</span></div>
   </div>
   <div class="seg">
+    <button id="segCal">📅 Agenda</button>
     <button id="segPlage" class="on">🏖 Plage</button>
     <button id="segResto">🍽 Resto</button>
     <button id="segEvent">🍸 Événement</button>
@@ -309,6 +368,12 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <div class="stat"><b id="evNbC">0</b><span>Clos Réal</span></div>
     <div class="stat"><b id="evNbCh">0</b><span>+ champagne 🍾</span></div>
   </div>
+  <div class="stats" id="statsCal" style="display:none">
+    <div class="stat"><b id="clNb">0</b><span>à venir</span></div>
+    <div class="stat"><b id="clPax">0</b><span>pers. 30 j</span></div>
+    <div class="stat"><b id="clCA">0 €</b><span>CA prévu 30 j</span></div>
+    <div class="stat warn"><b id="clRem">0</b><span>rappels</span></div>
+  </div>
 </header>
 
 <div id="plage">
@@ -335,10 +400,18 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 </div>
 
 <div id="event">
-  <div class="evhead">🍸 15 AOÛT · MANGE-DEBOUTS <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
+  <div class="evhead" id="evHeadMD">🍸 ÉVÉNEMENT · MANGE-DEBOUTS <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
   <div class="evgrid" id="evGrid"></div>
-  <div class="evhead" style="margin-top:16px;background:#6e5a3d">🪑 TABLES BASSES <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
+  <div class="evhead" id="evHeadTB" style="margin-top:16px;background:#6e5a3d">🪑 TABLES BASSES <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span></div>
   <div class="evgrid" id="evGridTB"></div>
+</div>
+
+<div id="cal">
+  <div id="calList">
+    <div class="rem-box" id="calRem"></div>
+    <div id="calItems"></div>
+  </div>
+  <div id="calFiche" style="display:none"></div>
 </div>
 
 <div class="fabs">
@@ -504,6 +577,12 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <div id="evdBody"></div>
 </div>
 
+<!-- agenda : paramètres maison -->
+<div class="sheet" id="parSheet">
+  <div class="grab"></div>
+  <div id="parBody"></div>
+</div>
+
 <!-- événement : nombre de mange-debouts -->
 <div class="sheet" id="evCountSheet">
   <div class="grab"></div>
@@ -598,7 +677,9 @@ const EV_OPTS = {
   clos:  { label:'Clos Réal + table', short:'Clos Réal', px:70 },
   champ: { label:'Table + champagne', short:'Table + 🍾', px:150 }
 };
-function evPrix(b){ return ((b.mds&&b.mds.length)||0) * (EV_OPTS[b.option]?EV_OPTS[b.option].px:0); }
+function EVOPT(k,date){ const M=(typeof EVO==='function')?EVO(date):EV_OPTS;
+  return M[k]||EV_OPTS[k]||M[Object.keys(M)[0]]||{label:'—',short:'—',px:0}; }
+function evPrix(b,date){ return ((b.mds&&b.mds.length)||0) * (EVOPT(b.option,date).px||0); }
 // Plan du restaurant — positions en % (x,y,largeur,hauteur), cap = couverts par défaut
 const RESTO_TABLES = [
   {n:40,z:'t',x:3, y:12,w:10,h:42,cap:4},
@@ -765,6 +846,7 @@ function render(){
   document.getElementById('stLibApr').textContent=libA;
   renderResto();
   renderEvent();
+  renderCal();
 }
 
 function transatEl(day,t){
@@ -1193,6 +1275,7 @@ document.getElementById('listBtn').addEventListener('click',()=>{
 
 /* ---------- disposition ---------- */
 document.getElementById('dispoBtn').addEventListener('click',()=>{
+  if(view==='cal'){ openParams(); return; }
   if(view==='event'){ openEvCount(); return; }
   if(view==='resto'){ openRAdd(); return; }
   const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
@@ -1225,7 +1308,7 @@ function alertHint(msg){ const t=document.getElementById('dispoTotal'); t.innerH
 function showSheet(s){ overlay.classList.add('show'); document.querySelectorAll('.sheet').forEach(x=>x.classList.remove('show')); s.classList.add('show'); }
 function closeSheets(){ overlay.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); }
 overlay.addEventListener('click',()=>{ pendingTransat=null; rPendingTable=null; closeSheets(); });
-document.getElementById('newBtn').addEventListener('click',()=>{ if(view==='event'){ evPendingMD=null; openEvForm(null); return; } if(view==='resto'){ rPendingTable=null; openRForm(null); return; } pendingTransat=null; openForm(null); });
+document.getElementById('newBtn').addEventListener('click',()=>{ if(view==='cal'){ const ne=newEvt(); EVTS()[ne.id]=ne; calCur=ne.id; calView='fiche'; persistEvents(); renderCal(); window.scrollTo({top:0}); return; } if(view==='event'){ evPendingMD=null; openEvForm(null); return; } if(view==='resto'){ rPendingTable=null; openRForm(null); return; } pendingTransat=null; openForm(null); });
 
 /* ---------- navigation date ---------- */
 function shiftDay(n){ const d=new Date(currentDate+'T12:00:00'); d.setDate(d.getDate()+n);
@@ -1251,6 +1334,11 @@ function occupantR(rd,t,svc){
 }
 function setView(v){
   view=v; try{ localStorage.setItem('lido-view',v); }catch(e){}
+  document.getElementById('segCal').classList.toggle('on',v==='cal');
+  document.getElementById('cal').style.display = v==='cal'?'block':'none';
+  document.querySelector('header .datebar').style.display = v==='cal'?'none':'flex';
+  document.getElementById('newBtn').textContent = v==='cal'?'＋ Nouvel événement':'＋ Nouvelle résa';
+  document.getElementById('listBtn').style.display = v==='cal'?'none':'';
   document.getElementById('segPlage').classList.toggle('on',v==='plage');
   document.getElementById('segResto').classList.toggle('on',v==='resto');
   document.getElementById('segEvent').classList.toggle('on',v==='event');
@@ -1259,6 +1347,7 @@ function setView(v){
   document.getElementById('event').style.display = v==='event'?'block':'none';
   document.querySelectorAll('header .stats').forEach(s=>{
     if(s.id==='statsResto') s.style.display = v==='resto'?'flex':'none';
+    else if(s.id==='statsCal') s.style.display = v==='cal'?'flex':'none';
     else if(s.id&&s.id.indexOf('statsEvent')===0) s.style.display = v==='event'?'flex':'none';
     else s.style.display = v==='plage'?'flex':'none';
   });
@@ -1612,11 +1701,14 @@ document.getElementById('svcSoir').addEventListener('click',()=>{ rService='soir
 /* ---------- événement : mange-debouts (15 août) ---------- */
 function getEventDay(dateStr){
   const d=getDay(dateStr);
-  if(!d.event) d.event={bookings:{},annulations:[],count:23,tbCount:6};
+  const ce=(typeof evtOfDate==='function')?evtOfDate(dateStr):null;
+  const dMD = ce? Math.max(0, parseInt(((ce.espaces||{}).md)||0,10)||0) : 23;
+  const dTB = ce? Math.max(0, parseInt(((ce.espaces||{}).tb)||0,10)||0) : 6;
+  if(!d.event) d.event={bookings:{},annulations:[],count:dMD,tbCount:dTB};
   if(!d.event.bookings) d.event.bookings={};
   if(!d.event.annulations) d.event.annulations=[];
-  if(typeof d.event.count!=='number') d.event.count=23;
-  if(typeof d.event.tbCount!=='number') d.event.tbCount=6;
+  if(typeof d.event.count!=='number') d.event.count=dMD;
+  if(typeof d.event.tbCount!=='number') d.event.tbCount=dTB;
   return d.event;
 }
 function occupantEV(ev,n){
@@ -1634,7 +1726,7 @@ function evBuildCell(ev,n){
     const nm=document.createElement('span'); nm.className='mdnm'; nm.textContent=shortName(b.nom); el.appendChild(nm);
     const px=document.createElement('span'); px.className='mdpx'; px.textContent=b.pax+'p'+(b.heure?' · '+b.heure:''); el.appendChild(px);
     const op=document.createElement('span'); op.className='mdopt';
-    const o=EV_OPTS[b.option]||EV_OPTS.table; op.textContent=o.short+' · '+o.px+'€'; el.appendChild(op);
+    const o=EVOPT(b.option); op.textContent=o.short+(o.px?' · '+o.px+'€':''); el.appendChild(op);
     if(b.option==='champ') el.classList.add('champ');
     if(b.statut==='arrive'){ const c=document.createElement('span'); c.className='mdarr'; c.textContent='✓'; el.appendChild(c); }
   } else {
@@ -1653,6 +1745,12 @@ function evBuildCell(ev,n){
 function renderEvent(){
   if(view!=='event') return;
   const ev=getEventDay(currentDate);
+  const ce=(typeof evtOfDate==='function')?evtOfDate(currentDate):null;
+  const hMD=document.getElementById('evHeadMD'), hTB=document.getElementById('evHeadTB');
+  hMD.innerHTML=(ce? '🍸 '+esc((ce.nom||'ÉVÉNEMENT').toUpperCase()) : '🍸 ÉVÉNEMENT · MANGE-DEBOUTS')+
+    ' <span style="opacity:.85;font-weight:400">(1 = 4 pers.)</span>';
+  hMD.style.display=ev.count?'':'none';
+  hTB.style.display=ev.tbCount?'':'none';
   const grid=document.getElementById('evGrid'); grid.innerHTML='';
   for(let n=1;n<=ev.count;n++) grid.appendChild(evBuildCell(ev,n));
   const gridTB=document.getElementById('evGridTB'); gridTB.innerHTML='';
@@ -1721,17 +1819,20 @@ function openEvForm(b){
   document.getElementById('evfTitle').textContent=b?'Modifier la résa':'Nouvelle résa · mange-debout';
   document.getElementById('evfNom').value=b?b.nom:'';
   evfPaxV=b?b.pax:4;
-  evfOptV=b?(b.option||'table'):'table';
+  evfOptV=b?(b.option||Object.keys(EVO())[0]):Object.keys(EVO())[0];
   document.getElementById('evfHeure').value=b?(b.heure||''):'';
   document.getElementById('evfNotes').value=b?(b.notes||''):'';
   syncEvForm();
   showSheet(document.getElementById('evFormSheet'));
 }
 function syncEvForm(){
+  const M=EVO();
+  if(!M[evfOptV]) evfOptV=Object.keys(M)[0];
+  document.getElementById('evfOpt').innerHTML=Object.keys(M).map(k=>
+    '<button class="chip'+(k===evfOptV?' on':'')+'" data-v="'+k+'">'+M[k].label+'</button>').join('');
   document.getElementById('evfPaxOut').textContent=evfPaxV;
   const md=Math.ceil(evfPaxV/4);
-  const opt=EV_OPTS[evfOptV]||EV_OPTS.table;
-  document.querySelectorAll('#evfOpt .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===evfOptV));
+  const opt=EVOPT(evfOptV);
   document.getElementById('evfHint').textContent='≈ '+md+' emplacement'+(md>1?'s':'')+' · '+opt.label+' → '+(md*opt.px)+' €';
 }
 document.getElementById('evfOpt').addEventListener('click',e=>{ if(e.target.dataset.v){ evfOptV=e.target.dataset.v; syncEvForm(); }});
@@ -1784,8 +1885,8 @@ function openEvDetail(b){
     '<div class="d-line"><span>Personnes</span><b>'+b.pax+'</b></div>'+
     (b.heure?'<div class="d-line"><span>Heure</span><b>'+esc(b.heure)+'</b></div>':'')+
     '<div class="d-line"><span>Emplacement(s)</span><b>'+((b.mds||[]).map(evUnitLabel).join(', ')||'—')+'</b></div>'+
-    '<div class="d-line"><span>Formule</span><b>'+(EV_OPTS[b.option]?EV_OPTS[b.option].label:'Table seule')+'</b></div>'+
-    '<div class="d-line"><span>Total</span><b>'+evPrix(b)+' € <span style="font-weight:400;opacity:.7">('+((b.mds&&b.mds.length)||0)+' × '+(EV_OPTS[b.option]?EV_OPTS[b.option].px:50)+' €)</span></b></div>'+
+    '<div class="d-line"><span>Formule</span><b>'+EVOPT(b.option).label+'</b></div>'+
+    '<div class="d-line"><span>Total</span><b>'+evPrix(b)+' € <span style="font-weight:400;opacity:.7">('+((b.mds&&b.mds.length)||0)+' × '+EVOPT(b.option).px+' €)</span></b></div>'+
     (b.notes?'<div class="d-line"><span>Notes</span><b style="text-align:right;max-width:60%">'+esc(b.notes)+'</b></div>':'')+
     '<div class="d-line"><span>Statut</span><b>'+(b.statut==='arrive'?'✓ Arrivés':'Réservé')+'</b></div>'+
     '<div class="actions">'+
@@ -1815,11 +1916,12 @@ function renderEvList(){
   const bs=Object.values(ev.bookings).sort((a,b)=>(a.heure||'').localeCompare(b.heure||'')|| (Math.min.apply(null,a.mds||[99])-Math.min.apply(null,b.mds||[99])));
   const tot=bs.reduce((s,b)=>s+(+b.pax||0),0);
   const caTot=bs.reduce((s,b)=>s+evPrix(b),0);
-  body.innerHTML='<div class="zone-tag" style="margin-top:6px">🍸 15 août — '+tot+' pers. · '+bs.length+' résa(s) · '+caTot+' €</div>'+
+  const ceL=(typeof evtOfDate==='function')?evtOfDate(currentDate):null;
+  body.innerHTML='<div class="zone-tag" style="margin-top:6px">🍸 '+esc(ceL?ceL.nom:'Événement')+' — '+tot+' pers. · '+bs.length+' résa(s) · '+caTot+' €</div>'+
     (bs.length? bs.map(b=>'<div class="resa-item" data-evopen="'+b.id+'">'+
       '<div class="top"><span class="nm">'+esc(b.nom)+(b.statut==='arrive'?' ✓':'')+'</span>'+
       '<span class="tagslot tag-jour">'+(b.heure?esc(b.heure):b.pax+'p')+'</span></div>'+
-      '<div class="sub">'+b.pax+' pers · '+((b.mds||[]).map(evUnitLabel).join(', ')||'—')+' · '+(EV_OPTS[b.option]?EV_OPTS[b.option].short:'Table')+' · '+evPrix(b)+' €'+(b.notes?' · '+esc(b.notes):'')+'</div>'+
+      '<div class="sub">'+b.pax+' pers · '+((b.mds||[]).map(evUnitLabel).join(', ')||'—')+' · '+EVOPT(b.option).short+' · '+evPrix(b)+' €'+(b.notes?' · '+esc(b.notes):'')+'</div>'+
     '</div>').join('') : '<div class="empty">Aucune réservation.</div>')+
     (ev.annulations.length? '<div class="annul-log"><b>Annulations du jour :</b> '+ev.annulations.map(a=>esc(a.nom)+' ('+a.pax+'p, '+a.quand+')').join(' · ')+'</div>' : '');
   body.querySelectorAll('[data-evopen]').forEach(el=>el.addEventListener('click',()=>{
@@ -1845,6 +1947,440 @@ document.getElementById('evcGo').addEventListener('click',()=>{
   ev.count=evcV; persist(); closeSheets(); render();
 });
 document.getElementById('segEvent').addEventListener('click',()=>setView('event'));
+
+
+/* ================= AGENDA ÉVÉNEMENTS (privatisations · mariages · prestations) ================= */
+const EVT_TYPES = { privatisation:'Privatisation', mariage:'Mariage', soiree:'Soirée / événement', groupe:'Groupe', presta:'Prestation extérieure' };
+const EVT_STATUTS = { option:'Option', confirme:'Confirmé', realise:'Réalisé', annule:'Annulé' };
+const COST_POSTES = [
+  ['animation','Animation : DJ, artiste, cachets, GUSO'],
+  ['sono','Sono, écran, scène, éclairage'],
+  ['sacem','Droits musicaux (SACEM / SPRE)'],
+  ['securite','Sécurité — agents'],
+  ['mobilier','Location de mobilier'],
+  ['vaisselle','Location vaisselle, verrerie, matériel'],
+  ['deco','Décoration et fleurs'],
+  ['comm','Communication, réseaux, impression'],
+  ['conso','Consommables jetables et casse'],
+  ['menage','Ménage renforcé et remise en état'],
+  ['assurance','Assurance spécifique'],
+  ['transport','Transport, livraison, manutention'],
+  ['autorisations','Autorisations, taxes, droits'],
+  ['divers','Divers et imprévus']
+];
+const STAFF_POSTES = ['Barman renfort','Serveur extra','Runner / commis','Renfort cuisine','Plonge','Régisseur / responsable'];
+const DEF_PARAMS = { cmCuisine:0.30, cmBoisson:0.22, cmMoyen:0.25, coutHoraire:22, redevance:0.011, tva:0.20 };
+let calView='list', calCur=null;
+
+function P(){ if(!state.params) state.params=Object.assign({},DEF_PARAMS);
+  for(const k in DEF_PARAMS) if(typeof state.params[k]!=='number') state.params[k]=DEF_PARAMS[k];
+  return state.params; }
+function EVTS(){ if(!state.events) state.events={}; return state.events; }
+function evtOfDate(d){ const l=Object.values(EVTS()).filter(e=>e.date===d && e.statut!=='annule'); return l.length?l[0]:null; }
+function evtSorted(){ return Object.values(EVTS()).sort((a,b)=>(a.date||'').localeCompare(b.date||'')); }
+function num(v){ const n=parseFloat(String(v==null?'':v).replace(',','.')); return isNaN(n)?0:n; }
+function eur(n){ return Math.round(n).toLocaleString('fr-FR')+' €'; }
+function eur2(n){ return (Math.round(n*10)/10).toLocaleString('fr-FR',{maximumFractionDigits:1})+' €'; }
+function dFR(s,opt){ if(!s) return '—'; const d=new Date(s+'T12:00:00');
+  return d.toLocaleDateString('fr-FR', opt||{weekday:'short', day:'numeric', month:'short'}); }
+function daysTo(s){ const a=new Date(s+'T12:00:00'), b=new Date(todayStr()+'T12:00:00'); return Math.round((a-b)/86400000); }
+
+function newEvt(){
+  return { id:'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    date:currentDate, nom:'', type:'privatisation', statut:'option',
+    client:{soc:'',contact:'',tel:'',mail:''},
+    heure:'', heureFin:'', pax:0, paxConf:0,
+    espaces:{md:0,tb:0,transats:0,resto:''},
+    offre:{mode:'carte', prixEmpl:0, minConso:0, ticket:0, partBoisson:''},
+    couts:{}, staff:{}, matiere:{mode:'ratio', montant:0},
+    jourNormal:{remplace:false, caTTC:0},
+    reel:{caTTC:0, couverts:0, matiere:0, couts:0, staff:0, lecons:''},
+    rappels:[], presta:'', notes:'' };
+}
+
+/* ---------- économie de l'événement (logique de Fiche_evenement_type.xlsx) ---------- */
+function evtCalc(e){
+  const p=P(), o=e.offre||{}, es=e.espaces||{};
+  const empl=num(es.md)+num(es.tb);
+  const pax=num(e.paxConf)||num(e.pax);
+  let ttc=0, detail='';
+  if(o.mode==='forfait'){ ttc=empl*num(o.prixEmpl)+pax*num(o.ticket);
+    detail=empl+' empl. × '+eur(num(o.prixEmpl))+(num(o.ticket)?' + '+pax+' pers × '+eur(num(o.ticket)):''); }
+  else if(o.mode==='minconso'){ const gar=empl*num(o.minConso), att=pax*num(o.ticket);
+    ttc=Math.max(gar,att);
+    detail='garanti '+eur(gar)+' ('+empl+' × '+eur(num(o.minConso))+') · attendu '+eur(att)+' ('+pax+' × '+eur(num(o.ticket))+')'; }
+  else { ttc=pax*num(o.ticket); detail=pax+' pers × '+eur(num(o.ticket)); }
+  const caHT=ttc/(1+p.tva);
+  const pb=String(o.partBoisson||'').trim();
+  let cmRatio=p.cmMoyen;
+  if(pb!==''){ const b=num(pb)/100; cmRatio=b*p.cmBoisson+(1-b)*p.cmCuisine; }
+  let matiere = (e.matiere&&e.matiere.mode==='saisi') ? num(e.matiere.montant) : caHT*cmRatio;
+  let propres=0; COST_POSTES.forEach(([k])=>{ propres+=num((e.couts||{})[k]); });
+  let staffTot=0; STAFF_POSTES.forEach(sp=>{ const s=(e.staff||{})[sp]; if(s) staffTot+=num(s.nb)*num(s.h)*(num(s.taux)||p.coutHoraire); });
+  const redev=caHT*p.redevance;
+  const contribution=caHT-matiere-redev-propres-staffTot;
+  const jnHT=num((e.jourNormal||{}).caTTC)/(1+p.tva);
+  const jnContrib=(e.jourNormal&&e.jourNormal.remplace)? jnHT*(1-p.cmMoyen-p.redevance) : 0;
+  const gain=contribution-jnContrib;
+  const plancher=propres+staffTot+matiere+jnContrib;
+  return {empl,pax,ttc,caHT,detail,cmRatio,matiere,propres,staffTot,redev,contribution,jnContrib,gain,plancher};
+}
+function evtReel(e){
+  const p=P(), r=e.reel||{};
+  const caHT=num(r.caTTC)/(1+p.tva);
+  const redev=caHT*p.redevance;
+  const contribution=caHT-num(r.matiere)-redev-num(r.couts)-num(r.staff);
+  return {caHT,redev,contribution};
+}
+
+/* ---------- rappels ---------- */
+function allRappels(){
+  const out=[];
+  evtSorted().forEach(e=>{ if(e.statut==='annule') return;
+    (e.rappels||[]).forEach(r=>{ if(!r.fait) out.push({e,r,d:daysTo(r.date)}); }); });
+  return out.sort((a,b)=>(a.r.date||'').localeCompare(b.r.date||''));
+}
+function renderRappels(){
+  const box=document.getElementById('calRem');
+  const due=allRappels().filter(x=>x.d<=7);
+  if(!due.length){ box.classList.remove('show'); box.innerHTML=''; return; }
+  box.classList.add('show');
+  box.innerHTML='<h5>⏰ À faire</h5>'+due.map(x=>{
+    const late=x.d<0, today=x.d===0;
+    const quand= late? 'en retard de '+(-x.d)+' j' : today? "aujourd'hui" : 'dans '+x.d+' j';
+    return '<div class="rem-line'+(late||today?' late':'')+'">'+
+      '<button class="rk" data-remdone="'+x.e.id+'|'+x.r.id+'">✓</button>'+
+      '<div><b>'+esc(x.r.texte)+'</b><br><span style="opacity:.8">'+esc(x.e.nom||'événement')+' · '+dFR(x.e.date)+' — échéance '+dFR(x.r.date)+' ('+quand+')</span></div></div>';
+  }).join('');
+  box.querySelectorAll('[data-remdone]').forEach(b=>b.addEventListener('click',()=>{
+    const [eid,rid]=b.dataset.remdone.split('|');
+    const ev=EVTS()[eid]; if(!ev) return;
+    const r=(ev.rappels||[]).find(x=>x.id===rid); if(r) r.fait=true;
+    persistEvents(); renderCal();
+  }));
+}
+
+/* ---------- liste ---------- */
+function renderCal(){
+  if(view!=='cal') return;
+  document.getElementById('calList').style.display = calView==='list'?'':'none';
+  document.getElementById('calFiche').style.display = calView==='fiche'?'':'none';
+  if(calView==='fiche'){ renderFiche(); return; }
+  renderRappels();
+  const items=document.getElementById('calItems');
+  const list=evtSorted();
+  const today=todayStr();
+  const futurs=list.filter(e=>e.date>=today), passes=list.filter(e=>e.date<today).reverse();
+  const card=(e)=>{
+    const c=evtCalc(e);
+    const cls=e.statut==='option'?'option':e.statut==='annule'?'annule':e.statut==='realise'?'realise':'';
+    const nb=(e.espaces&&(num(e.espaces.md)+num(e.espaces.tb)))||0;
+    return '<div class="cal-card '+cls+'" data-open="'+e.id+'">'+
+      '<div class="cc-top"><span class="cc-d">'+dFR(e.date)+'</span>'+
+      '<span class="cc-n">'+esc(e.nom||'(sans nom)')+'</span>'+
+      '<span class="cc-b '+cls+'">'+(EVT_STATUTS[e.statut]||'')+'</span></div>'+
+      '<div class="cc-s">'+(EVT_TYPES[e.type]||'')+
+        ' · '+(num(e.paxConf)||num(e.pax)||0)+' pers'+(e.heure?' · '+esc(e.heure):'')+
+        (nb?' · '+nb+' empl.':'')+
+        (c.ttc?' · CA prévu '+eur(c.ttc)+' TTC':'')+
+        ((e.rappels||[]).filter(r=>!r.fait).length?' · <span class="badge-warn">'+(e.rappels||[]).filter(r=>!r.fait).length+' rappel(s)</span>':'')+
+      '</div></div>';
+  };
+  let h='';
+  if(futurs.length){ h+='<div class="month-tag">À venir</div>'+futurs.map(card).join(''); }
+  else h+='<div class="empty">Aucun événement à venir. Touche « ＋ Nouvel événement ».</div>';
+  if(passes.length){ h+='<div class="month-tag">Passés</div>'+passes.slice(0,20).map(card).join(''); }
+  items.innerHTML=h;
+  items.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>{ calCur=el.dataset.open; calView='fiche'; renderCal(); window.scrollTo({top:0}); }));
+  // stats header
+  const c30=futurs.filter(e=>daysTo(e.date)<=30);
+  document.getElementById('clNb').textContent=futurs.length;
+  document.getElementById('clPax').textContent=c30.reduce((s,e)=>s+(num(e.paxConf)||num(e.pax)),0);
+  document.getElementById('clCA').textContent=eur(c30.reduce((s,e)=>s+evtCalc(e).ttc,0));
+  document.getElementById('clRem').textContent=allRappels().filter(x=>x.d<=7).length;
+}
+
+/* ---------- fiche ---------- */
+function fld(label,path,val,attrs){ return '<div class="frow"><span>'+label+'</span>'+
+  '<input data-f="'+path+'" value="'+esc(val==null?'':val)+'" '+(attrs||'')+'></div>'; }
+function chips(path,cur,map){ return '<div class="chips" style="margin:4px 0 8px">'+Object.keys(map).map(k=>
+  '<button class="chip'+(cur===k?' on':'')+'" data-c="'+path+'" data-v="'+k+'">'+map[k]+'</button>').join('')+'</div>'; }
+
+function renderFiche(){
+  const e=EVTS()[calCur]; if(!e){ calView='list'; renderCal(); return; }
+  const c=evtCalc(e), p=P(), r=evtReel(e);
+  const box=document.getElementById('calFiche');
+  let h='';
+  h+='<div class="fiche-head"><button id="fBack">←</button>'+
+     '<div class="fh-t">'+esc(e.nom||'(sans nom)')+'<small>'+dFR(e.date,{weekday:'long',day:'numeric',month:'long',year:'numeric'})+
+     (e.heure?' · '+esc(e.heure):'')+'</small></div></div>';
+
+  h+='<div class="sec"><h4>Identité</h4>'+
+     fld('Nom de l’événement','nom',e.nom,'class="wide"')+
+     '<div class="frow"><span>Type</span></div>'+chips('type',e.type,EVT_TYPES)+
+     '<div class="frow"><span>Statut</span></div>'+chips('statut',e.statut,EVT_STATUTS)+
+     fld('Date','date',e.date,'type="date"')+
+     fld('Arrivée','heure',e.heure,'placeholder="18h" class="wide"')+
+     fld('Fin prévue','heureFin',e.heureFin,'placeholder="23h" class="wide"')+
+     fld('Personnes annoncées','pax',e.pax,'inputmode="numeric"')+
+     fld('Personnes CONFIRMÉES','paxConf',e.paxConf,'inputmode="numeric"')+
+     '<p class="mini">Tant que le nombre n’est pas confirmé, tous les calculs utilisent le chiffre annoncé.</p></div>';
+
+  h+='<div class="sec"><h4>Client</h4>'+
+     fld('Société / groupe','client.soc',e.client.soc,'class="wide"')+
+     fld('Contact','client.contact',e.client.contact,'class="wide"')+
+     fld('Téléphone','client.tel',e.client.tel,'class="wide" inputmode="tel"')+
+     fld('E-mail','client.mail',e.client.mail,'class="wide" inputmode="email"')+
+     ((e.client.tel||e.client.mail)?'<div class="plan-btns">'+
+        (e.client.tel?'<button class="alt" onclick="location.href=\'tel:'+esc(e.client.tel)+'\'">📞 Appeler</button>':'')+
+        (e.client.mail?'<button class="alt" onclick="location.href=\'mailto:'+esc(e.client.mail)+'\'">✉️ Écrire</button>':'')+
+      '</div>':'')+'</div>';
+
+  h+='<div class="sec"><h4>Espaces réservés</h4>'+
+     fld('Mange-debouts','espaces.md',e.espaces.md,'inputmode="numeric"')+
+     fld('Tables basses','espaces.tb',e.espaces.tb,'inputmode="numeric"')+
+     fld('Transats','espaces.transats',e.espaces.transats,'inputmode="numeric"')+
+     fld('Tables resto','espaces.resto',e.espaces.resto,'class="wide" placeholder="ex. 60 + 70"')+
+     '<div class="plan-btns"><button id="fPlan">🍸 Ouvrir le plan du '+dFR(e.date,{day:'numeric',month:'short'})+'</button>'+
+     '<button class="alt" id="fPose">📌 Poser la résa sur le plan</button></div>'+
+     '<p class="mini">« Poser » crée la réservation nominative sur le plan du jour et met le stock d’emplacements à niveau.</p></div>';
+
+  h+='<div class="sec"><h4>Offre & chiffre d’affaires prévu</h4>'+
+     chips('offre.mode',e.offre.mode,{carte:'À la carte',forfait:'Forfait',minconso:'Min. conso'})+
+     (e.offre.mode==='forfait'?fld('Prix par emplacement (TTC)','offre.prixEmpl',e.offre.prixEmpl,'inputmode="decimal"'):'')+
+     (e.offre.mode==='minconso'?fld('Minimum de conso / emplacement (TTC)','offre.minConso',e.offre.minConso,'inputmode="decimal"'):'')+
+     fld('Ticket moyen attendu / pers (TTC)','offre.ticket',e.offre.ticket,'inputmode="decimal"')+
+     fld('Part boissons (%) — optionnel','offre.partBoisson',e.offre.partBoisson,'inputmode="decimal" placeholder="ex. 60"')+
+     '<div class="subline"><span>'+esc(c.detail)+'</span></div>'+
+     '<div class="tot"><span>CA prévu TTC</span><b>'+eur(c.ttc)+'</b></div>'+
+     '<div class="subline"><span>soit HT (TVA '+Math.round(p.tva*100)+' %)</span><b>'+eur(c.caHT)+'</b></div>'+
+     '<p class="mini">Le prix des prestations se saisit TTC (comme en caisse) ; tout le calcul de marge se fait en HT.</p></div>';
+
+  h+='<div class="sec"><h4>Coûts propres à l’événement</h4>'+
+     COST_POSTES.map(([k,l])=>fld(l,'couts.'+k,(e.couts||{})[k],'inputmode="decimal" placeholder="0"')).join('')+
+     '<div class="tot"><span>Total coûts propres</span><b>'+eur(c.propres)+'</b></div>'+
+     '<p class="mini">Ne chiffrer QUE ce qui n’existerait pas sans l’événement.</p></div>';
+
+  h+='<div class="sec"><h4>Personnel supplémentaire</h4>'+
+     '<div class="staff-head"><span>Poste</span><span>Nb</span><span>H</span><span>Total</span></div>'+
+     STAFF_POSTES.map(sp=>{ const s=((e.staff||{})[sp])||{};
+       const tot=num(s.nb)*num(s.h)*(num(s.taux)||p.coutHoraire);
+       return '<div class="staff-row"><span>'+sp+'</span>'+
+         '<input data-f="staff.'+sp+'.nb" value="'+esc(s.nb==null?'':s.nb)+'" inputmode="numeric">'+
+         '<input data-f="staff.'+sp+'.h" value="'+esc(s.h==null?'':s.h)+'" inputmode="numeric">'+
+         '<b>'+eur(tot)+'</b></div>'; }).join('')+
+     '<div class="tot"><span>Total personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
+     '<p class="mini">Coût horaire chargé : '+eur2(p.coutHoraire)+'/h (paramètre maison, ⚙). Penser aux majorations de nuit et dimanche.</p></div>';
+
+  h+='<div class="sec"><h4>Coût matière</h4>'+
+     chips('matiere.mode',(e.matiere||{}).mode||'ratio',{ratio:'Par ratio',saisi:'Montant connu'})+
+     ((e.matiere||{}).mode==='saisi'? fld('Coût matière réel estimé (HT)','matiere.montant',e.matiere.montant,'inputmode="decimal"')
+       : '<div class="subline"><span>Ratio appliqué</span><b>'+Math.round(c.cmRatio*1000)/10+' %</b></div>')+
+     '<div class="tot"><span>Coût matière</span><b>'+eur(c.matiere)+'</b></div>'+
+     '<p class="mini">Le ratio vient des paramètres maison (cuisine '+Math.round(p.cmCuisine*100)+' % · boissons '+Math.round(p.cmBoisson*100)+' %). Dès que le coût boissons est sorti du module stock, le saisir en « montant connu ».</p></div>';
+
+  const negClass=c.contribution<0?' neg':'';
+  h+='<div class="sec"><h4>Résultat prévu</h4>'+
+     '<div class="subline"><span>CA HT</span><b>'+eur(c.caHT)+'</b></div>'+
+     '<div class="subline"><span>− Coût matière</span><b>'+eur(c.matiere)+'</b></div>'+
+     '<div class="subline"><span>− Redevance concession ('+(p.redevance*100).toFixed(1).replace('.',',')+' % du CA HT)</span><b>'+eur(c.redev)+'</b></div>'+
+     '<div class="subline"><span>− Coûts propres</span><b>'+eur(c.propres)+'</b></div>'+
+     '<div class="subline"><span>− Personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
+     '<div class="tot big'+negClass+'"><span>Contribution nette</span><b>'+eur(c.contribution)+'</b></div>'+
+     '<div class="frow" style="margin-top:8px"><span>L’événement remplace un service normal</span>'+
+       '<button class="chip'+((e.jourNormal||{}).remplace?' on':'')+'" data-t="jourNormal.remplace">'+((e.jourNormal||{}).remplace?'Oui':'Non')+'</button></div>'+
+     ((e.jourNormal||{}).remplace? fld('CA TTC d’un jour normal comparable','jourNormal.caTTC',e.jourNormal.caTTC,'inputmode="decimal"')+
+        '<div class="subline"><span>Contribution d’un jour normal</span><b>'+eur(c.jnContrib)+'</b></div>':'')+
+     '<div class="tot'+(c.gain<0?' neg':'')+'"><span>GAIN vs jour normal</span><b>'+eur(c.gain)+'</b></div>'+
+     '<div class="subline" style="margin-top:8px"><span>Prix plancher d’une privatisation (HT)</span><b>'+eur(c.plancher)+'</b></div>'+
+     '<p class="mini">Prix plancher = coûts propres + personnel + coût matière + contribution du service remplacé. En dessous, la privatisation coûte de l’argent.</p></div>';
+
+  h+='<div class="sec"><h4>Rappels</h4>'+
+     ((e.rappels||[]).length? e.rappels.map(rr=>'<div class="frow"><span>'+(rr.fait?'✅ ':'⏰ ')+esc(rr.texte)+
+        '<br><span style="opacity:.7;font-size:11.5px">'+dFR(rr.date,{weekday:'long',day:'numeric',month:'long'})+'</span></span>'+
+        '<button class="chip" data-remtog="'+rr.id+'">'+(rr.fait?'↺':'✓')+'</button>'+
+        '<button class="chip" data-remdel="'+rr.id+'">✕</button></div>').join('')
+       : '<p class="mini">Aucun rappel.</p>')+
+     '<div class="frow" style="margin-top:8px"><input id="remTxt" class="wide" placeholder="ex. relancer pour le nb de pax"><input id="remDate" type="date"></div>'+
+     '<div class="plan-btns"><button class="alt" id="remAdd">＋ Ajouter le rappel</button></div></div>';
+
+  h+='<div class="sec"><h4>Prestations & notes</h4>'+
+     '<textarea data-f="presta" placeholder="ex. vente de tapas et planches, 1 mange-debout réservé, arrivée 18h">'+esc(e.presta||'')+'</textarea>'+
+     '<div style="height:8px"></div>'+
+     '<textarea data-f="notes" placeholder="notes internes, contraintes, matériel…">'+esc(e.notes||'')+'</textarea></div>';
+
+  h+='<div class="sec"><h4>Bilan réel (après l’événement)</h4>'+
+     fld('CA réel TTC','reel.caTTC',e.reel.caTTC,'inputmode="decimal"')+
+     fld('Couverts / personnes réelles','reel.couverts',e.reel.couverts,'inputmode="numeric"')+
+     fld('Coût matière réel (HT)','reel.matiere',e.reel.matiere,'inputmode="decimal"')+
+     fld('Coûts propres réels','reel.couts',e.reel.couts,'inputmode="decimal"')+
+     fld('Personnel extra réel','reel.staff',e.reel.staff,'inputmode="decimal"')+
+     '<div class="tot"><span>Contribution réelle</span><b>'+eur(r.contribution)+'</b></div>'+
+     (num(e.reel.caTTC)? '<div class="subline"><span>Écart vs prévu</span><b>'+eur(r.contribution-c.contribution)+'</b></div>':'')+
+     '<div style="height:8px"></div><textarea data-f="reel.lecons" placeholder="Enseignements : fréquentation sur-estimée ? poste oublié ? le referait-on ?">'+esc(e.reel.lecons||'')+'</textarea></div>';
+
+  h+='<div class="plan-btns" style="margin:14px 2px 0"><button class="alt" id="fDup">⧉ Dupliquer</button>'+
+     '<button class="alt" id="fDel" style="color:var(--danger)">🗑 Supprimer</button></div>';
+
+  box.innerHTML=h;
+  bindFiche(e);
+}
+
+function setPath(o,path,val){ const ks=path.split('.'); let c=o;
+  for(let i=0;i<ks.length-1;i++){ if(typeof c[ks[i]]!=='object'||c[ks[i]]===null) c[ks[i]]={}; c=c[ks[i]]; }
+  c[ks[ks.length-1]]=val; }
+
+function bindFiche(e){
+  const box=document.getElementById('calFiche');
+  box.querySelectorAll('[data-f]').forEach(inp=>{
+    inp.addEventListener('change',()=>{ setPath(e,inp.dataset.f,inp.value); persistEvents(); renderFiche(); });
+  });
+  box.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{
+    setPath(e,b.dataset.c,b.dataset.v); persistEvents(); renderFiche(); }));
+  box.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{
+    const cur=b.dataset.t.split('.').reduce((o,k)=>o&&o[k],e); setPath(e,b.dataset.t,!cur); persistEvents(); renderFiche(); }));
+  box.querySelectorAll('[data-remtog]').forEach(b=>b.addEventListener('click',()=>{
+    const rr=(e.rappels||[]).find(x=>x.id===b.dataset.remtog); if(rr) rr.fait=!rr.fait; persistEvents(); renderFiche(); }));
+  box.querySelectorAll('[data-remdel]').forEach(b=>b.addEventListener('click',()=>{
+    e.rappels=(e.rappels||[]).filter(x=>x.id!==b.dataset.remdel); persistEvents(); renderFiche(); }));
+  const add=document.getElementById('remAdd');
+  if(add) add.addEventListener('click',()=>{
+    const t=document.getElementById('remTxt').value.trim(), d=document.getElementById('remDate').value;
+    if(!t||!d) return;
+    if(!e.rappels) e.rappels=[];
+    e.rappels.push({id:uid(), texte:t, date:d, fait:false});
+    persistEvents(); renderFiche(); });
+  document.getElementById('fBack').addEventListener('click',()=>{ calView='list'; renderCal(); });
+  document.getElementById('fPlan').addEventListener('click',()=>{ currentDate=e.date; syncEventStock(e); setView('event'); });
+  document.getElementById('fPose').addEventListener('click',()=>{ poseSurPlan(e); });
+  document.getElementById('fDup').addEventListener('click',()=>{
+    const c=JSON.parse(JSON.stringify(e)); c.id='e'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    c.nom=(c.nom||'')+' (copie)'; c.statut='option'; c.rappels=[]; c.reel={caTTC:0,couverts:0,matiere:0,couts:0,staff:0,lecons:''};
+    EVTS()[c.id]=c; calCur=c.id; persistEvents(); renderFiche(); });
+  const del=document.getElementById('fDel');
+  del.addEventListener('click',()=>{
+    if(del.textContent.indexOf('Confirmer')<0){ del.textContent='Confirmer la suppression ?'; return; }
+    delete EVTS()[e.id]; calCur=null; calView='list'; persistEvents(); renderCal(); });
+}
+
+/* ---------- liaison avec le plan ---------- */
+function syncEventStock(e){
+  const ev=getEventDay(e.date);
+  const md=num(e.espaces.md), tb=num(e.espaces.tb);
+  if(md>ev.count) ev.count=md;
+  if(tb>ev.tbCount) ev.tbCount=tb;
+  persistDay(e.date);
+}
+function poseSurPlan(e){
+  const ev=getEventDay(e.date);
+  syncEventStock(e);
+  const need=Math.max(1,num(e.espaces.md)+num(e.espaces.tb));
+  const already=Object.values(ev.bookings).find(b=>b.evtId===e.id);
+  const b=already||{id:uid(), statut:'reserve', mds:[], evtId:e.id};
+  b.nom=e.nom||e.client.soc||'Événement';
+  b.pax=num(e.paxConf)||num(e.pax)||4;
+  b.heure=e.heure||'';
+  b.notes=(e.presta||'')+(e.client.contact?' · '+e.client.contact:'');
+  b.option=Object.keys(EVO(e.date))[0];
+  if(!b.mds || b.mds.length<need){
+    const sel=(b.mds||[]).slice();
+    for(let n=1;n<=ev.count && sel.length<need;n++){ const o=occupantEV(ev,n); if((!o||o.id===b.id)&&sel.indexOf(n)<0) sel.push(n); }
+    for(let n=101;n<=100+ev.tbCount && sel.length<need;n++){ const o=occupantEV(ev,n); if((!o||o.id===b.id)&&sel.indexOf(n)<0) sel.push(n); }
+    b.mds=sel;
+  }
+  ev.bookings[b.id]=b;
+  persistDay(e.date);
+  currentDate=e.date; setView('event');
+}
+
+/* ---------- formules du jour : pilotées par la fiche événement ---------- */
+function EVO(date){
+  const e=evtOfDate(date||currentDate);
+  if(!e) return EV_OPTS;
+  const o=e.offre||{};
+  if(o.mode==='forfait') return { forfait:{label:'Forfait · '+eur(num(o.prixEmpl)), short:'Forfait', px:num(o.prixEmpl)} };
+  if(o.mode==='minconso') return { minconso:{label:'Min. conso '+eur(num(o.minConso))+' / empl.', short:'Min '+Math.round(num(o.minConso))+'€', px:num(o.minConso)} };
+  return { carte:{label:'À la carte', short:'Carte', px:0} };
+}
+
+/* ---------- paramètres maison ---------- */
+function openParams(){
+  const p=P();
+  const b=document.getElementById('parBody');
+  b.innerHTML='<h3>Paramètres maison</h3>'+
+    fld('Coût matière cuisine (%)','__cmCuisine',Math.round(p.cmCuisine*100),'inputmode="decimal"')+
+    fld('Coût matière boissons (%)','__cmBoisson',Math.round(p.cmBoisson*100),'inputmode="decimal"')+
+    fld('Coût matière moyen (%)','__cmMoyen',Math.round(p.cmMoyen*100),'inputmode="decimal"')+
+    fld('Coût horaire chargé (€/h)','__coutHoraire',p.coutHoraire,'inputmode="decimal"')+
+    fld('Redevance concession (% du CA HT)','__redevance',(p.redevance*100).toFixed(1).replace('.',','),'inputmode="decimal"')+
+    fld('TVA moyenne (%)','__tva',Math.round(p.tva*100),'inputmode="decimal"')+
+    '<p class="hint">Valeurs reprises de ta fiche événement type (cuisine 30 % · boissons 22 % · 22 €/h) et du sous-traité (redevance 1,1 % du CA HT global). Modifiables ici, elles s’appliquent à tous les événements.</p>'+
+    '<div class="actions"><button class="btn ghost" id="parCancel">Fermer</button><button class="btn primary" id="parGo">Enregistrer</button></div>';
+  b.querySelectorAll('[data-f]').forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') i.blur(); }));
+  document.getElementById('parCancel').addEventListener('click',closeSheets);
+  document.getElementById('parGo').addEventListener('click',()=>{
+    const g=(k)=>num(b.querySelector('[data-f="__'+k+'"]').value);
+    p.cmCuisine=g('cmCuisine')/100; p.cmBoisson=g('cmBoisson')/100; p.cmMoyen=g('cmMoyen')/100;
+    p.coutHoraire=g('coutHoraire'); p.redevance=g('redevance')/100; p.tva=g('tva')/100;
+    persistEvents(); closeSheets(); renderCal();
+  });
+  showSheet(document.getElementById('parSheet'));
+}
+
+
+/* ---------- calendrier : événements déjà annoncés par Julien ---------- */
+function seedEvents(){
+  if(!state.seeded) state.seeded={};
+  let add=false;
+  if(!state.seeded.uja1809){
+    state.seeded.uja1809=true; add=true;
+    EVTS()['uja1809']={ id:'uja1809', date:'2026-09-18', nom:'Soirée blanche — UJA de Toulon',
+      type:'groupe', statut:'confirme',
+      client:{soc:'UJA de Toulon (avocats)', contact:'Me Louis-Marie La Balme', tel:'', mail:''},
+      heure:'18h', heureFin:'', pax:20, paxConf:0,
+      espaces:{md:1,tb:0,transats:0,resto:''},
+      offre:{mode:'minconso', prixEmpl:0, minConso:0, ticket:0, partBoisson:''},
+      couts:{}, staff:{}, matiere:{mode:'ratio',montant:0},
+      jourNormal:{remplace:false, caTTC:0},
+      reel:{caTTC:0,couverts:0,matiere:0,couts:0,staff:0,lecons:''},
+      rappels:[{id:'r-uja-pax', texte:'Relancer Me La Balme — confirmer le nombre de pax', date:'2026-08-31', fait:false}],
+      presta:'Vente de tapas / planches. 1 mange-debout réservé, arrivée 18h, 20 pers. et +.',
+      notes:'À CHIFFRER : minimum de consommation par mange-debout + ticket moyen attendu (laissés à 0 tant que non décidés).' };
+  }
+  return add;
+}
+/* ---------- persistance des événements (nœuds hors « days ») ---------- */
+let evPushTimer=null, evtPending=false;
+function persistEvents(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  if(db){
+    evtPending=true;
+    clearTimeout(evPushTimer);
+    evPushTimer=setTimeout(()=>{
+      Promise.all([
+        db.child('events').set(state.events||{}),
+        db.child('params').set(state.params||{}),
+        db.child('seeded').set(state.seeded||{})
+      ]).then(()=>{ evtPending=false; }).catch(()=>{ evtPending=false; });
+    },300);
+  }
+  renderCal();
+}
+function persistDay(d){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  if(!db) return;
+  if(typeof pendingDays!=='undefined') pendingDays.add(d);
+  let payload=getDay(d);
+  if(typeof mergeDay==='function'){
+    payload=mergeDay(remoteSnap.days&&remoteSnap.days[d], state.days&&state.days[d], lastSynced.days&&lastSynced.days[d]);
+    state.days[d]=payload;
+  }
+  db.child('days/'+d).set(payload)
+    .then(()=>{ if(typeof lastSynced!=='undefined') lastSynced.days[d]=scloneJSON(payload);
+      if(typeof pendingDays!=='undefined') pendingDays.delete(d); })
+    .catch(()=>{ if(typeof pendingDays!=='undefined') pendingDays.delete(d); });
+}
+document.getElementById('segCal').addEventListener('click',()=>setView('cal'));
 
 /* ---------- persistance ---------- */
 const LS_KEY='lido-transats-v2';
@@ -1922,6 +2458,12 @@ function startSync(dot,txt){
       db.on('value',snap=>{
         applyingRemote=true;
         const v=snap.val();
+        if(v && !evtPending){
+          if(v.events) state.events=v.events;
+          if(v.params) state.params=v.params;
+          if(v.seeded) state.seeded=v.seeded;
+        }
+        if(!state.events) state.events={};
         if(v && v.days){
           remoteSnap = v;
           if(!state.days) state.days={};
@@ -1934,6 +2476,7 @@ function startSync(dot,txt){
           }
         }
         else if(first){ db.set(state).catch(()=>{}); lastSynced=scloneJSON(state); remoteSnap=scloneJSON(state); } // base vide
+        if(first && seedEvents()) persistEvents();
         first=false;
         applyingRemote=false;
         try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
@@ -1995,9 +2538,10 @@ function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 /* ---------- init ---------- */
 const had=loadLocal();
 if(!had) seed();
+seedEvents();
 setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }catch(e){ return 'plage'; } })());
 initFirebase();
 </script>
 </body>
-<!-- v18 sync+resto-tables -->
+<!-- v19 agenda-evenements (sur base v18 sync+resto-tables) -->
 </html>
