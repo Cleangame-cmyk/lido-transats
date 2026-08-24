@@ -2437,20 +2437,36 @@ function mergePool(remotePool, localPool, basePool){
   return res;
 }
 // fusion optimiste d'un jour : les pools de résas fusionnent par id ; plans/compteurs = local
+// valeur "plan" (tables, layout, compteurs) : si CE poste l'a modifiée (local≠base) on garde local,
+// sinon on prend le serveur → un poste qui n'a pas touché le plan n'écrase plus les modifs des autres.
+function pick3(remote, local, base){
+  if(JSON.stringify(local)!==JSON.stringify(base)) return scloneJSON(local);
+  return remote!==undefined ? scloneJSON(remote) : scloneJSON(local);
+}
+// journal d'annulations : union des deux côtés (on ne perd pas une annulation d'un autre poste)
+function mergeAnnul(remote, local){
+  const seen=new Set(), out=[];
+  (local||[]).concat(remote||[]).forEach(a=>{ const k=JSON.stringify(a); if(!seen.has(k)){ seen.add(k); out.push(a); } });
+  return out;
+}
 function mergeDay(remoteDay, localDay, baseDay){
   const rd=remoteDay||{}, ld=localDay||{}, bd=baseDay||{};
   const out=scloneJSON(ld);
   out.bookings = mergePool(rd.bookings, ld.bookings, bd.bookings);
+  out.annulations = mergeAnnul(rd.annulations, ld.annulations);
+  out.layout = pick3(rd.layout, ld.layout, bd.layout);
   if(ld.resto || rd.resto){
     out.resto = scloneJSON(ld.resto||{});
     out.resto.bookings = mergePool(rd.resto&&rd.resto.bookings, ld.resto&&ld.resto.bookings, bd.resto&&bd.resto.bookings);
-    if((!out.resto.tables||!out.resto.tables.length) && rd.resto&&rd.resto.tables) out.resto.tables=scloneJSON(rd.resto.tables);
-    if(!out.resto.annulations) out.resto.annulations=scloneJSON((rd.resto&&rd.resto.annulations)||[]);
+    out.resto.tables = pick3(rd.resto&&rd.resto.tables, ld.resto&&ld.resto.tables, bd.resto&&bd.resto.tables);
+    out.resto.annulations = mergeAnnul(rd.resto&&rd.resto.annulations, ld.resto&&ld.resto.annulations);
   }
   if(ld.event || rd.event){
     out.event = scloneJSON(ld.event||{});
     out.event.bookings = mergePool(rd.event&&rd.event.bookings, ld.event&&ld.event.bookings, bd.event&&bd.event.bookings);
-    if(!out.event.annulations) out.event.annulations=scloneJSON((rd.event&&rd.event.annulations)||[]);
+    out.event.annulations = mergeAnnul(rd.event&&rd.event.annulations, ld.event&&ld.event.annulations);
+    const c=pick3(rd.event&&rd.event.count, ld.event&&ld.event.count, bd.event&&bd.event.count); if(c!==undefined) out.event.count=c;
+    const tc=pick3(rd.event&&rd.event.tbCount, ld.event&&ld.event.tbCount, bd.event&&bd.event.tbCount); if(tc!==undefined) out.event.tbCount=tc;
   }
   return out;
 }
@@ -2582,5 +2598,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v20 modif-num-tables (sur base v19 agenda) -->
+<!-- v21 fix-sync-plan (tables) -->
 </html>
