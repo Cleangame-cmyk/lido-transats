@@ -542,6 +542,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
     <button class="hc-b" id="rcMove">📍 Déplacer la table</button>
     <button class="hc-m" id="rcResa">👤 Déplacer la résa</button>
     <button class="hc-b" id="rcCap" style="background:var(--gold)">👥 Couverts / taille de la table</button>
+    <button class="hc-b" id="rcNum" style="background:#3f7f9c">🔢 Modifier le numéro</button>
     <button class="hc-a" id="rcDel" style="background:#c0564b">🗑 Retirer la table du plan</button>
     <button class="hc-x" id="rcCancel">Annuler</button>
   </div>
@@ -604,6 +605,18 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
   <div class="actions">
     <button class="btn ghost" id="rcapCancel">Annuler</button>
     <button class="btn primary" id="rcapGo">Appliquer</button>
+  </div>
+</div>
+
+<!-- resto : numéro d'une table -->
+<div class="sheet" id="rNumSheet">
+  <div class="grab"></div>
+  <h3 id="rnumTitle">Numéro de la table</h3>
+  <div class="field"><label>Nouveau numéro</label><input type="number" id="rnumInput" inputmode="numeric" min="1" style="width:100%;border:1.5px solid var(--gold-soft);border-radius:10px;padding:11px 12px;font-size:16px;background:#fff;font-family:inherit"></div>
+  <p class="hint" id="rnumHint">Le numéro doit être unique. Les résas déjà posées sur cette table suivent automatiquement.</p>
+  <div class="actions">
+    <button class="btn ghost" id="rnumCancel">Annuler</button>
+    <button class="btn primary" id="rnumGo">Appliquer</button>
   </div>
 </div>
 
@@ -1462,6 +1475,32 @@ document.getElementById('rcapGo').addEventListener('click',()=>{
   persist(); closeSheets(); render();
 });
 document.getElementById('rChooser').addEventListener('click',e=>{ if(e.target.id==='rChooser') rCloseChooser(); });
+/* modifier le numéro d'une table */
+let rnumT=null;
+document.getElementById('rcNum').addEventListener('click',()=>{ const t=rChooserT; rCloseChooser(); openRNum(t); });
+function openRNum(t){
+  rnumT=t;
+  document.getElementById('rnumTitle').textContent='Numéro de la table n°'+t;
+  const inp=document.getElementById('rnumInput'); inp.value=t;
+  document.getElementById('rnumHint').textContent='Le numéro doit être unique. Les résas déjà posées sur cette table suivent automatiquement.';
+  showSheet(document.getElementById('rNumSheet'));
+  setTimeout(()=>{ try{ inp.focus(); inp.select(); }catch(e){} },220);
+}
+document.getElementById('rnumCancel').addEventListener('click',closeSheets);
+document.getElementById('rnumGo').addEventListener('click',()=>{
+  const rd=getRestoDay(currentDate);
+  const old=rnumT;
+  const nv=parseInt(document.getElementById('rnumInput').value,10);
+  const hint=document.getElementById('rnumHint');
+  if(!nv||nv<1){ hint.innerHTML='<span style="color:var(--danger)">Entre un numéro valide (≥ 1).</span>'; return; }
+  if(nv===old){ closeSheets(); return; }
+  if(rd.tables.some(o=>o.n===nv)){ hint.innerHTML='<span style="color:var(--danger)">Le numéro '+nv+' est déjà pris par une autre table.</span>'; return; }
+  const tb=rd.tables.find(o=>o.n===old); if(!tb){ closeSheets(); return; }
+  tb.n=nv;
+  // les résas posées sur cette table suivent le nouveau numéro (midi + soir)
+  Object.values(rd.bookings).forEach(b=>{ if(b&&b.tables) b.tables=b.tables.map(x=>x===old?nv:x); });
+  persist(); closeSheets(); render();
+});
 function rStartResaCarry(t){
   const rd=getRestoDay(currentDate);
   const b=occupantR(rd,t,rService);
@@ -2543,5 +2582,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v19 agenda-evenements (sur base v18 sync+resto-tables) -->
+<!-- v20 modif-num-tables (sur base v19 agenda) -->
 </html>
