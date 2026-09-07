@@ -347,9 +347,37 @@ function laboCocktails(){
     return {nom:nom,pv:pv,rows:rows};
   });
 }
-function laboPuMap(){
+function laboFirst(s){var m=(''+(s||'')).match(/(\d+(?:[.,]\d+)?)/);return m?parseFloat(m[1].replace(',','.')):0;}
+function laboSize(txt){
+  var mp=txt.match(/(\d+)\s*[xX×]\s*(\d+(?:[.,]\d+)?)\s*(kg|cl|l|g)\b/i);
+  if(mp){var n=parseInt(mp[1],10),v=parseFloat(mp[2].replace(',','.')),u=mp[3].toLowerCase();
+    if(u==='kg')return {q:n*v*1000,unit:'g'};if(u==='g')return {q:n*v,unit:'g'};
+    if(u==='l')return {q:n*v*100,unit:'cl'};return {q:n*v,unit:'cl'};}
+  var last=null,re=/(\d+(?:[.,]\d+)?)\s*(kg|cl|l|g)\b/gi,m;
+  while((m=re.exec(txt)))last=m;
+  if(!last)return null;
+  var v=parseFloat(last[1].replace(',','.')),u=last[2].toLowerCase();
+  if(u==='kg')return {q:v*1000,unit:'g'};if(u==='g')return {q:v,unit:'g'};
+  if(u==='l')return {q:v*100,unit:'cl'};return {q:v,unit:'cl'};
+}
+var _pmCache=null;
+function laboCatMap(){
   var map={};
-  laboCocktails().forEach(function(c){c.rows.forEach(function(r){if(!map[r.ing])map[r.ing]={pu:r.pu,unit:r.unit};});});
+  var rows=(typeof allPriceRows==='function')?allPriceRows():[];
+  rows.forEach(function(o){
+    var name=(o.produit||'').trim();if(!name||map[name])return;
+    var prix=laboFirst(o.prix);if(!prix)return;
+    var sz=laboSize(name+' '+(o.cond||''));
+    if(sz&&sz.q>0)map[name]={pu:prix/sz.q,unit:sz.unit};
+    else map[name]={pu:prix,unit:'u'};
+  });
+  return map;
+}
+function laboPuMap(){
+  if(_pmCache)return _pmCache;
+  var map=laboCatMap();
+  laboCocktails().forEach(function(c){c.rows.forEach(function(r){map[r.ing]={pu:r.pu,unit:r.unit};});});
+  _pmCache=map;
   return map;
 }
 function laboTotals(){
@@ -402,15 +430,18 @@ function vLabo(){
   h+='<div class="card" style="padding:12px">';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><select onchange="laboLoad(this.value)" style="flex:1;min-width:180px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">'+opts+'</select><button class="fab" style="position:static;box-shadow:none;padding:8px 14px;font-size:13px" onclick="laboNew()">✦ Nouvelle</button></div>';
   h+='<label style="font-size:11px;color:var(--muted);text-transform:uppercase">Nom</label><input value="'+esc(labo.nom)+'" oninput="laboNom(this.value)" placeholder="ex : Sunset Lido" style="width:100%;padding:8px;margin:2px 0 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">';
-  h+='<div style="display:grid;grid-template-columns:1fr 64px 70px 80px 66px 30px;gap:4px;font-size:11px;color:var(--gold);text-transform:uppercase"><span>Ingrédient</span><span>Qté</span><span>Unité</span><span>€/unité</span><span>Coût</span><span></span></div>';
+  var IN='padding:9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0;width:100%;box-sizing:border-box;font-size:15px';
   labo.rows.forEach(function(r,i){
-    h+='<div style="display:grid;grid-template-columns:1fr 64px 70px 80px 66px 30px;gap:4px;margin-top:4px;align-items:center">'
-      +'<input list="lb_dl" value="'+esc(r.ing)+'" oninput="laboUpd('+i+',\'ing\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
-      +'<input inputmode="decimal" value="'+esc(''+r.qty).replace('.',',')+'" oninput="laboUpd('+i+',\'qty\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
-      +'<input id="lb_u'+i+'" value="'+esc(r.unit)+'" oninput="laboUpd('+i+',\'unit\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
-      +'<input id="lb_p'+i+'" inputmode="decimal" value="'+laboFr(laboNum(r.pu),3)+'" oninput="laboUpd('+i+',\'pu\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
-      +'<span id="lb_c'+i+'" style="font-weight:700;color:var(--accent);font-size:13px">'+laboFr(laboNum(r.qty)*laboNum(r.pu))+' €</span>'
-      +'<button onclick="laboDel('+i+')" style="border:none;background:none;color:var(--urgent-ink);cursor:pointer;font-size:15px">✕</button></div>';
+    h+='<div style="margin-top:10px;padding-bottom:8px;border-bottom:1px dashed var(--line)">'
+      +'<div style="display:flex;gap:4px;align-items:center">'
+      +'<input list="lb_dl" placeholder="Ingrédient — tape pour chercher" value="'+esc(r.ing)+'" oninput="laboUpd('+i+',\'ing\',this.value)" style="'+IN+';flex:1;font-weight:600">'
+      +'<button onclick="laboDel('+i+')" style="border:none;background:none;color:var(--urgent-ink);cursor:pointer;font-size:17px;padding:6px">✕</button></div>'
+      +'<div style="display:grid;grid-template-columns:70px 60px 90px 1fr;gap:4px;margin-top:4px;align-items:center">'
+      +'<input inputmode="decimal" placeholder="Qté" value="'+esc(''+r.qty).replace('.',',')+'" oninput="laboUpd('+i+',\'qty\',this.value)" style="'+IN+'">'
+      +'<input id="lb_u'+i+'" placeholder="unité" value="'+esc(r.unit)+'" oninput="laboUpd('+i+',\'unit\',this.value)" style="'+IN+'">'
+      +'<input id="lb_p'+i+'" inputmode="decimal" placeholder="€/unité" value="'+laboFr(laboNum(r.pu),3)+'" oninput="laboUpd('+i+',\'pu\',this.value)" style="'+IN+'">'
+      +'<span id="lb_c'+i+'" style="font-weight:700;color:var(--accent);font-size:14px;text-align:right">'+laboFr(laboNum(r.qty)*laboNum(r.pu))+' €</span>'
+      +'</div></div>';
   });
   h+='<button onclick="laboAdd()" style="margin-top:8px;border:1px dashed var(--line);background:none;color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer;width:100%">+ ingrédient</button>';
   h+='<div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap"><label style="font-size:12px;color:var(--muted)">PV TTC</label><input inputmode="decimal" value="'+esc(''+labo.pv).replace('.',',')+'" oninput="laboPv(this.value)" style="width:70px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"> €<span style="flex:1"></span><button class="fab" style="position:static;box-shadow:none;padding:9px 16px;font-size:14px" onclick="laboSave()">💾 Enregistrer</button></div>';
