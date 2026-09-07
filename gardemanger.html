@@ -129,6 +129,7 @@ button:focus-visible,input:focus-visible,.row:focus-visible{outline:2px solid va
     <button data-tab="fours">🚚 Fournisseurs</button>
     <button data-tab="todo">❓ À trouver</button>
     <button data-tab="ajouts">✍️ Nos ajouts</button>
+    <button data-tab="labo">🧪 Labo</button>
   </nav>
 </header>
 <main>
@@ -296,7 +297,7 @@ function render(){
   const q=$('#q').value.trim();
   const v=$('#view');
   if(q){v.innerHTML=vSearch(q);return;}
-  v.innerHTML={search:()=>vSearch(''),carte:vCarte,fours:vFours,todo:vTodo,ajouts:vAjouts}[tab]();
+  v.innerHTML={search:()=>vSearch(''),carte:vCarte,fours:vFours,todo:vTodo,ajouts:vAjouts,labo:vLabo}[tab]();
 }
 /* ---------- db ---------- */
 function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -320,6 +321,160 @@ async function saveAjout(){
     ['f_prod','f_ref','f_prix','f_cond','f_note'].forEach(i=>$('#'+i).value='');
   }catch(e){alert('Enregistrement impossible ('+(e.code||'erreur')+'). Réessaie.');}
 }
+/* ---------- LABO CUISINE : cout de revient des plats (TVA au choix) ---------- */
+var labo={rows:[],nom:'',pv:15,tva:1.1,srcKey:null};
+var creations=[];
+function laboFirst(s){var m=(''+(s||'')).match(/(\d+(?:[.,]\d+)?)/);return m?parseFloat(m[1].replace(',','.')):0;}
+function laboNum(s){if(typeof s==='number')return s;s=(''+(s||'')).replace(',','.').replace(/[^0-9.]/g,'');var v=parseFloat(s);return isNaN(v)?0:v;}
+function laboFr(x,d){if(x==null||isNaN(x))return '—';return x.toFixed(d==null?2:d).replace('.',',');}
+/* Prix fixés a la main d'apres les achats releves (0 = prix a saisir, fournisseur pas encore connu) */
+var INGR={
+ "Pain céréales":{pu:0,unit:"u"},
+ "Tout prêt":{pu:0,unit:"u"},
+ "Sauce Salca":{pu:0,unit:"u"},
+ "Olives de Toscane":{pu:0.1724,unit:"cl"},
+ "Croquettes (produit fini)":{pu:0,unit:"u"},
+ "Focaccia":{pu:0,unit:"u"},
+ "Concombre":{pu:0,unit:"g"},
+ "Croûtons":{pu:0.0054,unit:"g"},
+ "Riz vénéré":{pu:0,unit:"g"},
+ "Citrons confits":{pu:0,unit:"g"},
+ "Emulsion Gremolata":{pu:0,unit:"u"},
+ "Entrecôte":{pu:0,unit:"g"},
+ "Sauce 3 poivres (crème + poivres)":{pu:0.0306,unit:"g"},
+ "Préparation capres/tomates":{pu:0,unit:"g"},
+ "Frites":{pu:0.0018,unit:"g"},
+ "Poivre fermenté":{pu:0,unit:"g"},
+ "Câprons":{pu:0.0832,unit:"cl"},
+ "Sacs sandwich kraft":{pu:0.0314,unit:"u"},
+ "Glace vanille":{pu:0.0552,unit:"cl"},
+ "Baba (produit fini)":{pu:2.58,unit:"u"},
+ "Glace coco":{pu:0,unit:"cl"},
+ "Amaretto + amandes + crème":{pu:0,unit:"u"},
+ "Mascarpone / biscuits / café / cacao":{pu:0,unit:"u"},
+ "Jambon blanc":{pu:0,unit:"g"},
+ "Pesto":{pu:0,unit:"g"},
+ "Polenta":{pu:0,unit:"g"},
+ "Veau en tranches":{pu:0,unit:"g"}
+};
+function laboDefQty(u){return u==='g'?100:(u==='cl'?5:1);}
+function laboParseRow(o){
+  var ov=INGR[o.ing];
+  if(ov){
+    var q=laboDefQty(ov.unit);
+    var gm0=(o.gram||'').match(/^(\d+(?:[.,]\d+)?)\s*(g|kg|cl|l)\b/i);
+    if(gm0){q=laboNum(gm0[1]);var u0=gm0[2].toLowerCase();
+      if(u0==='kg'&&ov.unit==='g')q*=1000;else if(u0==='l'&&ov.unit==='cl')q*=100;}
+    return {ing:o.ing,qty:q,unit:ov.unit,pu:ov.pu};
+  }
+  return laboParseRowAuto(o);
+}
+function laboParseRowAuto(o){
+  var p=o.prix||'',g=(o.gram||'').trim();
+  var qty=0,unit='g',pu=0;
+  var mkg=p.match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*kg/i);
+  var mL=p.match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*[lL]\b/);
+  var mNg=p.match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*(\d+)\s*g/);
+  if(mkg){pu=parseFloat(mkg[1].replace(',','.'))/1000;unit='g';qty=100;}
+  else if(mNg){pu=parseFloat(mNg[1].replace(',','.'))/parseInt(mNg[2],10);unit='g';qty=10;}
+  else if(mL){pu=parseFloat(mL[1].replace(',','.'))/100;unit='cl';qty=5;}
+  else{pu=laboFirst(p);unit='u';qty=1;}
+  var gm=g.match(/^(\d+(?:[.,]\d+)?)\s*(g|kg|cl|l)\b/i);
+  if(gm){qty=laboNum(gm[1]);var u2=gm[2].toLowerCase();
+    if(u2==='kg'&&unit==='g'){qty=qty*1000;}
+    else if(u2==='l'&&unit==='cl'){qty=qty*100;}
+    else if(u2===unit){}else{unit=u2;}
+  }
+  return {ing:o.ing,qty:qty,unit:unit,pu:pu};
+}
+function laboPlats(){
+  var secs={},order=[];
+  SEED.carte.forEach(function(o){var k=o.plat;if(!secs[k]){secs[k]=[];order.push(k);}secs[k].push(o);});
+  return order.map(function(plat){
+    return {nom:plat,pv:0,rows:secs[plat].map(laboParseRow)};
+  });
+}
+function laboPuMap(){
+  var map={};
+  laboPlats().forEach(function(c){c.rows.forEach(function(r){if(r.pu>0&&!map[r.ing])map[r.ing]={pu:r.pu,unit:r.unit};});});
+  Object.keys(INGR).forEach(function(k){if(INGR[k].pu>0)map[k]={pu:INGR[k].pu,unit:INGR[k].unit};});
+  return map;
+}
+function laboTotals(){
+  var cost=0;labo.rows.forEach(function(r){cost+=laboNum(r.qty)*laboNum(r.pu);});
+  var pv=laboNum(labo.pv);
+  var ht=pv/labo.tva;
+  var cm=ht>0?cost/ht*100:0;
+  return {cost:cost,ht:ht,cm:cm,marge:ht-cost};
+}
+function laboRefreshTotals(){
+  var t=laboTotals();
+  var el=document.getElementById('lb_tot');
+  if(el)el.innerHTML='Coût matière : <b>'+laboFr(t.cost)+' €</b> • PV HT : '+laboFr(t.ht)+' € • CM : <b style="color:'+(t.cm>30?'var(--urgent-ink)':'var(--ok-ink)')+'">'+laboFr(t.cm,1)+' %</b> • Marge brute : <b>'+laboFr(t.marge)+' €</b>/assiette';
+  labo.rows.forEach(function(r,i){var c=document.getElementById('lb_c'+i);if(c)c.textContent=laboFr(laboNum(r.qty)*laboNum(r.pu))+' €';});
+}
+window.laboUpd=function(i,f,v){labo.rows[i][f]=v;if(f==='ing'){var m=laboPuMap()[v];if(m){labo.rows[i].pu=m.pu;labo.rows[i].unit=m.unit;var p=document.getElementById('lb_p'+i);if(p)p.value=laboFr(m.pu,4);var u=document.getElementById('lb_u'+i);if(u)u.value=m.unit;}}laboRefreshTotals();};
+window.laboPv=function(v){labo.pv=v;laboRefreshTotals();};
+window.laboTva=function(v){labo.tva=parseFloat(v);laboRefreshTotals();};
+window.laboNom=function(v){labo.nom=v;};
+window.laboAdd=function(){labo.rows.push({ing:'',qty:100,unit:'g',pu:0});render();};
+window.laboDel=function(i){labo.rows.splice(i,1);render();};
+window.laboNew=function(){labo={rows:[{ing:'',qty:100,unit:'g',pu:0}],nom:'',pv:15,tva:1.1,srcKey:null};render();};
+window.laboLoad=function(val){
+  if(val==='')return;
+  if(val.indexOf('c:')===0){
+    var idx=parseInt(val.slice(2),10);var c=laboPlats()[idx];
+    labo={rows:JSON.parse(JSON.stringify(c.rows)),nom:c.nom,pv:labo.pv||15,tva:1.1,srcKey:null};
+  }else{
+    var k=val.slice(2);var cr=null;creations.forEach(function(x){if(x.key===k)cr=x;});
+    if(cr)labo={rows:JSON.parse(JSON.stringify(cr.rows||[])),nom:cr.nom,pv:cr.pv,tva:cr.tva||1.1,srcKey:k};
+  }
+  render();
+};
+window.laboSave=function(){
+  if(!labo.nom){alert('Donne un nom à la recette !');return;}
+  if(!fdb){alert('Base partagée indisponible.');return;}
+  var t=laboTotals();
+  var o={nom:labo.nom,pv:laboNum(labo.pv),tva:labo.tva,rows:labo.rows,cost:t.cost,cm:t.cm,auteur:who||'?',date:today(),ts:Date.now()};
+  var p=labo.srcKey?fdb.child('creations/'+labo.srcKey).set(o):fdb.child('creations').push(o);
+  p.then(function(){alert('Recette enregistrée — visible par toute l’équipe.');}).catch(function(){alert('Enregistrement impossible.');});
+};
+window.laboKill=function(k){if(!fdb)return;if(confirm('Supprimer cette recette ?'))fdb.child('creations/'+k).remove();};
+function vLabo(){
+  var plats=laboPlats();
+  var opts='<option value="">— partir d’un plat de la carte —</option><optgroup label="🍽 Carte actuelle">'+plats.map(function(c,i){return '<option value="c:'+i+'">'+esc(c.nom)+'</option>';}).join('')+'</optgroup>';
+  if(creations.length)opts+='<optgroup label="✨ Recettes du Labo">'+creations.map(function(c){return '<option value="k:'+c.key+'">'+esc(c.nom)+' — '+esc(c.auteur||'?')+'</option>';}).join('')+'</optgroup>';
+  var pm=laboPuMap();
+  var dl='<datalist id="lb_dl">'+Object.keys(pm).map(function(k){return '<option value="'+esc(k)+'">';}).join('')+'</datalist>';
+  var h='<div class="legend">🧪 Le Labo cuisine : charge un plat de la carte ou pars de zéro, règle les grammages et les prix (pré-remplis depuis le catalogue quand ils sont connus en €/kg), le coût de revient et le CM % se recalculent en direct. Les quantités arrivent à 100 g par défaut quand la fiche ne les précise pas — ajuste-les ! « Enregistrer » partage la recette avec toute l’équipe.</div>';
+  h+='<div class="card" style="padding:12px">';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><select onchange="laboLoad(this.value)" style="flex:1;min-width:180px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">'+opts+'</select><button class="fab" style="position:static;box-shadow:none;padding:8px 14px;font-size:13px" onclick="laboNew()">✦ Nouvelle</button></div>';
+  h+='<label style="font-size:11px;color:var(--muted);text-transform:uppercase">Nom du plat</label><input value="'+esc(labo.nom)+'" oninput="laboNom(this.value)" placeholder="ex : Tataki de thon" style="width:100%;padding:8px;margin:2px 0 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">';
+  h+='<div style="display:grid;grid-template-columns:1fr 64px 58px 88px 66px 30px;gap:4px;font-size:11px;color:var(--gold);text-transform:uppercase"><span>Ingrédient</span><span>Qté</span><span>Unité</span><span>€/unité</span><span>Coût</span><span></span></div>';
+  labo.rows.forEach(function(r,i){
+    h+='<div style="display:grid;grid-template-columns:1fr 64px 58px 88px 66px 30px;gap:4px;margin-top:4px;align-items:center">'
+      +'<input list="lb_dl" value="'+esc(r.ing)+'" oninput="laboUpd('+i+',\'ing\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
+      +'<input inputmode="decimal" value="'+esc(''+r.qty).replace('.',',')+'" oninput="laboUpd('+i+',\'qty\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
+      +'<input id="lb_u'+i+'" value="'+esc(r.unit)+'" oninput="laboUpd('+i+',\'unit\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
+      +'<input id="lb_p'+i+'" inputmode="decimal" value="'+laboFr(laboNum(r.pu),4)+'" oninput="laboUpd('+i+',\'pu\',this.value)" style="padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0">'
+      +'<span id="lb_c'+i+'" style="font-weight:700;color:var(--accent);font-size:13px">'+laboFr(laboNum(r.qty)*laboNum(r.pu))+' €</span>'
+      +'<button onclick="laboDel('+i+')" style="border:none;background:none;color:var(--urgent-ink);cursor:pointer;font-size:15px">✕</button></div>';
+  });
+  h+='<button onclick="laboAdd()" style="margin-top:8px;border:1px dashed var(--line);background:none;color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer;width:100%">+ ingrédient</button>';
+  h+='<div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap"><label style="font-size:12px;color:var(--muted)">PV TTC</label><input inputmode="decimal" value="'+esc(''+labo.pv).replace('.',',')+'" oninput="laboPv(this.value)" style="width:64px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"> €'
+  +'<label style="font-size:12px;color:var(--muted)">TVA</label><select onchange="laboTva(this.value)" style="padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"><option value="1.1"'+(labo.tva===1.1?' selected':'')+'>10 %</option><option value="1.2"'+(labo.tva===1.2?' selected':'')+'>20 %</option></select>'
+  +'<span style="flex:1"></span><button class="fab" style="position:static;box-shadow:none;padding:9px 16px;font-size:14px" onclick="laboSave()">💾 Enregistrer</button></div>';
+  h+='<div id="lb_tot" style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:13.5px"></div>';
+  h+='</div>'+dl;
+  if(creations.length){
+    h+='<div class="grouphead">✨ Recettes du Labo</div><div class="card">'+creations.map(function(c){
+      return '<div class="row" tabindex="0" onclick="laboLoad(\'k:'+c.key+'\')"><div class="r1"><span class="pname">'+esc(c.nom)+'</span><span class="price">'+laboFr(laboNum(c.pv),0)+' € · CM '+laboFr(laboNum(c.cm),1)+' %</span></div><div class="r2"><span class="chip gold">'+esc(c.auteur||'?')+' · '+esc(c.date||'')+'</span><span>coût '+laboFr(laboNum(c.cost))+' €</span><button class="chip urgent" style="border:none;cursor:pointer" onclick="event.stopPropagation();laboKill(\''+c.key+'\')">suppr.</button></div></div>';
+    }).join('')+'</div>';
+  }
+  setTimeout(laboRefreshTotals,0);
+  return h;
+}
+/* ---------- fin LABO ---------- */
 /* ---------- boot ---------- */
 function setWho(w){who=w;try{localStorage.setItem('gm_who',w);}catch(e){}
   $('#wj').classList.toggle('on',w==='Julien');$('#wa').classList.toggle('on',w==='Alix');}
@@ -335,6 +490,7 @@ let fdb=null;
 function startSubs(){
   fdb.child('ajouts').on('value',s=>{const v=s.val()||{};ajouts=Object.keys(v).map(k=>Object.assign({id:'a-'+k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
   fdb.child('notes').on('value',s=>{const v=s.val()||{};notes=Object.keys(v).map(k=>v[k]).sort((a,b)=>(a.ts||0)-(b.ts||0));render();});
+  fdb.child('creations').on('value',s=>{const v=s.val()||{};creations=Object.keys(v).map(k=>Object.assign({key:k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
 }
 function unlockUI(){$('#lock').style.display='none';}
 const FIREBASE_CONFIG={apiKey:"AIzaSyBsocdWNBUchsa9QDcuMmqyj34MbpJpzcw",authDomain:"lido-plage.firebaseapp.com",databaseURL:"https://lido-plage-default-rtdb.europe-west1.firebasedatabase.app",projectId:"lido-plage",storageBucket:"lido-plage.firebasestorage.app"};
