@@ -324,7 +324,9 @@ async function saveAjout(){
 }
 /* ---------- STOCK : inventaire cuisine (releve Dmytro 04/09) ---------- */
 var stockFil='tous';
+var stockFam='';
 window.stockFiltre=function(f){stockFil=f;render();};
+window.stockFamF=function(f){stockFam=(stockFam===f?'':f);render();};
 function stockClass(st){
   if(/RUPTURE|ILLISIBLE|INCOMPLET|CONFIRMER|INTERROGATION|⚠/.test(st||''))return 'urgent';
   if(/HORS CARTE/.test(st||''))return 'gold';
@@ -343,8 +345,14 @@ function vStock(){
   var nHc=inv.filter(function(o){return stockClass(o.statut)==='gold';}).length;
   var chips=[['tous','Tous ('+inv.length+')'],['alerte','⚠ Alertes ('+nAlert+')'],['horscarte','Hors carte ('+nHc+')'],['ok','OK ('+(inv.length-nAlert-nHc)+')']];
   var h='<div class="legend">📦 Inventaire cuisine relevé par Dmytro le 04/09 (cahier retranscrit). Pour la saisie des mouvements du quotidien, utilise l\'appli Stock : <a href="https://cleangame-cmyk.github.io/lido-transats/stock.html" style="color:var(--accent)">stock.html</a>. Les alertes ⚠ = ruptures, quantités illisibles ou à confirmer.</div>';
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">'+chips.map(function(c){
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px">'+chips.map(function(c){
     return '<button class="chip '+(stockFil===c[0]?'gold':'')+'" style="cursor:pointer;border:1px solid var(--line);background:'+(stockFil===c[0]?'var(--accent)':'var(--surface)')+';color:'+(stockFil===c[0]?'var(--bg)':'var(--ink)')+'" onclick="stockFiltre(\''+c[0]+'\')">'+c[1]+'</button>';
+  }).join('')+'</div>';
+  var allFams=[],famCount={};
+  inv.forEach(function(o){var f=o.fam||'Divers';if(!famCount[f]){famCount[f]=0;allFams.push(f);}famCount[f]++;});
+  h+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 0 10px;-webkit-overflow-scrolling:touch">'+allFams.map(function(f){
+    var on=stockFam===f;
+    return '<button style="cursor:pointer;white-space:nowrap;flex:0 0 auto;border:1px solid '+(on?'var(--accent)':'var(--line)')+';border-radius:999px;padding:6px 12px;font-size:13px;background:'+(on?'var(--accent)':'var(--surface)')+';color:'+(on?'var(--bg)':'var(--ink)')+'" onclick="stockFamF(\''+f.replace(/'/g,"\\'")+'\')">'+esc(f)+' <span style="opacity:.6">'+famCount[f]+'</span></button>';
   }).join('')+'</div>';
   var fams={},order=[];
   inv.forEach(function(o){
@@ -353,6 +361,7 @@ function vStock(){
     if(stockFil==='horscarte'&&cl!=='gold')return;
     if(stockFil==='ok'&&cl!=='ok')return;
     var f=o.fam||'Divers';
+    if(stockFam&&f!==stockFam)return;
     if(!fams[f]){fams[f]=[];order.push(f);}
     fams[f].push(o);
   });
@@ -552,6 +561,40 @@ function vLabo(){
     }).join('')+'</div>';
   }
   setTimeout(laboRefreshTotals,0);
+  return h;
+}
+/* ---------- CARTE ÉDITABLE : redéfinit vCarte (la déclaration la plus tardive gagne) ---------- */
+function laboGoTab(t){tab=t;document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x.dataset.tab===t);});var q=document.getElementById('q');if(q)q.value='';render();window.scrollTo(0,0);}
+window.openLabo=function(el){
+  var nom=el.getAttribute('data-p');
+  var ps=laboPlats();var i=-1;ps.forEach(function(p,k){if(i<0&&p.nom===nom)i=k;});
+  if(i<0)return;
+  laboGoTab('labo');laboLoad('c:'+i);
+};
+window.openLaboKey=function(k){laboGoTab('labo');laboLoad('k:'+k);};
+function vCarte(){
+  const secs={};
+  SEED.carte.forEach(o=>{(secs[o.sec]=secs[o.sec]||{});(secs[o.sec][o.plat]=secs[o.sec][o.plat]||[]).push(o);});
+  var byNom={};creations.forEach(function(c){if(!byNom[c.nom]||(c.ts||0)>(byNom[c.nom].ts||0))byNom[c.nom]=c;});
+  let h='<div class="legend">Touche un plat pour ses ingrédients, ✏️ pour l\'ouvrir dans le Labo (grammages, prix, coût de revient — modifiable et partagé). Un plat retravaillé au Labo porte le badge 🧪.</div>';
+  for(const s in secs){
+    h+='<div class="grouphead">'+esc(s)+'</div><div class="card">';
+    for(const p in secs[s]){
+      const items=secs[s][p]; const miss=items.filter(i=>!i.prix).length;
+      const cr=byNom[p];
+      h+='<div class="plathead" onclick="this.nextElementSibling.classList.toggle(\'open\')" style="display:flex;align-items:center;gap:8px">'
+        +'<span style="flex:1">'+esc(p)+(cr?' <span class="chip gold" style="font-size:10px">🧪 v. Labo '+esc(cr.date||'')+'</span>':'')+'</span>'
+        +'<span class="cnt">'+items.length+' ingr.'+(miss?' · '+miss+' prix ?':'')+'</span>'
+        +'<button data-p="'+esc(p)+'" onclick="event.stopPropagation();openLabo(this)" style="border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px;flex:0 0 auto">✏️</button></div>'
+        +'<div class="platbody">'+items.map(carteRowHtml).join('')+'</div>';
+    }
+    h+='</div>';
+  }
+  if(creations.length){
+    h+='<div class="grouphead">✨ Recettes du Labo (créées ou retravaillées)</div><div class="card">'+creations.map(function(c){
+      return '<div class="row" tabindex="0" onclick="openLaboKey(\''+c.key+'\')"><div class="r1"><span class="pname">'+esc(c.nom)+'</span><span class="price">'+(c.pv?laboFr(laboNum(c.pv),0)+' € · ':'')+'CM '+laboFr(laboNum(c.cm),1)+' %</span></div><div class="r2"><span class="chip gold">'+esc(c.auteur||'?')+' · '+esc(c.date||'')+'</span><span>coût '+laboFr(laboNum(c.cost))+' € · toucher pour ouvrir au Labo</span></div></div>';
+    }).join('')+'</div>';
+  }
   return h;
 }
 /* ---------- fin LABO ---------- */
