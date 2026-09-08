@@ -131,6 +131,7 @@ button:focus-visible,input:focus-visible,.row:focus-visible{outline:2px solid va
     <button data-tab="ajouts">✍️ Nos ajouts</button>
     <button data-tab="labo">🧪 Labo</button>
     <button data-tab="stock">📦 Stock</button>
+    <button data-tab="dec">🧾 Décompte</button>
   </nav>
 </header>
 <main>
@@ -298,7 +299,7 @@ function render(){
   const q=$('#q').value.trim();
   const v=$('#view');
   if(q){v.innerHTML=vSearch(q);return;}
-  v.innerHTML={search:()=>vSearch(''),carte:vCarte,fours:vFours,todo:vTodo,ajouts:vAjouts,labo:vLabo,stock:vStock}[tab]();
+  v.innerHTML={search:()=>vSearch(''),carte:vCarte,fours:vFours,todo:vTodo,ajouts:vAjouts,labo:vLabo,stock:vStock,dec:vDec}[tab]();
 }
 /* ---------- db ---------- */
 function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -598,6 +599,277 @@ function vCarte(){
   return h;
 }
 /* ---------- fin LABO ---------- */
+/* ---------- DECOMPTE : ventes -> conso theorique -> stock -> ecarts ---------- */
+var decSub='saisie';
+var decV={};        /* saisie en cours : nom du plat -> qte vendue */
+var decDate='';
+var decServ='Soir';
+var decC={};        /* comptage physique en cours : invId -> qte */
+var decEnt='';      /* article dont le mini-formulaire entree est ouvert */
+var decFam='';
+var decServices=[],decEntrees=[],decInvs=[],decLiens={};
+var _decIdx=null,_decGuess={};
+function decNorm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();}
+function decSlug(s){return decNorm(s).replace(/ /g,'_').slice(0,90)||'x';}
+function decArts(){return (SEED.inventaire||[]).filter(function(o){return o.fam;});}
+function decIdx(){if(_decIdx)return _decIdx;var m={};decArts().forEach(function(o){m[o.id]=o;});_decIdx=m;return m;}
+function decU(u){var s=decNorm(u);
+  if(/^kg/.test(s))return{unit:'g',k:1000};
+  if(/^g( |$)/.test(s))return{unit:'g',k:1};
+  if(/^(l|litre|litres)( |$)/.test(s))return{unit:'cl',k:100};
+  if(/^cl/.test(s))return{unit:'cl',k:1};
+  return{unit:'u',k:1};}
+/* etat initial d'un article = ce que dit l'inventaire du 04/09, jamais une estimation */
+function decBase(o){if(!o)return null;
+  var nb=laboNum(o.nb);if(!o.nb||!(nb>0))return null;
+  var ct=laboNum(o.contenu),u=decU(o.unite);
+  if(o.contenu&&ct>0)return{q:nb*ct*u.k,unit:u.unit};
+  if(o.unite&&u.unit!=='u')return{q:nb*u.k,unit:u.unit};
+  return{q:nb,unit:'u'};}
+function decFmt(q,unit){if(q==null||isNaN(q))return '—';
+  if(unit==='g'&&Math.abs(q)>=1000)return laboFr(q/1000,2)+' kg';
+  if(unit==='cl'&&Math.abs(q)>=100)return laboFr(q/100,2)+' L';
+  return laboFr(q,0)+' '+(unit||'');}
+function decCont(o){var s='';if(o.nb)s+=o.nb;if(o.contenant&&!/pas de quantit/.test(decNorm(o.contenant)))s+=(s?' ':'')+o.contenant;
+  if(o.contenu)s+=' x '+o.contenu+(o.unite?' '+o.unite:'');else if(o.unite)s+=' '+o.unite;return s.trim();}
+/* --- recettes : une creation du Labo = grammages valides, sinon plat non decompte --- */
+function decSecMap(){var m={};SEED.carte.forEach(function(o){if(!m[o.plat])m[o.plat]=o.sec;});return m;}
+function decPlats(){
+  var sec=decSecMap(),byNom={},out=[],seen={};
+  creations.forEach(function(c){if(!byNom[c.nom]||(c.ts||0)>(byNom[c.nom].ts||0))byNom[c.nom]=c;});
+  laboPlats().forEach(function(p){var cr=byNom[p.nom];seen[p.nom]=1;
+    out.push({nom:p.nom,sec:sec[p.nom]||'CARTE',rows:cr?(cr.rows||[]):p.rows,valide:!!cr,date:cr?cr.date:'',key:cr?cr.key:''});});
+  Object.keys(byNom).forEach(function(n){if(seen[n])return;var c=byNom[n];
+    out.push({nom:n,sec:'RECETTES DU LABO',rows:c.rows||[],valide:true,date:c.date||'',key:c.key});});
+  return out;}
+function decStem(s){return decNorm(s).split(' ').map(function(w){return w.length>3?w.replace(/(s|x)$/,''):w;}).join(' ');}
+function decGuess(ing){
+  if(_decGuess[ing]!==undefined)return _decGuess[ing];
+  var n=decStem(ing),best='',bs=0;
+  if(n){decArts().forEach(function(o){
+    var a=decStem(decNorm(o.art).replace(/ p \d+$/,'')),s=0;
+    if(a===n)s=100;
+    else if(a.length>3&&(n.indexOf(a)>=0||a.indexOf(n)>=0))s=60+Math.min(a.length,n.length)/50;
+    else{var ta=a.split(' '),tn=n.split(' '),c=0;
+      ta.forEach(function(w){if(w.length>3&&tn.indexOf(w)>=0)c++;});s=c*30;}
+    s-=a.length/1000;
+    if(s>bs){bs=s;best=o.id;}});}
+  _decGuess[ing]=bs>=60?best:'';return _decGuess[ing];}
+function decLink(ing){if(Object.prototype.hasOwnProperty.call(decLiens,ing))return decLiens[ing];return decGuess(ing);}
+function decIngs(){/* tous les ingredients des recettes validees */
+  var m={},out=[];decPlats().forEach(function(p){if(!p.valide)return;
+    (p.rows||[]).forEach(function(r){var i=(r.ing||'').trim();if(!i||m[i])return;m[i]=1;out.push(i);});});
+  return out.sort();}
+function decConso(ventes){
+  var res={},warn={},byNom={};decPlats().forEach(function(p){byNom[p.nom]=p;});
+  Object.keys(ventes||{}).forEach(function(nom){
+    var q=laboNum(ventes[nom]);if(!(q>0))return;
+    var p=byNom[nom];if(!p||!p.valide)return;
+    (p.rows||[]).forEach(function(r){
+      var ing=(r.ing||'').trim();if(!ing)return;
+      var id=decLink(ing);
+      if(!id){warn[ing]='pas d\u2019article de stock li\u00e9';return;}
+      var art=decIdx()[id],b=decBase(art);
+      if(!b){warn[ing]=(art?art.art:id)+' : quantit\u00e9 inconnue \u00e0 l\u2019inventaire';return;}
+      var u=decNorm(r.unit)||'u',qq=laboNum(r.qty)*q;
+      if(u==='kg'){qq*=1000;u='g';}else if(u==='l'){qq*=100;u='cl';}
+      if(u!==b.unit){warn[ing]='unit\u00e9 '+u+' vs '+b.unit+' ('+art.art+')';return;}
+      res[id]=(res[id]||0)+qq;});});
+  return{conso:res,warn:warn};}
+function decStock(){
+  var out={};
+  decArts().forEach(function(o){var b=decBase(o);
+    out[o.id]={art:o,unit:b?b.unit:'',q:b?b.q:null,since:0,src:b?'Inventaire 04/09':'',mv:0};});
+  decInvs.forEach(function(iv){(iv.lignes||[]).forEach(function(l){var s=out[l.inv];if(!s)return;
+    if((iv.ts||0)>=s.since){s.q=laboNum(l.q);s.since=iv.ts||0;s.src='Comptage du '+(iv.date||'?');s.mv=0;}});});
+  decEntrees.forEach(function(e){var s=out[e.inv];if(!s||s.q==null)return;
+    if((e.ts||0)>s.since){s.q+=laboNum(e.q);s.mv++;}});
+  decServices.forEach(function(sv){(sv.conso||[]).forEach(function(c){var s=out[c.inv];if(!s||s.q==null)return;
+    if((sv.ts||0)>s.since){s.q-=laboNum(c.q);s.mv++;}});});
+  return out;}
+/* ---------- actions ---------- */
+window.decGo=function(s){decSub=s;render();};
+window.decSetDate=function(v){decDate=v;};
+window.decSetServ=function(v){decServ=v;};
+window.decVente=function(nom,v){decV[nom]=v;decRecap();};
+function decRecap(){
+  var el=document.getElementById('dec_recap');if(!el)return;
+  var n=0,nd=0,byNom={};decPlats().forEach(function(p){byNom[p.nom]=p;});
+  Object.keys(decV).forEach(function(k){var q=laboNum(decV[k]);if(!(q>0))return;n+=q;if(byNom[k]&&byNom[k].valide)nd+=q;});
+  var r=decConso(decV),nl=Object.keys(r.conso).length,wk=Object.keys(r.warn);
+  el.innerHTML='<b>'+n+'</b> plat'+(n>1?'s':'')+' saisi'+(n>1?'s':'')+' \u00b7 <b>'+nd+'</b> sur recette valid\u00e9e \u2192 '+nl+' article'+(nl>1?'s':'')+' de stock d\u00e9compt\u00e9'+(nl>1?'s':'')
+    +(n-nd>0?'<br><span style="color:var(--warn-ink)">\u26a0 '+(n-nd)+' vente(s) sur des plats sans recette valid\u00e9e au Labo \u2014 non d\u00e9compt\u00e9es (aucun grammage invent\u00e9).</span>':'')
+    +(wk.length?'<br><span style="color:var(--warn-ink)">\u26a0 non d\u00e9duits : '+wk.slice(0,6).map(function(k){return esc(k)+' ('+esc(r.warn[k])+')';}).join(' \u00b7 ')+(wk.length>6?' \u2026 +'+(wk.length-6):'')+' \u2014 voir \ud83d\udd17 Liaisons.</span>':'');}
+window.decSave=function(){
+  if(!fdb){alert('Base partag\u00e9e indisponible.');return;}
+  var v=[],n=0,byNom={};decPlats().forEach(function(p){byNom[p.nom]=p;});
+  Object.keys(decV).forEach(function(k){var q=laboNum(decV[k]);if(q>0){v.push({plat:k,q:q,val:byNom[k]&&byNom[k].valide?1:0});n+=q;}});
+  if(!n){alert('Aucune vente saisie.');return;}
+  var r=decConso(decV),lignes=Object.keys(r.conso).map(function(id){return{inv:id,q:Math.round(r.conso[id]*1000)/1000};});
+  var o={date:decDate||today(),service:decServ,ventes:v,conso:lignes,nb:n,auteur:who||'?',ts:Date.now()};
+  fdb.child('decompte/services').push(o).then(function(){decV={};alert('Service enregistr\u00e9 \u2014 '+n+' plat(s), '+lignes.length+' article(s) d\u00e9compt\u00e9(s).');render();})
+    .catch(function(e){alert('Enregistrement impossible ('+(e&&e.code||'erreur')+').');});};
+window.decDelServ=function(k){if(!fdb)return;if(confirm('Supprimer ce service ? Le stock th\u00e9orique sera recalcul\u00e9.'))fdb.child('decompte/services/'+k).remove();};
+window.decDelEnt=function(k){if(!fdb)return;if(confirm('Supprimer cette entr\u00e9e ?'))fdb.child('decompte/entrees/'+k).remove();};
+window.decDelInv=function(k){if(!fdb)return;if(confirm('Supprimer ce comptage ? Le stock repartira du comptage pr\u00e9c\u00e9dent.'))fdb.child('decompte/inventaires/'+k).remove();};
+window.decEntOpen=function(id){decEnt=(decEnt===id?'':id);render();};
+window.decEntSave=function(id){
+  var el=document.getElementById('dec_e_'+id);if(!el)return;
+  var q=laboNum(el.value);if(!q){alert('Quantit\u00e9 ?');return;}
+  if(!fdb){alert('Base partag\u00e9e indisponible.');return;}
+  fdb.child('decompte/entrees').push({inv:id,q:q,date:today(),auteur:who||'?',ts:Date.now()}).then(function(){decEnt='';render();})
+    .catch(function(){alert('Enregistrement impossible.');});};
+window.decCompte=function(id,v){decC[id]=v;
+  var st=decStock()[id];var el=document.getElementById('dec_ec_'+id);if(!el||!st)return;
+  if(v===''||st.q==null){el.textContent='';el.style.color='var(--muted)';return;}
+  var d=laboNum(v)-st.q;
+  el.textContent=(d>0?'+':'')+decFmt(d,st.unit);
+  el.style.color=Math.abs(d)<0.0001?'var(--ok-ink)':(d<0?'var(--urgent-ink)':'var(--gold)');};
+window.decSaveInv=function(){
+  if(!fdb){alert('Base partag\u00e9e indisponible.');return;}
+  var st=decStock(),lignes=[];
+  Object.keys(decC).forEach(function(id){var v=decC[id];if(v===''||v==null)return;
+    var q=laboNum(v),s=st[id];if(!s)return;
+    lignes.push({inv:id,q:q,th:s.q==null?null:Math.round(s.q*1000)/1000,unit:s.unit});});
+  if(!lignes.length){alert('Aucun article compt\u00e9.');return;}
+  fdb.child('decompte/inventaires').push({date:decDate||today(),lignes:lignes,auteur:who||'?',ts:Date.now()})
+    .then(function(){decC={};alert('Comptage enregistr\u00e9 \u2014 '+lignes.length+' article(s). Il devient le nouveau point de d\u00e9part du stock.');render();})
+    .catch(function(){alert('Enregistrement impossible.');});};
+window.decSetLien=function(ing,id){
+  decLiens[ing]=id;
+  if(fdb)fdb.child('decompte/liens/'+decSlug(ing)).set({ing:ing,inv:id,auteur:who||'?',ts:Date.now()});
+  render();};
+window.decFamF=function(f){decFam=(decFam===f?'':f);render();};
+/* ---------- vues ---------- */
+function decTabs(){
+  var t=[['saisie','\ud83e\uddfe Saisie du service'],['stock','\ud83d\udcc9 Stock th\u00e9orique'],['ecarts','\u2696\ufe0f \u00c9carts'],['liens','\ud83d\udd17 Liaisons']];
+  return '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;-webkit-overflow-scrolling:touch">'+t.map(function(c){
+    var on=decSub===c[0];
+    return '<button onclick="decGo(\''+c[0]+'\')" style="flex:0 0 auto;white-space:nowrap;cursor:pointer;border:1px solid '+(on?'var(--accent)':'var(--line)')+';background:'+(on?'var(--accent)':'var(--surface)')+';color:'+(on?'var(--bg)':'var(--ink)')+';border-radius:999px;padding:7px 14px;font-size:13px;font-weight:'+(on?'700':'500')+'">'+c[1]+'</button>';}).join('')+'</div>';}
+function decInp(){return 'padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font-size:15px;width:100%;min-width:0';}
+function vDecSaisie(){
+  var plats=decPlats(),secs={},order=[];
+  plats.forEach(function(p){if(!secs[p.sec]){secs[p.sec]=[];order.push(p.sec);}secs[p.sec].push(p);});
+  var nv=plats.filter(function(p){return p.valide;}).length;
+  var h='<div class="legend">\ud83e\uddfe En fin de service : le nombre de plats vendus. La consommation est calcul\u00e9e depuis les recettes du \ud83e\uddea Labo, puis d\u00e9duite du stock. <b>Seuls les plats dont la recette a \u00e9t\u00e9 valid\u00e9e au Labo sont d\u00e9compt\u00e9s</b> ('+nv+'/'+plats.length+') \u2014 aucun grammage n\u2019est invent\u00e9.</div>';
+  h+='<div class="card" style="padding:12px">';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+    +'<div style="flex:1;min-width:110px"><label style="font-size:11px;color:var(--muted);text-transform:uppercase">Date</label>'
+    +'<input value="'+esc(decDate||today())+'" oninput="decSetDate(this.value)" placeholder="JJ/MM" style="'+decInp()+'"></div>'
+    +'<div style="flex:1;min-width:110px"><label style="font-size:11px;color:var(--muted);text-transform:uppercase">Service</label>'
+    +'<select onchange="decSetServ(this.value)" style="'+decInp()+'">'+['Midi','Soir','Journ\u00e9e'].map(function(s){return '<option'+(decServ===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div></div>';
+  h+='<div id="dec_recap" style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:13.5px"></div>';
+  h+='<button class="fab" style="position:static;box-shadow:none;padding:10px 16px;font-size:14px;margin-top:10px;width:100%" onclick="decSave()">Enregistrer le service</button>';
+  h+='</div>';
+  order.forEach(function(s){
+    h+='<div class="grouphead">'+esc(s)+'</div><div class="card">';
+    h+=secs[s].map(function(p){
+      var v=decV[p.nom]!==undefined?decV[p.nom]:'';
+      return '<div class="row" style="cursor:default"><div class="r1">'
+        +'<span class="pname">'+esc(p.nom)+'</span>'
+        +'<input inputmode="numeric" value="'+esc(''+v)+'" placeholder="0" oninput="decVente(\''+esc(p.nom).replace(/'/g,"\\'")+'\',this.value)" style="'+decInp()+';width:72px;flex:0 0 auto;text-align:center;font-weight:700">'
+        +'</div><div class="r2">'
+        +(p.valide?'<span class="chip ok">recette valid\u00e9e '+esc(p.date||'')+'</span>':'<span class="chip warn">recette \u00e0 valider au Labo</span>')
+        +'<span>'+(p.rows||[]).length+' ingr.</span>'
+        +(p.valide?'':'<button onclick="openLabo(this)" data-p="'+esc(p.nom)+'" style="border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:6px;padding:1px 8px;font-size:12px;cursor:pointer">\u270f\ufe0f Labo</button>')
+        +'</div></div>';}).join('');
+    h+='</div>';});
+  if(decServices.length){
+    h+='<div class="grouphead">Services enregistr\u00e9s</div><div class="card">'+decServices.slice(0,12).map(function(sv){
+      return '<div class="row" tabindex="0" onclick="tg(this)"><div class="r1"><span class="pname">'+esc(sv.date||'?')+' \u00b7 '+esc(sv.service||'')+'</span><span class="price">'+(sv.nb||0)+' plats</span></div>'
+        +'<div class="r2"><span class="chip">'+((sv.conso||[]).length)+' articles d\u00e9compt\u00e9s</span><span>'+esc(sv.auteur||'?')+'</span></div></div>'
+        +'<div class="detail">'+(sv.ventes||[]).map(function(x){return esc(x.plat)+' \u00d7 '+x.q+(x.val?'':' <span class="chip warn">non d\u00e9compt\u00e9</span>');}).join('<br>')
+        +'<div style="margin-top:8px"><button onclick="decDelServ(\''+sv.key+'\')" style="border:1px solid var(--line);background:var(--surface);color:var(--urgent-ink);border-radius:7px;padding:5px 11px;font-size:12.5px;cursor:pointer">Supprimer</button></div></div>';}).join('')+'</div>';}
+  setTimeout(decRecap,0);
+  return h;}
+function vDecStock(){
+  var st=decStock(),arts=decArts();
+  var suivis=arts.filter(function(o){return st[o.id].q!=null;}),nons=arts.filter(function(o){return st[o.id].q==null;});
+  var fams=[],cnt={};suivis.forEach(function(o){var f=o.fam||'Divers';if(!cnt[f]){cnt[f]=0;fams.push(f);}cnt[f]++;});
+  var h='<div class="legend">\ud83d\udcc9 Stock th\u00e9orique = dernier comptage (ou l\u2019inventaire du 04/09) + entr\u00e9es \u2212 consommation des services. Touche <b>\uff0b</b> pour saisir une livraison ou une correction.</div>';
+  h+='<div class="statgrid"><div class="stat"><b>'+suivis.length+'</b><span>articles suivis</span></div>'
+    +'<div class="stat"><b>'+decServices.length+'</b><span>services d\u00e9compt\u00e9s</span></div>'
+    +'<div class="stat"><b>'+nons.length+'</b><span>articles sans quantit\u00e9 de d\u00e9part</span></div></div>';
+  h+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 0 10px;-webkit-overflow-scrolling:touch">'+fams.map(function(f){
+    var on=decFam===f;
+    return '<button onclick="decFamF(\''+f.replace(/'/g,"\\'")+'\')" style="cursor:pointer;white-space:nowrap;flex:0 0 auto;border:1px solid '+(on?'var(--accent)':'var(--line)')+';background:'+(on?'var(--accent)':'var(--surface)')+';color:'+(on?'var(--bg)':'var(--muted)')+';border-radius:999px;padding:5px 12px;font-size:12.5px">'+esc(f)+' '+cnt[f]+'</button>';}).join('')+'</div>';
+  var by={},order=[];
+  suivis.forEach(function(o){if(decFam&&o.fam!==decFam)return;var f=o.fam||'Divers';if(!by[f]){by[f]=[];order.push(f);}by[f].push(o);});
+  order.forEach(function(f){
+    h+='<div class="grouphead">'+esc(f)+'</div><div class="card">'+by[f].map(function(o){
+      var s=st[o.id],neg=s.q<0;
+      var r='<div class="row" style="cursor:default"><div class="r1"><span class="pname">'+esc(o.art)+'</span>'
+        +'<span class="price" style="'+(neg?'color:var(--urgent-ink)':'')+'">'+decFmt(s.q,s.unit)+'</span>'
+        +'<button onclick="decEntOpen(\''+o.id+'\')" style="border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:6px;padding:1px 9px;font-size:14px;cursor:pointer;flex:0 0 auto">\uff0b</button></div>'
+        +'<div class="r2"><span class="chip'+(neg?' urgent':'')+'">'+esc(s.src)+'</span>'+(s.mv?'<span>'+s.mv+' mouvement(s)</span>':'')+(neg?'<span class="chip urgent">n\u00e9gatif \u2014 \u00e0 recompter</span>':'')+'</div>';
+      if(decEnt===o.id)r+='<div style="display:flex;gap:6px;margin-top:8px"><input id="dec_e_'+o.id+'" inputmode="decimal" placeholder="Entr\u00e9e en '+esc(s.unit)+' (+)" style="'+decInp()+'">'
+        +'<button onclick="decEntSave(\''+o.id+'\')" style="border:none;background:var(--accent);color:var(--bg);border-radius:7px;padding:0 14px;font-weight:700;cursor:pointer">OK</button></div>';
+      return r+'</div>';}).join('')+'</div>';});
+  if(decEntrees.length){
+    h+='<div class="grouphead">Entr\u00e9es saisies</div><div class="card">'+decEntrees.slice(0,15).map(function(e){
+      var o=decIdx()[e.inv],s=st[e.inv];
+      return '<div class="row" tabindex="0" onclick="tg(this)"><div class="r1"><span class="pname">'+esc(o?o.art:e.inv)+'</span><span class="price">+'+decFmt(laboNum(e.q),s?s.unit:'')+'</span></div>'
+        +'<div class="r2"><span>'+esc(e.date||'')+' \u00b7 '+esc(e.auteur||'?')+'</span></div></div>'
+        +'<div class="detail"><button onclick="decDelEnt(\''+e.key+'\')" style="border:1px solid var(--line);background:var(--surface);color:var(--urgent-ink);border-radius:7px;padding:5px 11px;font-size:12.5px;cursor:pointer">Supprimer</button></div>';}).join('')+'</div>';}
+  if(nons.length){
+    h+='<div class="grouphead">Sans quantit\u00e9 de d\u00e9part ('+nons.length+')</div><div class="card">'+nons.map(function(o){
+      return '<div class="row" style="cursor:default"><div class="r1"><span class="pname">'+esc(o.art)+'</span><span class="price miss">\u00e0 compter</span></div>'
+        +'<div class="r2"><span class="chip warn">'+esc((o.statut||'quantit\u00e9 non relev\u00e9e').slice(0,60))+'</span></div></div>';}).join('')+'</div>';}
+  return h;}
+function vDecEcarts(){
+  var st=decStock(),arts=decArts().filter(function(o){return st[o.id].q!=null;});
+  var h='<div class="legend">\u2696\ufe0f Inventaire physique : compte, saisis, compare. \u00c9cart = compt\u00e9 \u2212 th\u00e9orique (rouge = il manque, dor\u00e9 = il y en a plus). En enregistrant, le comptage devient le nouveau point de d\u00e9part du stock.</div>';
+  h+='<div class="card" style="padding:12px"><div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">'
+    +'<div style="flex:1;min-width:110px"><label style="font-size:11px;color:var(--muted);text-transform:uppercase">Date du comptage</label>'
+    +'<input value="'+esc(decDate||today())+'" oninput="decSetDate(this.value)" placeholder="JJ/MM" style="'+decInp()+'"></div>'
+    +'<button class="fab" style="position:static;box-shadow:none;padding:10px 16px;font-size:14px" onclick="decSaveInv()">Enregistrer le comptage</button></div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-top:8px">Laisse vide un article que tu n\u2019as pas compt\u00e9 : il gardera son stock th\u00e9orique.</div></div>';
+  var by={},order=[];
+  arts.forEach(function(o){var f=o.fam||'Divers';if(!by[f]){by[f]=[];order.push(f);}by[f].push(o);});
+  order.forEach(function(f){
+    h+='<div class="grouphead">'+esc(f)+'</div><div class="card">'+by[f].map(function(o){
+      var s=st[o.id],v=decC[o.id]!==undefined?decC[o.id]:'';
+      return '<div class="row" style="cursor:default"><div class="r1"><span class="pname">'+esc(o.art)+'</span>'
+        +'<span style="color:var(--muted);font-size:12.5px;flex:0 0 auto">th. '+decFmt(s.q,s.unit)+'</span></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 90px;gap:6px;align-items:center;margin-top:5px">'
+        +'<input inputmode="decimal" value="'+esc(''+v)+'" placeholder="compt\u00e9 en '+esc(s.unit)+'" oninput="decCompte(\''+o.id+'\',this.value)" style="'+decInp()+'">'
+        +'<span id="dec_ec_'+o.id+'" style="font-weight:700;text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px"></span></div>'
+        +'<div class="r2"><span>'+esc(decCont(o))+'</span></div></div>';}).join('')+'</div>';});
+  if(decInvs.length){
+    var last=decInvs[decInvs.length-1];
+    var ec=(last.lignes||[]).filter(function(l){return l.th!=null&&Math.abs(laboNum(l.q)-laboNum(l.th))>0.0001;})
+      .sort(function(a,b){return Math.abs(laboNum(b.q)-laboNum(b.th))-Math.abs(laboNum(a.q)-laboNum(a.th));});
+    h+='<div class="grouphead">Dernier comptage \u2014 '+esc(last.date||'')+' ('+((last.lignes||[]).length)+' articles, '+ec.length+' \u00e9cart'+(ec.length>1?'s':'')+')</div><div class="card">';
+    h+=ec.slice(0,40).map(function(l){var o=decIdx()[l.inv],d=laboNum(l.q)-laboNum(l.th);
+      return '<div class="row" style="cursor:default"><div class="r1"><span class="pname">'+esc(o?o.art:l.inv)+'</span>'
+        +'<span class="price" style="color:'+(d<0?'var(--urgent-ink)':'var(--gold)')+'">'+(d>0?'+':'')+decFmt(d,l.unit)+'</span></div>'
+        +'<div class="r2"><span>th\u00e9orique '+decFmt(laboNum(l.th),l.unit)+'</span><span>compt\u00e9 '+decFmt(laboNum(l.q),l.unit)+'</span></div></div>';}).join('');
+    if(!ec.length)h+='<div class="row" style="cursor:default"><span class="pname">Aucun \u00e9cart \u2014 th\u00e9orique et r\u00e9el align\u00e9s.</span></div>';
+    h+='<div class="row" style="cursor:default"><button onclick="decDelInv(\''+last.key+'\')" style="border:1px solid var(--line);background:var(--surface);color:var(--urgent-ink);border-radius:7px;padding:5px 11px;font-size:12.5px;cursor:pointer">Supprimer ce comptage</button></div></div>';}
+  return h;}
+function vDecLiens(){
+  var ings=decIngs(),arts=decArts();
+  var opts=function(sel){return '<option value="">\u2014 ne pas d\u00e9compter \u2014</option>'+arts.map(function(o){
+    return '<option value="'+o.id+'"'+(sel===o.id?' selected':'')+'>'+esc(o.art)+' ('+esc(o.fam)+')</option>';}).join('');};
+  var h='<div class="legend">\ud83d\udd17 Chaque ingr\u00e9dient des recettes valid\u00e9es est reli\u00e9 \u00e0 un article de l\u2019inventaire. La proposition automatique est un rapprochement de noms \u2014 <b>v\u00e9rifie-la</b>. Ton choix est partag\u00e9 avec l\u2019\u00e9quipe.</div>';
+  if(!ings.length)return h+'<div class="empty">Aucune recette valid\u00e9e au Labo pour l\u2019instant.<br>Ouvre un plat dans le \ud83e\uddea Labo, r\u00e8gle les grammages, enregistre : il appara\u00eetra ici.</div>';
+  var lie=0;ings.forEach(function(i){if(decLink(i))lie++;});
+  h+='<div class="statgrid"><div class="stat"><b>'+ings.length+'</b><span>ingr\u00e9dients des recettes valid\u00e9es</span></div>'
+    +'<div class="stat"><b>'+lie+'</b><span>reli\u00e9s \u00e0 un article</span></div></div>';
+  h+='<div class="card">'+ings.map(function(i){
+    var cur=decLink(i),manuel=Object.prototype.hasOwnProperty.call(decLiens,i),art=decIdx()[cur];
+    return '<div class="row" style="cursor:default"><div class="r1"><span class="pname">'+esc(i)+'</span>'
+      +(cur?'<span class="chip '+(manuel?'ok':'gold')+'">'+(manuel?'valid\u00e9':'propos\u00e9')+'</span>':'<span class="chip warn">non reli\u00e9</span>')+'</div>'
+      +'<select onchange="decSetLien(\''+esc(i).replace(/'/g,"\\'")+'\',this.value)" style="'+decInp()+';margin-top:6px">'+opts(cur)+'</select>'
+      +(art?'<div class="r2"><span>stock de d\u00e9part : '+esc(decCont(art))+'</span></div>':'')+'</div>';}).join('')+'</div>';
+  return h;}
+function vDec(){
+  var h=decTabs();
+  if(decSub==='stock')return h+vDecStock();
+  if(decSub==='ecarts')return h+vDecEcarts();
+  if(decSub==='liens')return h+vDecLiens();
+  return h+vDecSaisie();}
+/* ---------- fin DECOMPTE ---------- */
 /* ---------- boot ---------- */
 function setWho(w){who=w;try{localStorage.setItem('gm_who',w);}catch(e){}
   $('#wj').classList.toggle('on',w==='Julien');$('#wa').classList.toggle('on',w==='Alix');}
@@ -614,6 +886,10 @@ function startSubs(){
   fdb.child('ajouts').on('value',s=>{const v=s.val()||{};ajouts=Object.keys(v).map(k=>Object.assign({id:'a-'+k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
   fdb.child('notes').on('value',s=>{const v=s.val()||{};notes=Object.keys(v).map(k=>v[k]).sort((a,b)=>(a.ts||0)-(b.ts||0));render();});
   fdb.child('creations').on('value',s=>{const v=s.val()||{};creations=Object.keys(v).map(k=>Object.assign({key:k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
+  fdb.child('decompte/services').on('value',s=>{const v=s.val()||{};decServices=Object.keys(v).map(k=>Object.assign({key:k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
+  fdb.child('decompte/entrees').on('value',s=>{const v=s.val()||{};decEntrees=Object.keys(v).map(k=>Object.assign({key:k},v[k])).sort((a,b)=>(b.ts||0)-(a.ts||0));render();});
+  fdb.child('decompte/inventaires').on('value',s=>{const v=s.val()||{};decInvs=Object.keys(v).map(k=>Object.assign({key:k},v[k])).sort((a,b)=>(a.ts||0)-(b.ts||0));render();});
+  fdb.child('decompte/liens').on('value',s=>{const v=s.val()||{};decLiens={};Object.keys(v).forEach(k=>{if(v[k]&&v[k].ing!==undefined)decLiens[v[k].ing]=v[k].inv||'';});render();});
 }
 function unlockUI(){$('#lock').style.display='none';}
 const FIREBASE_CONFIG={apiKey:"AIzaSyBsocdWNBUchsa9QDcuMmqyj34MbpJpzcw",authDomain:"lido-plage.firebaseapp.com",databaseURL:"https://lido-plage-default-rtdb.europe-west1.firebasedatabase.app",projectId:"lido-plage",storageBucket:"lido-plage.firebasestorage.app"};
