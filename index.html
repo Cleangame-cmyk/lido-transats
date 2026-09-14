@@ -318,6 +318,53 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 
 @media (min-width:520px){ .half{font-size:10.5px} .transat .num{font-size:10.5px} .transat{height:64px} }
 @media (max-width:359px){ .transat{height:70px} .grid{gap:4px} #plage{padding:8px 5px 120px} }
+
+/* ---- rentabilité (privé) ---- */
+.renta{background:var(--card);border:1px solid var(--gold-soft);border-radius:14px;padding:12px 13px;margin:0 2px 12px}
+.renta.locked{background:#f4efe2;border-style:dashed}
+.renta-lock{display:flex;flex-direction:column;gap:8px}
+.renta-lock>span{font-weight:700;color:var(--green);font-size:13.5px}
+.rl-in{display:flex;gap:8px}
+.rl-in input{flex:1;border:1.5px solid var(--gold-soft);border-radius:9px;padding:9px 11px;font-size:15px;font-family:inherit;background:#fff}
+.renta-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.renta-top b{color:var(--green);font-size:14.5px}
+.ref-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.ref-row>div{background:#fff;border:1px solid var(--gold-soft);border-radius:10px;padding:7px 8px;text-align:center}
+.ref-row span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:#a5946a}
+.ref-row b{display:block;font-size:16px;color:var(--green);margin:1px 0}
+.ref-row small{display:block;font-size:10px;color:#9a8a63}
+.rk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){ .rk-grid{grid-template-columns:1fr} }
+.rk-col h6,.type-tbl+*{margin:0}
+h6{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#a5946a}
+.rk-line{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 7px;background:#fff;border:1px solid var(--gold-soft);border-radius:9px;margin-bottom:5px;cursor:pointer}
+.rk-n{font-size:12.5px;font-weight:700;color:#4b4330;line-height:1.15}
+.rk-n small{display:block;font-weight:400;font-size:10.5px;color:#9a8a63}
+.rk-v{font-size:13.5px;font-weight:800;color:var(--green);text-align:right;white-space:nowrap}
+.rk-v small{display:block;font-weight:600;font-size:10.5px;color:#8a7a52}
+.rk-v.neg,b.neg,.tot.neg b{color:var(--danger)}
+.type-tbl{display:flex;flex-direction:column;gap:4px}
+.type-line{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;font-size:12.5px;padding:5px 7px;background:#fff;border:1px solid var(--gold-soft);border-radius:8px}
+.type-line small{color:#a5946a}
+.type-line b{color:var(--green);min-width:44px;text-align:right}
+.type-line .tl-c{color:#6b5d34;min-width:64px;text-align:right;font-size:12px}
+.mrow{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0 2px}
+.mrow>div{background:#fff;border:1px solid var(--gold-soft);border-radius:10px;padding:7px 6px;text-align:center}
+.mrow span{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;color:#a5946a}
+.mrow b{display:block;font-size:15px;color:var(--green);margin:1px 0}
+.mrow small{display:block;font-size:9.5px;color:#9a8a63}
+.mrow>div.ok{border-color:#8bbf9a;background:#eef6ef}
+.mrow>div.bad{border-color:#e0b3ad;background:#faf0ee}
+.dl-head{display:grid;grid-template-columns:1fr 62px 46px 60px 26px;gap:5px;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;color:#a5946a;margin:2px 0}
+.dl-row{display:grid;grid-template-columns:1fr 62px 46px 60px 26px;gap:5px;align-items:center;padding:3px 0}
+.dl-row input{width:100%;border:1.5px solid var(--gold-soft);border-radius:8px;padding:7px 6px;font-size:14px;font-family:inherit;background:#fff}
+.dl-row b{font-size:12px;color:var(--green);text-align:right}
+.dl-x{border:none;background:#f6e3e0;color:var(--danger);border-radius:7px;padding:6px 0;font-size:12px;cursor:pointer}
+.n1-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 6px}
+.n1-grid label{display:flex;flex-direction:column;font-size:10px;color:#a5946a;gap:2px}
+.n1-grid input{border:1.5px solid var(--gold-soft);border-radius:8px;padding:7px 5px;font-size:13px;font-family:inherit;background:#fff;text-align:center}
+h6.ph{margin:12px 0 6px;color:var(--green);font-size:12px}
+.renta-lockfiche{background:#f4efe2;border-style:dashed}
 </style>
 </head>
 <body>
@@ -409,6 +456,7 @@ header{position:sticky;top:0;z-index:40;background:var(--green);color:#fff;
 <div id="cal">
   <div id="calList">
     <div class="rem-box" id="calRem"></div>
+    <div id="rentaPanel"></div>
     <div id="calItems"></div>
   </div>
   <div id="calFiche" style="display:none"></div>
@@ -1288,7 +1336,7 @@ document.getElementById('listBtn').addEventListener('click',()=>{
 
 /* ---------- disposition ---------- */
 document.getElementById('dispoBtn').addEventListener('click',()=>{
-  if(view==='cal'){ openParams(); return; }
+  if(view==='cal'){ if(rentaUnlocked){ openParams(); } else { renderCal(); const pi=document.getElementById('pinInput'); if(pi) pi.focus(); } return; }
   if(view==='event'){ openEvCount(); return; }
   if(view==='resto'){ openRAdd(); return; }
   const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
@@ -2008,12 +2056,24 @@ const COST_POSTES = [
   ['divers','Divers et imprévus']
 ];
 const STAFF_POSTES = ['Barman renfort','Serveur extra','Runner / commis','Renfort cuisine','Plonge','Régisseur / responsable'];
-const DEF_PARAMS = { cmCuisine:0.30, cmBoisson:0.22, cmMoyen:0.25, coutHoraire:22, redevance:0.011, tva:0.20 };
+const DEF_PARAMS = { cmCuisine:0.30, cmBoisson:0.22, cmMoyen:0.25, coutHoraire:22, redevance:0.011, tva:0.20,
+  recentJourTTC:3065, joursOuv:26, margeCible:0.55, plancherTete:65, pin:'8300',
+  n1:{1:60134,2:68460,3:79532,4:98399,5:142347,6:187287,7:230146,8:243359,9:105036,10:68499,11:68607,12:67181} };
+const NUM_PARAMS=['cmCuisine','cmBoisson','cmMoyen','coutHoraire','redevance','tva','recentJourTTC','joursOuv','margeCible','plancherTete'];
 let calView='list', calCur=null;
 
-function P(){ if(!state.params) state.params=Object.assign({},DEF_PARAMS);
-  for(const k in DEF_PARAMS) if(typeof state.params[k]!=='number') state.params[k]=DEF_PARAMS[k];
-  return state.params; }
+/* accès verrouillé : l'équipe voit l'agenda, pas les chiffres de marge */
+let rentaUnlocked=false;
+try{ rentaUnlocked = localStorage.getItem('lido-renta-unlock')==='1'; }catch(e){}
+function setUnlock(v){ rentaUnlocked=!!v; try{ localStorage.setItem('lido-renta-unlock', v?'1':'0'); }catch(e){} }
+
+function P(){ if(!state.params||typeof state.params!=='object') state.params={};
+  const p=state.params;
+  for(const k in DEF_PARAMS){ if(p[k]===undefined||p[k]===null) p[k]=(typeof DEF_PARAMS[k]==='object'?JSON.parse(JSON.stringify(DEF_PARAMS[k])):DEF_PARAMS[k]); }
+  NUM_PARAMS.forEach(k=>{ if(typeof p[k]!=='number'||isNaN(p[k])) p[k]=DEF_PARAMS[k]; });
+  if(!p.n1||typeof p.n1!=='object') p.n1=Object.assign({},DEF_PARAMS.n1);
+  if(typeof p.pin!=='string'||!p.pin) p.pin=DEF_PARAMS.pin;
+  return p; }
 function EVTS(){ if(!state.events) state.events={}; return state.events; }
 function evtOfDate(d){ const l=Object.values(EVTS()).filter(e=>e.date===d && e.statut!=='annule'); return l.length?l[0]:null; }
 function evtSorted(){ return Object.values(EVTS()).sort((a,b)=>(a.date||'').localeCompare(b.date||'')); }
@@ -2030,20 +2090,24 @@ function newEvt(){
     client:{soc:'',contact:'',tel:'',mail:''},
     heure:'', heureFin:'', pax:0, paxConf:0,
     espaces:{md:0,tb:0,transats:0,resto:''},
-    offre:{mode:'carte', prixEmpl:0, minConso:0, ticket:0, partBoisson:''},
-    couts:{}, staff:{}, matiere:{mode:'ratio', montant:0},
+    offre:{mode:'devis', prixEmpl:0, minConso:0, ticket:0, partBoisson:''},
+    devisRec:[],
+    couts:{}, staff:{}, matiere:{mode:'devis', montant:0, lignes:[]},
     jourNormal:{remplace:false, caTTC:0},
     reel:{caTTC:0, couverts:0, matiere:0, couts:0, staff:0, lecons:''},
     rappels:[], presta:'', notes:'' };
 }
 
 /* ---------- économie de l'événement (logique de Fiche_evenement_type.xlsx) ---------- */
+function linesTot(L){ return (L||[]).reduce((s,l)=>s+num(l.pu)*num(l.qty),0); }
 function evtCalc(e){
   const p=P(), o=e.offre||{}, es=e.espaces||{};
   const empl=num(es.md)+num(es.tb);
   const pax=num(e.paxConf)||num(e.pax);
   let ttc=0, detail='';
-  if(o.mode==='forfait'){ ttc=empl*num(o.prixEmpl)+pax*num(o.ticket);
+  if(o.mode==='devis'){ ttc=linesTot(e.devisRec); const n=(e.devisRec||[]).filter(l=>num(l.pu)*num(l.qty)).length;
+    detail=n?n+' ligne(s) de devis':'devis vide'; }
+  else if(o.mode==='forfait'){ ttc=empl*num(o.prixEmpl)+pax*num(o.ticket);
     detail=empl+' empl. × '+eur(num(o.prixEmpl))+(num(o.ticket)?' + '+pax+' pers × '+eur(num(o.ticket)):''); }
   else if(o.mode==='minconso'){ const gar=empl*num(o.minConso), att=pax*num(o.ticket);
     ttc=Math.max(gar,att);
@@ -2053,16 +2117,39 @@ function evtCalc(e){
   const pb=String(o.partBoisson||'').trim();
   let cmRatio=p.cmMoyen;
   if(pb!==''){ const b=num(pb)/100; cmRatio=b*p.cmBoisson+(1-b)*p.cmCuisine; }
-  let matiere = (e.matiere&&e.matiere.mode==='saisi') ? num(e.matiere.montant) : caHT*cmRatio;
+  const mm=(e.matiere&&e.matiere.mode)||'ratio';
+  let matiere = mm==='devis' ? linesTot(e.matiere&&e.matiere.lignes)
+              : mm==='saisi' ? num(e.matiere&&e.matiere.montant)
+              : caHT*cmRatio;
   let propres=0; COST_POSTES.forEach(([k])=>{ propres+=num((e.couts||{})[k]); });
   let staffTot=0; STAFF_POSTES.forEach(sp=>{ const s=(e.staff||{})[sp]; if(s) staffTot+=num(s.nb)*num(s.h)*(num(s.taux)||p.coutHoraire); });
   const redev=caHT*p.redevance;
   const contribution=caHT-matiere-redev-propres-staffTot;
+  const margePct = caHT>0 ? contribution/caHT : 0;
+  const teteNet  = pax>0 ? contribution/pax : 0;
+  const prixTeteTTC = pax>0 ? ttc/pax : 0;
+  // repères jour normal
+  const jnFactor=(1-p.cmMoyen-p.redevance);           // proxy contribution d'un service normal
+  const recentJourHT=p.recentJourTTC/(1+p.tva);
+  const recentContrib=recentJourHT*jnFactor;
+  const mois=parseInt((e.date||'').slice(5,7),10)||0;
+  const n1MoisTTC=(p.n1&&p.n1[mois])||0;
+  const n1JourTTC=p.joursOuv>0 ? n1MoisTTC/p.joursOuv : 0;
+  const n1Contrib=(n1JourTTC/(1+p.tva))*jnFactor;
+  const vsRecent=contribution-recentContrib;
+  const vsN1=contribution-n1Contrib;
+  const eqJours=recentContrib>0 ? contribution/recentContrib : 0;
+  // service explicitement remplacé (optionnel)
   const jnHT=num((e.jourNormal||{}).caTTC)/(1+p.tva);
-  const jnContrib=(e.jourNormal&&e.jourNormal.remplace)? jnHT*(1-p.cmMoyen-p.redevance) : 0;
+  const jnContrib=(e.jourNormal&&e.jourNormal.remplace)? jnHT*jnFactor : 0;
   const gain=contribution-jnContrib;
   const plancher=propres+staffTot+matiere+jnContrib;
-  return {empl,pax,ttc,caHT,detail,cmRatio,matiere,propres,staffTot,redev,contribution,jnContrib,gain,plancher};
+  const plancherTete=pax>0 ? plancher/pax : 0;
+  const okCible=margePct>=p.margeCible;
+  const okPlancherTete=prixTeteTTC>=p.plancherTete;
+  return {empl,pax,ttc,caHT,detail,cmRatio,mm,matiere,propres,staffTot,redev,contribution,
+    margePct,teteNet,prixTeteTTC,recentContrib,n1Contrib,n1JourTTC,vsRecent,vsN1,eqJours,
+    jnContrib,gain,plancher,plancherTete,okCible,okPlancherTete};
 }
 function evtReel(e){
   const p=P(), r=e.reel||{};
@@ -2106,6 +2193,7 @@ function renderCal(){
   document.getElementById('calFiche').style.display = calView==='fiche'?'':'none';
   if(calView==='fiche'){ renderFiche(); return; }
   renderRappels();
+  renderRenta();
   const items=document.getElementById('calItems');
   const list=evtSorted();
   const today=todayStr();
@@ -2121,7 +2209,7 @@ function renderCal(){
       '<div class="cc-s">'+(EVT_TYPES[e.type]||'')+
         ' · '+(num(e.paxConf)||num(e.pax)||0)+' pers'+(e.heure?' · '+esc(e.heure):'')+
         (nb?' · '+nb+' empl.':'')+
-        (c.ttc?' · CA prévu '+eur(c.ttc)+' TTC':'')+
+        (rentaUnlocked&&c.ttc?' · CA prévu '+eur(c.ttc)+' TTC':'')+
         ((e.rappels||[]).filter(r=>!r.fait).length?' · <span class="badge-warn">'+(e.rappels||[]).filter(r=>!r.fait).length+' rappel(s)</span>':'')+
       '</div></div>';
   };
@@ -2135,8 +2223,61 @@ function renderCal(){
   const c30=futurs.filter(e=>daysTo(e.date)<=30);
   document.getElementById('clNb').textContent=futurs.length;
   document.getElementById('clPax').textContent=c30.reduce((s,e)=>s+(num(e.paxConf)||num(e.pax)),0);
-  document.getElementById('clCA').textContent=eur(c30.reduce((s,e)=>s+evtCalc(e).ttc,0));
+  document.getElementById('clCA').textContent=rentaUnlocked?eur(c30.reduce((s,e)=>s+evtCalc(e).ttc,0)):'•••';
   document.getElementById('clRem').textContent=allRappels().filter(x=>x.d<=7).length;
+}
+
+/* ---------- panneau rentabilité (privé, code requis) ---------- */
+function renderRenta(){
+  const box=document.getElementById('rentaPanel'); if(!box) return;
+  if(!rentaUnlocked){
+    box.className='renta locked';
+    box.innerHTML='<div class="renta-lock"><span>🔒 Rentabilité & devis — réservé (toi + événementiel)</span>'+
+      '<div class="rl-in"><input id="pinInput" inputmode="numeric" placeholder="code" autocomplete="off">'+
+      '<button class="chip on" id="pinGo">Déverrouiller</button></div>'+
+      '<div id="pinMsg" class="mini" style="color:var(--danger)"></div></div>';
+    document.getElementById('pinGo').addEventListener('click',tryUnlock);
+    const pi=document.getElementById('pinInput');
+    pi.addEventListener('keydown',ev=>{ if(ev.key==='Enter') tryUnlock(); });
+    return;
+  }
+  const p=P();
+  const list=evtSorted().filter(e=>e.statut!=='annule');
+  const withCA=list.map(e=>({e,c:evtCalc(e)})).filter(x=>x.c.ttc>0);
+  // classement par événement (contribution) + rendement (marge %)
+  const byContrib=withCA.slice().sort((a,b)=>b.c.contribution-a.c.contribution);
+  const byMarge=withCA.slice().sort((a,b)=>b.c.margePct-a.c.margePct);
+  // moyenne par type
+  const types={}; withCA.forEach(x=>{ const t=x.e.type||'presta'; (types[t]=types[t]||[]).push(x); });
+  const typeRows=Object.keys(types).map(t=>{
+    const arr=types[t]; const ca=arr.reduce((s,x)=>s+x.c.caHT,0), ct=arr.reduce((s,x)=>s+x.c.contribution,0);
+    return {t, n:arr.length, ca, ct, m: ca>0?ct/ca:0};
+  }).sort((a,b)=>b.m-a.m);
+  const li=(x)=>{ const neg=x.c.contribution<0; return '<div class="rk-line" data-open="'+x.e.id+'">'+
+    '<span class="rk-n">'+esc(x.e.nom||'(sans nom)')+'<small>'+dFR(x.e.date)+' · '+(EVT_TYPES[x.e.type]||'')+'</small></span>'+
+    '<span class="rk-v'+(neg?' neg':'')+'">'+eur(x.c.contribution)+'<small>'+Math.round(x.c.margePct*100)+' % · '+eur(x.c.teteNet)+'/pers</small></span></div>'; };
+  let h='<div class="renta"><div class="renta-top"><b>📊 Rentabilité (privé)</b>'+
+    '<button class="chip" id="rentaLock">🔒 Verrouiller</button></div>';
+  h+='<div class="ref-row"><div><span>Rythme actuel</span><b>'+eur(p.recentJourTTC)+'</b><small>CA/jour ouvré récent</small></div>'+
+     '<div><span>N-1 / jour</span><b>'+eur(Math.round((p.n1[new Date().getMonth()+1]||0)/p.joursOuv))+'</b><small>'+
+     new Date().toLocaleDateString('fr-FR',{month:'long'})+' '+ (new Date().getFullYear()-1) +'</small></div>'+
+     '<div><span>Cible marge</span><b>'+Math.round(p.margeCible*100)+' %</b><small>plancher '+eur(p.plancherTete)+'/pers</small></div></div>';
+  if(!withCA.length){ h+='<p class="mini">Aucun événement chiffré pour l’instant. Renseigne un devis dans une fiche pour voir le classement.</p></div>'; box.className='renta'; box.innerHTML=h;
+    box.querySelector('#rentaLock').addEventListener('click',()=>{ setUnlock(false); renderCal(); }); return; }
+  h+='<div class="rk-grid"><div class="rk-col"><h6>Meilleure contribution €</h6>'+byContrib.slice(0,5).map(li).join('')+'</div>'+
+     '<div class="rk-col"><h6>Meilleur rendement (marge %)</h6>'+byMarge.slice(0,5).map(li).join('')+'</div></div>';
+  h+='<h6 style="margin:10px 2px 4px">Rendement moyen par type</h6><div class="type-tbl">'+
+     typeRows.map(r=>'<div class="type-line"><span>'+(EVT_TYPES[r.t]||r.t)+' <small>×'+r.n+'</small></span>'+
+       '<b'+(r.ct<0?' class="neg"':'')+'>'+Math.round(r.m*100)+' %</b><span class="tl-c">'+eur(r.ct)+'</span></div>').join('')+'</div>';
+  h+='<p class="mini">Touche une ligne pour ouvrir la fiche. « vs jour normal » et « prix plancher » sont détaillés dans chaque fiche.</p></div>';
+  box.className='renta'; box.innerHTML=h;
+  box.querySelector('#rentaLock').addEventListener('click',()=>{ setUnlock(false); renderCal(); });
+  box.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>{ calCur=el.dataset.open; calView='fiche'; renderCal(); window.scrollTo({top:0}); }));
+}
+function tryUnlock(){
+  const pi=document.getElementById('pinInput'); if(!pi) return;
+  if(pi.value.trim()===P().pin){ setUnlock(true); renderCal(); }
+  else { const m=document.getElementById('pinMsg'); if(m) m.textContent='Code incorrect.'; pi.value=''; }
 }
 
 /* ---------- fiche ---------- */
@@ -2144,9 +2285,31 @@ function fld(label,path,val,attrs){ return '<div class="frow"><span>'+label+'</s
   '<input data-f="'+path+'" value="'+esc(val==null?'':val)+'" '+(attrs||'')+'></div>'; }
 function chips(path,cur,map){ return '<div class="chips" style="margin:4px 0 8px">'+Object.keys(map).map(k=>
   '<button class="chip'+(cur===k?' on':'')+'" data-c="'+path+'" data-v="'+k+'">'+map[k]+'</button>').join('')+'</div>'; }
+function linesEditor(base,arr){
+  let h='<div class="dl-head"><span>Désignation</span><span>PU €</span><span>Qté</span><span>Total</span><span></span></div>';
+  h+=(arr||[]).map((l,i)=>{ const t=num(l.pu)*num(l.qty);
+    return '<div class="dl-row">'+
+      '<input data-f="'+base+'.'+i+'.label" value="'+esc(l.label||'')+'" placeholder="désignation">'+
+      '<input data-f="'+base+'.'+i+'.pu" value="'+esc(l.pu==null?'':l.pu)+'" inputmode="decimal">'+
+      '<input data-f="'+base+'.'+i+'.qty" value="'+esc(l.qty==null?'':l.qty)+'" inputmode="decimal">'+
+      '<b>'+eur(t)+'</b>'+
+      '<button class="dl-x" data-delline="'+base+'|'+i+'">✕</button></div>'; }).join('');
+  h+='<div class="plan-btns"><button class="alt" data-addline="'+base+'">＋ Ajouter une ligne</button></div>';
+  return h;
+}
+function lockedFicheNotice(){
+  return '<div class="sec renta-lockfiche"><h4>🔒 Rentabilité & devis</h4>'+
+    '<p class="mini">Réservé (toi + événementiel). Entre le code pour voir/éditer le devis, les coûts et les marges.</p>'+
+    '<div class="rl-in"><input id="pinInputF" inputmode="numeric" placeholder="code" autocomplete="off">'+
+    '<button class="chip on" id="pinGoF">Déverrouiller</button></div>'+
+    '<div id="pinMsgF" class="mini" style="color:var(--danger)"></div></div>';
+}
 
 function renderFiche(){
   const e=EVTS()[calCur]; if(!e){ calView='list'; renderCal(); return; }
+  if(!Array.isArray(e.devisRec)) e.devisRec=[];
+  if(!e.matiere||typeof e.matiere!=='object') e.matiere={mode:'ratio',montant:0,lignes:[]};
+  if(!Array.isArray(e.matiere.lignes)) e.matiere.lignes=[];
   const c=evtCalc(e), p=P(), r=evtReel(e);
   const box=document.getElementById('calFiche');
   let h='';
@@ -2184,16 +2347,18 @@ function renderFiche(){
      '<button class="alt" id="fPose">📌 Poser la résa sur le plan</button></div>'+
      '<p class="mini">« Poser » crée la réservation nominative sur le plan du jour et met le stock d’emplacements à niveau.</p></div>';
 
-  h+='<div class="sec"><h4>Offre & chiffre d’affaires prévu</h4>'+
-     chips('offre.mode',e.offre.mode,{carte:'À la carte',forfait:'Forfait',minconso:'Min. conso'})+
+  if(rentaUnlocked){
+  h+='<div class="sec"><h4>Offre & recettes prévues</h4>'+
+     chips('offre.mode',e.offre.mode,{devis:'Devis (lignes)',forfait:'Forfait',minconso:'Min. conso',carte:'À la carte'})+
+     (e.offre.mode==='devis'? linesEditor('devisRec', e.devisRec) : '')+
      (e.offre.mode==='forfait'?fld('Prix par emplacement (TTC)','offre.prixEmpl',e.offre.prixEmpl,'inputmode="decimal"'):'')+
      (e.offre.mode==='minconso'?fld('Minimum de conso / emplacement (TTC)','offre.minConso',e.offre.minConso,'inputmode="decimal"'):'')+
-     fld('Ticket moyen attendu / pers (TTC)','offre.ticket',e.offre.ticket,'inputmode="decimal"')+
-     fld('Part boissons (%) — optionnel','offre.partBoisson',e.offre.partBoisson,'inputmode="decimal" placeholder="ex. 60"')+
+     (e.offre.mode!=='devis'?fld('Ticket moyen attendu / pers (TTC)','offre.ticket',e.offre.ticket,'inputmode="decimal"'):'')+
+     (e.offre.mode!=='devis'?fld('Part boissons (%) — optionnel','offre.partBoisson',e.offre.partBoisson,'inputmode="decimal" placeholder="ex. 60"'):'')+
      '<div class="subline"><span>'+esc(c.detail)+'</span></div>'+
      '<div class="tot"><span>CA prévu TTC</span><b>'+eur(c.ttc)+'</b></div>'+
-     '<div class="subline"><span>soit HT (TVA '+Math.round(p.tva*100)+' %)</span><b>'+eur(c.caHT)+'</b></div>'+
-     '<p class="mini">Le prix des prestations se saisit TTC (comme en caisse) ; tout le calcul de marge se fait en HT.</p></div>';
+     '<div class="subline"><span>soit HT (TVA '+Math.round(p.tva*100)+' %)'+(c.pax?' · '+eur(c.prixTeteTTC)+'/pers TTC':'')+'</span><b>'+eur(c.caHT)+'</b></div>'+
+     '<p class="mini">Devis : une ligne par prestation vendue (désignation · prix unitaire TTC · quantité). La marge se calcule en HT.</p></div>';
 
   h+='<div class="sec"><h4>Coûts propres à l’événement</h4>'+
      COST_POSTES.map(([k,l])=>fld(l,'couts.'+k,(e.couts||{})[k],'inputmode="decimal" placeholder="0"')).join('')+
@@ -2211,14 +2376,16 @@ function renderFiche(){
      '<div class="tot"><span>Total personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
      '<p class="mini">Coût horaire chargé : '+eur2(p.coutHoraire)+'/h (paramètre maison, ⚙). Penser aux majorations de nuit et dimanche.</p></div>';
 
-  h+='<div class="sec"><h4>Coût matière</h4>'+
-     chips('matiere.mode',(e.matiere||{}).mode||'ratio',{ratio:'Par ratio',saisi:'Montant connu'})+
-     ((e.matiere||{}).mode==='saisi'? fld('Coût matière réel estimé (HT)','matiere.montant',e.matiere.montant,'inputmode="decimal"')
-       : '<div class="subline"><span>Ratio appliqué</span><b>'+Math.round(c.cmRatio*1000)/10+' %</b></div>')+
+  h+='<div class="sec"><h4>Coût matière (achats)</h4>'+
+     chips('matiere.mode',(e.matiere||{}).mode||'ratio',{devis:'Lignes d’achat',saisi:'Montant connu',ratio:'Par ratio'})+
+     ((e.matiere||{}).mode==='devis'? linesEditor('matiere.lignes', (e.matiere||{}).lignes) : '')+
+     ((e.matiere||{}).mode==='saisi'? fld('Coût matière réel estimé (HT)','matiere.montant',e.matiere.montant,'inputmode="decimal"') : '')+
+     ((e.matiere||{}).mode!=='devis'&&(e.matiere||{}).mode!=='saisi'? '<div class="subline"><span>Ratio appliqué</span><b>'+Math.round(c.cmRatio*1000)/10+' %</b></div>' : '')+
      '<div class="tot"><span>Coût matière</span><b>'+eur(c.matiere)+'</b></div>'+
-     '<p class="mini">Le ratio vient des paramètres maison (cuisine '+Math.round(p.cmCuisine*100)+' % · boissons '+Math.round(p.cmBoisson*100)+' %). Dès que le coût boissons est sorti du module stock, le saisir en « montant connu ».</p></div>';
+     '<p class="mini">« Lignes d’achat » : entre le prix d’achat unitaire et la quantité prévue de chaque produit (montants HT). Sinon montant connu, ou ratio maison (cuisine '+Math.round(p.cmCuisine*100)+' % · boissons '+Math.round(p.cmBoisson*100)+' %).</p></div>';
 
   const negClass=c.contribution<0?' neg':'';
+  const yN1=(parseInt((e.date||'').slice(0,4),10)||0)-1;
   h+='<div class="sec"><h4>Résultat prévu</h4>'+
      '<div class="subline"><span>CA HT</span><b>'+eur(c.caHT)+'</b></div>'+
      '<div class="subline"><span>− Coût matière</span><b>'+eur(c.matiere)+'</b></div>'+
@@ -2226,13 +2393,24 @@ function renderFiche(){
      '<div class="subline"><span>− Coûts propres</span><b>'+eur(c.propres)+'</b></div>'+
      '<div class="subline"><span>− Personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
      '<div class="tot big'+negClass+'"><span>Contribution nette</span><b>'+eur(c.contribution)+'</b></div>'+
-     '<div class="frow" style="margin-top:8px"><span>L’événement remplace un service normal</span>'+
+     '<div class="mrow"><div class="'+(c.okCible?'ok':'bad')+'"><span>Marge nette</span><b>'+Math.round(c.margePct*100)+' %</b><small>cible '+Math.round(p.margeCible*100)+' %</small></div>'+
+       '<div><span>Net / pers</span><b>'+eur(c.teteNet)+'</b><small>'+(c.pax||0)+' pers</small></div>'+
+       '<div class="'+(c.okPlancherTete?'ok':'bad')+'"><span>Prix / pers</span><b>'+eur(c.prixTeteTTC)+'</b><small>plancher '+eur(p.plancherTete)+'</small></div></div>'+
+     '<h6 style="margin:12px 2px 4px">Vaut-il le coup ? (vs activité normale)</h6>'+
+     '<div class="subline"><span>Contribution d’un jour ouvré récent (~'+eur(p.recentJourTTC)+' TTC)</span><b>'+eur(c.recentContrib)+'</b></div>'+
+     '<div class="tot'+(c.vsRecent<0?' neg':'')+'"><span>vs rythme actuel</span><b>'+(c.vsRecent>=0?'+':'')+eur(c.vsRecent)+'</b></div>'+
+     '<div class="subline"><span>Contribution d’un jour N-1 ('+dFR(e.date,{month:'long'})+' '+yN1+', '+eur(Math.round(c.n1JourTTC))+' TTC)</span><b>'+eur(c.n1Contrib)+'</b></div>'+
+     '<div class="tot'+(c.vsN1<0?' neg':'')+'"><span>vs N-1</span><b>'+(c.vsN1>=0?'+':'')+eur(c.vsN1)+'</b></div>'+
+     '<div class="subline"><span>Équivaut à</span><b>'+(c.eqJours>0?(Math.round(c.eqJours*10)/10)+' jour(s) normal(aux)':'—')+'</b></div>'+
+     '<div class="frow" style="margin-top:10px"><span>Cet événement remplace un service (au lieu de s’ajouter)</span>'+
        '<button class="chip'+((e.jourNormal||{}).remplace?' on':'')+'" data-t="jourNormal.remplace">'+((e.jourNormal||{}).remplace?'Oui':'Non')+'</button></div>'+
-     ((e.jourNormal||{}).remplace? fld('CA TTC d’un jour normal comparable','jourNormal.caTTC',e.jourNormal.caTTC,'inputmode="decimal"')+
-        '<div class="subline"><span>Contribution d’un jour normal</span><b>'+eur(c.jnContrib)+'</b></div>':'')+
-     '<div class="tot'+(c.gain<0?' neg':'')+'"><span>GAIN vs jour normal</span><b>'+eur(c.gain)+'</b></div>'+
-     '<div class="subline" style="margin-top:8px"><span>Prix plancher d’une privatisation (HT)</span><b>'+eur(c.plancher)+'</b></div>'+
-     '<p class="mini">Prix plancher = coûts propres + personnel + coût matière + contribution du service remplacé. En dessous, la privatisation coûte de l’argent.</p></div>';
+     ((e.jourNormal||{}).remplace? fld('CA TTC du service remplacé (sinon = rythme actuel)','jourNormal.caTTC',e.jourNormal.caTTC,'inputmode="decimal"')+
+        '<div class="subline"><span>Contribution du service remplacé</span><b>'+eur(c.jnContrib)+'</b></div>'+
+        '<div class="tot'+(c.gain<0?' neg':'')+'"><span>GAIN net vs ce service</span><b>'+(c.gain>=0?'+':'')+eur(c.gain)+'</b></div>':'')+
+     '<div class="subline" style="margin-top:8px"><span>Prix plancher total (HT)</span><b>'+eur(c.plancher)+'</b></div>'+
+     '<div class="subline"><span>soit par personne</span><b>'+eur(c.plancherTete)+'</b></div>'+
+     '<p class="mini">Plancher = coûts propres + personnel + matière (+ contribution du service remplacé s’il y a lieu). En dessous, la presta perd de l’argent. Cible : marge ≥ '+Math.round(p.margeCible*100)+' % et prix ≥ '+eur(p.plancherTete)+'/pers.</p></div>';
+  } else { h+=lockedFicheNotice(); }
 
   h+='<div class="sec"><h4>Rappels</h4>'+
      ((e.rappels||[]).length? e.rappels.map(rr=>'<div class="frow"><span>'+(rr.fait?'✅ ':'⏰ ')+esc(rr.texte)+
@@ -2248,6 +2426,8 @@ function renderFiche(){
      '<div style="height:8px"></div>'+
      '<textarea data-f="notes" placeholder="notes internes, contraintes, matériel…">'+esc(e.notes||'')+'</textarea></div>';
 
+  if(!e.reel||typeof e.reel!=='object') e.reel={caTTC:0,couverts:0,matiere:0,couts:0,staff:0,lecons:''};
+  if(rentaUnlocked){
   h+='<div class="sec"><h4>Bilan réel (après l’événement)</h4>'+
      fld('CA réel TTC','reel.caTTC',e.reel.caTTC,'inputmode="decimal"')+
      fld('Couverts / personnes réelles','reel.couverts',e.reel.couverts,'inputmode="numeric"')+
@@ -2257,6 +2437,7 @@ function renderFiche(){
      '<div class="tot"><span>Contribution réelle</span><b>'+eur(r.contribution)+'</b></div>'+
      (num(e.reel.caTTC)? '<div class="subline"><span>Écart vs prévu</span><b>'+eur(r.contribution-c.contribution)+'</b></div>':'')+
      '<div style="height:8px"></div><textarea data-f="reel.lecons" placeholder="Enseignements : fréquentation sur-estimée ? poste oublié ? le referait-on ?">'+esc(e.reel.lecons||'')+'</textarea></div>';
+  }
 
   h+='<div class="plan-btns" style="margin:14px 2px 0"><button class="alt" id="fDup">⧉ Dupliquer</button>'+
      '<button class="alt" id="fDel" style="color:var(--danger)">🗑 Supprimer</button></div>';
@@ -2278,6 +2459,18 @@ function bindFiche(e){
     setPath(e,b.dataset.c,b.dataset.v); persistEvents(); renderFiche(); }));
   box.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{
     const cur=b.dataset.t.split('.').reduce((o,k)=>o&&o[k],e); setPath(e,b.dataset.t,!cur); persistEvents(); renderFiche(); }));
+  box.querySelectorAll('[data-addline]').forEach(b=>b.addEventListener('click',()=>{
+    const base=b.dataset.addline; const arr=base.split('.').reduce((o,k)=>o&&o[k],e);
+    if(Array.isArray(arr)){ arr.push({label:'',pu:'',qty:1}); persistEvents(); renderFiche(); } }));
+  box.querySelectorAll('[data-delline]').forEach(b=>b.addEventListener('click',()=>{
+    const [base,idx]=b.dataset.delline.split('|'); const arr=base.split('.').reduce((o,k)=>o&&o[k],e);
+    if(Array.isArray(arr)){ arr.splice(parseInt(idx,10),1); persistEvents(); renderFiche(); } }));
+  const pgf=document.getElementById('pinGoF');
+  if(pgf){ const go=()=>{ const pi=document.getElementById('pinInputF');
+      if(pi&&pi.value.trim()===P().pin){ setUnlock(true); renderFiche(); }
+      else { const m=document.getElementById('pinMsgF'); if(m)m.textContent='Code incorrect.'; if(pi)pi.value=''; } };
+    pgf.addEventListener('click',go);
+    const pif=document.getElementById('pinInputF'); if(pif) pif.addEventListener('keydown',ev=>{ if(ev.key==='Enter') go(); }); }
   box.querySelectorAll('[data-remtog]').forEach(b=>b.addEventListener('click',()=>{
     const rr=(e.rappels||[]).find(x=>x.id===b.dataset.remtog); if(rr) rr.fait=!rr.fait; persistEvents(); renderFiche(); }));
   box.querySelectorAll('[data-remdel]').forEach(b=>b.addEventListener('click',()=>{
@@ -2346,21 +2539,36 @@ function EVO(date){
 function openParams(){
   const p=P();
   const b=document.getElementById('parBody');
+  const mn=['','janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  const n1grid='<div class="n1-grid">'+[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>
+    '<label>'+mn[m]+'<input data-n1="'+m+'" value="'+esc(p.n1[m]||0)+'" inputmode="numeric"></label>').join('')+'</div>';
   b.innerHTML='<h3>Paramètres maison</h3>'+
+    '<h6 class="ph">Ratios & coûts</h6>'+
     fld('Coût matière cuisine (%)','__cmCuisine',Math.round(p.cmCuisine*100),'inputmode="decimal"')+
     fld('Coût matière boissons (%)','__cmBoisson',Math.round(p.cmBoisson*100),'inputmode="decimal"')+
     fld('Coût matière moyen (%)','__cmMoyen',Math.round(p.cmMoyen*100),'inputmode="decimal"')+
     fld('Coût horaire chargé (€/h)','__coutHoraire',p.coutHoraire,'inputmode="decimal"')+
     fld('Redevance concession (% du CA HT)','__redevance',(p.redevance*100).toFixed(1).replace('.',','),'inputmode="decimal"')+
     fld('TVA moyenne (%)','__tva',Math.round(p.tva*100),'inputmode="decimal"')+
-    '<p class="hint">Valeurs reprises de ta fiche événement type (cuisine 30 % · boissons 22 % · 22 €/h) et du sous-traité (redevance 1,1 % du CA HT global). Modifiables ici, elles s’appliquent à tous les événements.</p>'+
+    '<h6 class="ph">Repères de comparaison</h6>'+
+    fld('Rythme actuel — CA/jour ouvré (TTC)','__recentJourTTC',p.recentJourTTC,'inputmode="decimal"')+
+    fld('Jours ouvrés / mois','__joursOuv',p.joursOuv,'inputmode="numeric"')+
+    fld('Marge nette cible (%)','__margeCible',Math.round(p.margeCible*100),'inputmode="decimal"')+
+    fld('Prix plancher / pers (TTC)','__plancherTete',p.plancherTete,'inputmode="decimal"')+
+    '<p class="hint">CA mensuel N-1 (réel FEC 2025, TTC) — sert au « vs N-1 » selon le mois de l’événement.</p>'+n1grid+
+    '<h6 class="ph">Accès</h6>'+
+    fld('Code d’accès rentabilité','__pin',p.pin,'inputmode="numeric"')+
+    '<p class="hint">Ratios repris de la fiche type (cuisine 30 % · boissons 22 % · 22 €/h) + sous-traité (redevance 1,1 %). Rythme actuel = réel récent ; N-1 = FEC 2025. Appliqués à tous les événements.</p>'+
     '<div class="actions"><button class="btn ghost" id="parCancel">Fermer</button><button class="btn primary" id="parGo">Enregistrer</button></div>';
-  b.querySelectorAll('[data-f]').forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') i.blur(); }));
+  b.querySelectorAll('[data-f],[data-n1]').forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') i.blur(); }));
   document.getElementById('parCancel').addEventListener('click',closeSheets);
   document.getElementById('parGo').addEventListener('click',()=>{
     const g=(k)=>num(b.querySelector('[data-f="__'+k+'"]').value);
     p.cmCuisine=g('cmCuisine')/100; p.cmBoisson=g('cmBoisson')/100; p.cmMoyen=g('cmMoyen')/100;
     p.coutHoraire=g('coutHoraire'); p.redevance=g('redevance')/100; p.tva=g('tva')/100;
+    p.recentJourTTC=g('recentJourTTC'); p.joursOuv=g('joursOuv')||26; p.margeCible=g('margeCible')/100; p.plancherTete=g('plancherTete');
+    const pinv=b.querySelector('[data-f="__pin"]').value.trim(); if(pinv) p.pin=pinv;
+    b.querySelectorAll('[data-n1]').forEach(i=>{ p.n1[i.dataset.n1]=num(i.value); });
     persistEvents(); closeSheets(); renderCal();
   });
   showSheet(document.getElementById('parSheet'));
@@ -2598,5 +2806,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v21 fix-sync-plan (tables) -->
+<!-- v22 rentabilite-devis (agenda prive) -->
 </html>
