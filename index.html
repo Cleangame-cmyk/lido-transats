@@ -365,6 +365,17 @@ h6{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;co
 .n1-grid input{border:1.5px solid var(--gold-soft);border-radius:8px;padding:7px 5px;font-size:13px;font-family:inherit;background:#fff;text-align:center}
 h6.ph{margin:12px 0 6px;color:var(--green);font-size:12px}
 .renta-lockfiche{background:#f4efe2;border-style:dashed}
+.verdict{text-align:center}
+.verdict .v-badge{font-size:17px;font-weight:800;margin:2px 0 6px;line-height:1.2}
+.verdict .vtxt{font-size:13.5px;color:#4b4330;margin:0 0 4px;line-height:1.35}
+.verdict.v-good{background:#eef6ef;border-color:#8bbf9a}
+.verdict.v-good .v-badge{color:#2f7d4f}
+.verdict.v-mid{background:#fbf3e3;border-color:#e0c07a}
+.verdict.v-mid .v-badge{color:#b0791e}
+.verdict.v-bad{background:#faf0ee;border-color:#e0b3ad}
+.verdict.v-bad .v-badge{color:var(--danger)}
+.verdict.v-none{background:#f4efe2;border-style:dashed}
+.verdict.v-none .v-badge{color:#8a7a52}
 </style>
 </head>
 <body>
@@ -1336,7 +1347,7 @@ document.getElementById('listBtn').addEventListener('click',()=>{
 
 /* ---------- disposition ---------- */
 document.getElementById('dispoBtn').addEventListener('click',()=>{
-  if(view==='cal'){ if(rentaUnlocked){ openParams(); } else { renderCal(); const pi=document.getElementById('pinInput'); if(pi) pi.focus(); } return; }
+  if(view==='cal'){ if(rentaLevel>=2){ openParams(); } else { renderCal(); const pi=document.getElementById('pinInput'); if(pi) pi.focus(); } return; }
   if(view==='event'){ openEvCount(); return; }
   if(view==='resto'){ openRAdd(); return; }
   const day=getDay(currentDate); const rows=document.getElementById('dispoRows');
@@ -2057,22 +2068,24 @@ const COST_POSTES = [
 ];
 const STAFF_POSTES = ['Barman renfort','Serveur extra','Runner / commis','Renfort cuisine','Plonge','Régisseur / responsable'];
 const DEF_PARAMS = { cmCuisine:0.30, cmBoisson:0.22, cmMoyen:0.25, coutHoraire:22, redevance:0.011, tva:0.20,
-  recentJourTTC:3065, joursOuv:26, margeCible:0.55, plancherTete:65, pin:'8300',
+  recentJourTTC:3065, joursOuv:26, margeCible:0.55, plancherTete:65, pinPatron:'8300', pinGars:'1111',
   n1:{1:60134,2:68460,3:79532,4:98399,5:142347,6:187287,7:230146,8:243359,9:105036,10:68499,11:68607,12:67181} };
 const NUM_PARAMS=['cmCuisine','cmBoisson','cmMoyen','coutHoraire','redevance','tva','recentJourTTC','joursOuv','margeCible','plancherTete'];
 let calView='list', calCur=null;
 
 /* accès verrouillé : l'équipe voit l'agenda, pas les chiffres de marge */
-let rentaUnlocked=false;
-try{ rentaUnlocked = localStorage.getItem('lido-renta-unlock')==='1'; }catch(e){}
-function setUnlock(v){ rentaUnlocked=!!v; try{ localStorage.setItem('lido-renta-unlock', v?'1':'0'); }catch(e){} }
+let rentaLevel=0; // 0 = équipe (agenda) · 1 = gars (verdict, sans chiffres) · 2 = patron (tous les chiffres)
+try{ rentaLevel = parseInt(localStorage.getItem('lido-renta-level')||'0',10)||0; }catch(e){}
+function setLevel(n){ rentaLevel=n; try{ localStorage.setItem('lido-renta-level', String(n)); }catch(e){} }
+function levelFromCode(code){ const p=P(); code=String(code==null?'':code).trim(); if(code&&code===p.pinPatron) return 2; if(code&&code===p.pinGars) return 1; return 0; }
 
 function P(){ if(!state.params||typeof state.params!=='object') state.params={};
   const p=state.params;
   for(const k in DEF_PARAMS){ if(p[k]===undefined||p[k]===null) p[k]=(typeof DEF_PARAMS[k]==='object'?JSON.parse(JSON.stringify(DEF_PARAMS[k])):DEF_PARAMS[k]); }
   NUM_PARAMS.forEach(k=>{ if(typeof p[k]!=='number'||isNaN(p[k])) p[k]=DEF_PARAMS[k]; });
   if(!p.n1||typeof p.n1!=='object') p.n1=Object.assign({},DEF_PARAMS.n1);
-  if(typeof p.pin!=='string'||!p.pin) p.pin=DEF_PARAMS.pin;
+  if(typeof p.pinPatron!=='string'||!p.pinPatron) p.pinPatron=(typeof p.pin==='string'&&p.pin)?p.pin:DEF_PARAMS.pinPatron;
+  if(typeof p.pinGars!=='string'||!p.pinGars) p.pinGars=DEF_PARAMS.pinGars;
   return p; }
 function EVTS(){ if(!state.events) state.events={}; return state.events; }
 function evtOfDate(d){ const l=Object.values(EVTS()).filter(e=>e.date===d && e.statut!=='annule'); return l.length?l[0]:null; }
@@ -2209,7 +2222,7 @@ function renderCal(){
       '<div class="cc-s">'+(EVT_TYPES[e.type]||'')+
         ' · '+(num(e.paxConf)||num(e.pax)||0)+' pers'+(e.heure?' · '+esc(e.heure):'')+
         (nb?' · '+nb+' empl.':'')+
-        (rentaUnlocked&&c.ttc?' · CA prévu '+eur(c.ttc)+' TTC':'')+
+        (rentaLevel>=2&&c.ttc?' · CA prévu '+eur(c.ttc)+' TTC':'')+
         ((e.rappels||[]).filter(r=>!r.fait).length?' · <span class="badge-warn">'+(e.rappels||[]).filter(r=>!r.fait).length+' rappel(s)</span>':'')+
       '</div></div>';
   };
@@ -2223,22 +2236,35 @@ function renderCal(){
   const c30=futurs.filter(e=>daysTo(e.date)<=30);
   document.getElementById('clNb').textContent=futurs.length;
   document.getElementById('clPax').textContent=c30.reduce((s,e)=>s+(num(e.paxConf)||num(e.pax)),0);
-  document.getElementById('clCA').textContent=rentaUnlocked?eur(c30.reduce((s,e)=>s+evtCalc(e).ttc,0)):'•••';
+  document.getElementById('clCA').textContent=rentaLevel>=2?eur(c30.reduce((s,e)=>s+evtCalc(e).ttc,0)):'•••';
   document.getElementById('clRem').textContent=allRappels().filter(x=>x.d<=7).length;
 }
 
 /* ---------- panneau rentabilité (privé, code requis) ---------- */
 function renderRenta(){
   const box=document.getElementById('rentaPanel'); if(!box) return;
-  if(!rentaUnlocked){
+  if(rentaLevel<1){
     box.className='renta locked';
-    box.innerHTML='<div class="renta-lock"><span>🔒 Rentabilité & devis — réservé (toi + événementiel)</span>'+
+    box.innerHTML='<div class="renta-lock"><span>🔒 Devis & rentabilité — code requis</span>'+
       '<div class="rl-in"><input id="pinInput" inputmode="numeric" placeholder="code" autocomplete="off">'+
       '<button class="chip on" id="pinGo">Déverrouiller</button></div>'+
       '<div id="pinMsg" class="mini" style="color:var(--danger)"></div></div>';
     document.getElementById('pinGo').addEventListener('click',tryUnlock);
     const pi=document.getElementById('pinInput');
     pi.addEventListener('keydown',ev=>{ if(ev.key==='Enter') tryUnlock(); });
+    return;
+  }
+  if(rentaLevel===1){
+    box.className='renta';
+    box.innerHTML='<div class="renta-top"><b>📋 Mode devis</b>'+
+      '<button class="chip" id="rentaLock">Quitter</button></div>'+
+      '<p class="mini">Ouvre un événement, saisis ce que tu vends et ce que tu achètes : l’outil te dit si le devis est bon. '+
+      'Les montants de marge restent réservés.</p>'+
+      '<div class="rl-in" style="margin-top:6px"><input id="pinInput" inputmode="numeric" placeholder="code chiffres (patron)" autocomplete="off">'+
+      '<button class="chip" id="pinGo">Voir les chiffres</button></div><div id="pinMsg" class="mini" style="color:var(--danger)"></div>';
+    box.querySelector('#rentaLock').addEventListener('click',()=>{ setLevel(0); renderCal(); });
+    document.getElementById('pinGo').addEventListener('click',tryUnlock);
+    const pi=document.getElementById('pinInput'); pi.addEventListener('keydown',ev=>{ if(ev.key==='Enter') tryUnlock(); });
     return;
   }
   const p=P();
@@ -2263,7 +2289,7 @@ function renderRenta(){
      new Date().toLocaleDateString('fr-FR',{month:'long'})+' '+ (new Date().getFullYear()-1) +'</small></div>'+
      '<div><span>Cible marge</span><b>'+Math.round(p.margeCible*100)+' %</b><small>plancher '+eur(p.plancherTete)+'/pers</small></div></div>';
   if(!withCA.length){ h+='<p class="mini">Aucun événement chiffré pour l’instant. Renseigne un devis dans une fiche pour voir le classement.</p></div>'; box.className='renta'; box.innerHTML=h;
-    box.querySelector('#rentaLock').addEventListener('click',()=>{ setUnlock(false); renderCal(); }); return; }
+    box.querySelector('#rentaLock').addEventListener('click',()=>{ setLevel(0); renderCal(); }); return; }
   h+='<div class="rk-grid"><div class="rk-col"><h6>Meilleure contribution €</h6>'+byContrib.slice(0,5).map(li).join('')+'</div>'+
      '<div class="rk-col"><h6>Meilleur rendement (marge %)</h6>'+byMarge.slice(0,5).map(li).join('')+'</div></div>';
   h+='<h6 style="margin:10px 2px 4px">Rendement moyen par type</h6><div class="type-tbl">'+
@@ -2271,13 +2297,30 @@ function renderRenta(){
        '<b'+(r.ct<0?' class="neg"':'')+'>'+Math.round(r.m*100)+' %</b><span class="tl-c">'+eur(r.ct)+'</span></div>').join('')+'</div>';
   h+='<p class="mini">Touche une ligne pour ouvrir la fiche. « vs jour normal » et « prix plancher » sont détaillés dans chaque fiche.</p></div>';
   box.className='renta'; box.innerHTML=h;
-  box.querySelector('#rentaLock').addEventListener('click',()=>{ setUnlock(false); renderCal(); });
+  box.querySelector('#rentaLock').addEventListener('click',()=>{ setLevel(0); renderCal(); });
   box.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>{ calCur=el.dataset.open; calView='fiche'; renderCal(); window.scrollTo({top:0}); }));
 }
 function tryUnlock(){
   const pi=document.getElementById('pinInput'); if(!pi) return;
-  if(pi.value.trim()===P().pin){ setUnlock(true); renderCal(); }
+  const lv=levelFromCode(pi.value);
+  if(lv>0){ setLevel(lv); renderCal(); }
   else { const m=document.getElementById('pinMsg'); if(m) m.textContent='Code incorrect.'; pi.value=''; }
+}
+
+/* ---------- verdict (mode gars, sans chiffres) ---------- */
+function verdictBlock(e,c){
+  const p=P();
+  if(!c.ttc){ return '<div class="sec verdict v-none"><div class="v-badge">⚪ Devis à compléter</div>'+
+    '<p class="vtxt">Saisis ce que tu vends (recettes) et ce que tu achètes : je te dis tout de suite si c’est bon.</p></div>'; }
+  let cls,badge,txt;
+  if(c.contribution<0){ cls='v-bad'; badge='🔴 On perd de l’argent';
+    txt='À revoir : le prix ne couvre pas les coûts. Monte le prix de vente, ou réduis les achats / les heures de perso.'; }
+  else if(c.margePct<p.margeCible || c.vsRecent<0){ cls='v-mid'; badge='🟠 Ça passe, mais c’est juste';
+    txt='On gagne un peu, mais pas assez pour que ça vaille vraiment le coup. Idéalement pousse le prix, ou allège un peu les achats/heures.'; }
+  else { cls='v-good'; badge='🟢 Feu vert — on gagne bien';
+    txt='Le devis est rentable, tu peux y aller.'; }
+  return '<div class="sec verdict '+cls+'"><div class="v-badge">'+badge+'</div><p class="vtxt">'+txt+'</p>'+
+    '<p class="mini">Calcul complet en coulisses (achats, personnel, frais, redevance, comparaison à l’activité habituelle). Les montants restent réservés.</p></div>';
 }
 
 /* ---------- fiche ---------- */
@@ -2299,7 +2342,7 @@ function linesEditor(base,arr){
 }
 function lockedFicheNotice(){
   return '<div class="sec renta-lockfiche"><h4>🔒 Rentabilité & devis</h4>'+
-    '<p class="mini">Réservé (toi + événementiel). Entre le code pour voir/éditer le devis, les coûts et les marges.</p>'+
+    '<p class="mini">Entre le code pour saisir le devis et voir le verdict (code événementiel), ou tous les chiffres (code patron).</p>'+
     '<div class="rl-in"><input id="pinInputF" inputmode="numeric" placeholder="code" autocomplete="off">'+
     '<button class="chip on" id="pinGoF">Déverrouiller</button></div>'+
     '<div id="pinMsgF" class="mini" style="color:var(--danger)"></div></div>';
@@ -2347,7 +2390,7 @@ function renderFiche(){
      '<button class="alt" id="fPose">📌 Poser la résa sur le plan</button></div>'+
      '<p class="mini">« Poser » crée la réservation nominative sur le plan du jour et met le stock d’emplacements à niveau.</p></div>';
 
-  if(rentaUnlocked){
+  if(rentaLevel>=1){
   h+='<div class="sec"><h4>Offre & recettes prévues</h4>'+
      chips('offre.mode',e.offre.mode,{devis:'Devis (lignes)',forfait:'Forfait',minconso:'Min. conso',carte:'À la carte'})+
      (e.offre.mode==='devis'? linesEditor('devisRec', e.devisRec) : '')+
@@ -2357,8 +2400,9 @@ function renderFiche(){
      (e.offre.mode!=='devis'?fld('Part boissons (%) — optionnel','offre.partBoisson',e.offre.partBoisson,'inputmode="decimal" placeholder="ex. 60"'):'')+
      '<div class="subline"><span>'+esc(c.detail)+'</span></div>'+
      '<div class="tot"><span>CA prévu TTC</span><b>'+eur(c.ttc)+'</b></div>'+
-     '<div class="subline"><span>soit HT (TVA '+Math.round(p.tva*100)+' %)'+(c.pax?' · '+eur(c.prixTeteTTC)+'/pers TTC':'')+'</span><b>'+eur(c.caHT)+'</b></div>'+
-     '<p class="mini">Devis : une ligne par prestation vendue (désignation · prix unitaire TTC · quantité). La marge se calcule en HT.</p></div>';
+     (c.pax?'<div class="subline"><span>soit par personne</span><b>'+eur(c.prixTeteTTC)+' TTC</b></div>':'')+
+     (rentaLevel>=2?'<div class="subline"><span>soit HT (TVA '+Math.round(p.tva*100)+' %)</span><b>'+eur(c.caHT)+'</b></div>':'')+
+     '<p class="mini">Une ligne par prestation vendue (désignation · prix unitaire TTC · quantité). C’est ce que le client paie.</p></div>';
 
   h+='<div class="sec"><h4>Coûts propres à l’événement</h4>'+
      COST_POSTES.map(([k,l])=>fld(l,'couts.'+k,(e.couts||{})[k],'inputmode="decimal" placeholder="0"')).join('')+
@@ -2372,18 +2416,21 @@ function renderFiche(){
        return '<div class="staff-row"><span>'+sp+'</span>'+
          '<input data-f="staff.'+sp+'.nb" value="'+esc(s.nb==null?'':s.nb)+'" inputmode="numeric">'+
          '<input data-f="staff.'+sp+'.h" value="'+esc(s.h==null?'':s.h)+'" inputmode="numeric">'+
-         '<b>'+eur(tot)+'</b></div>'; }).join('')+
-     '<div class="tot"><span>Total personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
-     '<p class="mini">Coût horaire chargé : '+eur2(p.coutHoraire)+'/h (paramètre maison, ⚙). Penser aux majorations de nuit et dimanche.</p></div>';
+         '<b>'+(rentaLevel>=2?eur(tot):'')+'</b></div>'; }).join('')+
+     (rentaLevel>=2?'<div class="tot"><span>Total personnel extra</span><b>'+eur(c.staffTot)+'</b></div>'+
+       '<p class="mini">Coût horaire chargé : '+eur2(p.coutHoraire)+'/h (paramètre maison, ⚙). Penser aux majorations de nuit et dimanche.</p>'
+       :'<p class="mini">Indique le nombre de renforts et les heures prévues (nuit/dimanche compris).</p>')+'</div>';
 
   h+='<div class="sec"><h4>Coût matière (achats)</h4>'+
      chips('matiere.mode',(e.matiere||{}).mode||'ratio',{devis:'Lignes d’achat',saisi:'Montant connu',ratio:'Par ratio'})+
      ((e.matiere||{}).mode==='devis'? linesEditor('matiere.lignes', (e.matiere||{}).lignes) : '')+
      ((e.matiere||{}).mode==='saisi'? fld('Coût matière réel estimé (HT)','matiere.montant',e.matiere.montant,'inputmode="decimal"') : '')+
-     ((e.matiere||{}).mode!=='devis'&&(e.matiere||{}).mode!=='saisi'? '<div class="subline"><span>Ratio appliqué</span><b>'+Math.round(c.cmRatio*1000)/10+' %</b></div>' : '')+
-     '<div class="tot"><span>Coût matière</span><b>'+eur(c.matiere)+'</b></div>'+
-     '<p class="mini">« Lignes d’achat » : entre le prix d’achat unitaire et la quantité prévue de chaque produit (montants HT). Sinon montant connu, ou ratio maison (cuisine '+Math.round(p.cmCuisine*100)+' % · boissons '+Math.round(p.cmBoisson*100)+' %).</p></div>';
+     (rentaLevel>=2&&(e.matiere||{}).mode!=='devis'&&(e.matiere||{}).mode!=='saisi'? '<div class="subline"><span>Ratio appliqué</span><b>'+Math.round(c.cmRatio*1000)/10+' %</b></div>' : '')+
+     '<div class="tot"><span>Total achats</span><b>'+eur(c.matiere)+'</b></div>'+
+     (rentaLevel>=2?'<p class="mini">« Lignes d’achat » : prix d’achat unitaire × quantité prévue (montants HT). Sinon montant connu, ou ratio maison (cuisine '+Math.round(p.cmCuisine*100)+' % · boissons '+Math.round(p.cmBoisson*100)+' %).</p>':'<p class="mini">Entre le prix d’achat et la quantité prévue de chaque produit que tu comptes acheter.</p>')+'</div>';
 
+  h+=verdictBlock(e,c);
+  if(rentaLevel>=2){
   const negClass=c.contribution<0?' neg':'';
   const yN1=(parseInt((e.date||'').slice(0,4),10)||0)-1;
   h+='<div class="sec"><h4>Résultat prévu</h4>'+
@@ -2395,7 +2442,7 @@ function renderFiche(){
      '<div class="tot big'+negClass+'"><span>Contribution nette</span><b>'+eur(c.contribution)+'</b></div>'+
      '<div class="mrow"><div class="'+(c.okCible?'ok':'bad')+'"><span>Marge nette</span><b>'+Math.round(c.margePct*100)+' %</b><small>cible '+Math.round(p.margeCible*100)+' %</small></div>'+
        '<div><span>Net / pers</span><b>'+eur(c.teteNet)+'</b><small>'+(c.pax||0)+' pers</small></div>'+
-       '<div class="'+(c.okPlancherTete?'ok':'bad')+'"><span>Prix / pers</span><b>'+eur(c.prixTeteTTC)+'</b><small>plancher '+eur(p.plancherTete)+'</small></div></div>'+
+       '<div class="'+(c.prixTeteTTC>=c.plancherTete?'ok':'bad')+'"><span>Prix / pers</span><b>'+eur(c.prixTeteTTC)+'</b><small>plancher réel '+eur(c.plancherTete)+'</small></div></div>'+
      '<h6 style="margin:12px 2px 4px">Vaut-il le coup ? (vs activité normale)</h6>'+
      '<div class="subline"><span>Contribution d’un jour ouvré récent (~'+eur(p.recentJourTTC)+' TTC)</span><b>'+eur(c.recentContrib)+'</b></div>'+
      '<div class="tot'+(c.vsRecent<0?' neg':'')+'"><span>vs rythme actuel</span><b>'+(c.vsRecent>=0?'+':'')+eur(c.vsRecent)+'</b></div>'+
@@ -2409,7 +2456,8 @@ function renderFiche(){
         '<div class="tot'+(c.gain<0?' neg':'')+'"><span>GAIN net vs ce service</span><b>'+(c.gain>=0?'+':'')+eur(c.gain)+'</b></div>':'')+
      '<div class="subline" style="margin-top:8px"><span>Prix plancher total (HT)</span><b>'+eur(c.plancher)+'</b></div>'+
      '<div class="subline"><span>soit par personne</span><b>'+eur(c.plancherTete)+'</b></div>'+
-     '<p class="mini">Plancher = coûts propres + personnel + matière (+ contribution du service remplacé s’il y a lieu). En dessous, la presta perd de l’argent. Cible : marge ≥ '+Math.round(p.margeCible*100)+' % et prix ≥ '+eur(p.plancherTete)+'/pers.</p></div>';
+     '<p class="mini">Plancher = coûts propres + personnel + matière (+ contribution du service remplacé s’il y a lieu). En dessous, la presta perd de l’argent. Cible de marge : ≥ '+Math.round(p.margeCible*100)+' % (modifiable en ⚙).</p></div>';
+  }
   } else { h+=lockedFicheNotice(); }
 
   h+='<div class="sec"><h4>Rappels</h4>'+
@@ -2427,7 +2475,7 @@ function renderFiche(){
      '<textarea data-f="notes" placeholder="notes internes, contraintes, matériel…">'+esc(e.notes||'')+'</textarea></div>';
 
   if(!e.reel||typeof e.reel!=='object') e.reel={caTTC:0,couverts:0,matiere:0,couts:0,staff:0,lecons:''};
-  if(rentaUnlocked){
+  if(rentaLevel>=2){
   h+='<div class="sec"><h4>Bilan réel (après l’événement)</h4>'+
      fld('CA réel TTC','reel.caTTC',e.reel.caTTC,'inputmode="decimal"')+
      fld('Couverts / personnes réelles','reel.couverts',e.reel.couverts,'inputmode="numeric"')+
@@ -2466,8 +2514,8 @@ function bindFiche(e){
     const [base,idx]=b.dataset.delline.split('|'); const arr=base.split('.').reduce((o,k)=>o&&o[k],e);
     if(Array.isArray(arr)){ arr.splice(parseInt(idx,10),1); persistEvents(); renderFiche(); } }));
   const pgf=document.getElementById('pinGoF');
-  if(pgf){ const go=()=>{ const pi=document.getElementById('pinInputF');
-      if(pi&&pi.value.trim()===P().pin){ setUnlock(true); renderFiche(); }
+  if(pgf){ const go=()=>{ const pi=document.getElementById('pinInputF'); const lv=levelFromCode(pi&&pi.value);
+      if(lv>0){ setLevel(lv); renderFiche(); }
       else { const m=document.getElementById('pinMsgF'); if(m)m.textContent='Code incorrect.'; if(pi)pi.value=''; } };
     pgf.addEventListener('click',go);
     const pif=document.getElementById('pinInputF'); if(pif) pif.addEventListener('keydown',ev=>{ if(ev.key==='Enter') go(); }); }
@@ -2557,7 +2605,8 @@ function openParams(){
     fld('Prix plancher / pers (TTC)','__plancherTete',p.plancherTete,'inputmode="decimal"')+
     '<p class="hint">CA mensuel N-1 (réel FEC 2025, TTC) — sert au « vs N-1 » selon le mois de l’événement.</p>'+n1grid+
     '<h6 class="ph">Accès</h6>'+
-    fld('Code d’accès rentabilité','__pin',p.pin,'inputmode="numeric"')+
+    fld('Code ÉVÉNEMENTIEL (ton gars — devis + verdict, sans chiffres)','__pinGars',p.pinGars,'inputmode="numeric" class="wide"')+
+    fld('Code PATRON (tous les chiffres)','__pinPatron',p.pinPatron,'inputmode="numeric" class="wide"')+
     '<p class="hint">Ratios repris de la fiche type (cuisine 30 % · boissons 22 % · 22 €/h) + sous-traité (redevance 1,1 %). Rythme actuel = réel récent ; N-1 = FEC 2025. Appliqués à tous les événements.</p>'+
     '<div class="actions"><button class="btn ghost" id="parCancel">Fermer</button><button class="btn primary" id="parGo">Enregistrer</button></div>';
   b.querySelectorAll('[data-f],[data-n1]').forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') i.blur(); }));
@@ -2567,7 +2616,8 @@ function openParams(){
     p.cmCuisine=g('cmCuisine')/100; p.cmBoisson=g('cmBoisson')/100; p.cmMoyen=g('cmMoyen')/100;
     p.coutHoraire=g('coutHoraire'); p.redevance=g('redevance')/100; p.tva=g('tva')/100;
     p.recentJourTTC=g('recentJourTTC'); p.joursOuv=g('joursOuv')||26; p.margeCible=g('margeCible')/100; p.plancherTete=g('plancherTete');
-    const pinv=b.querySelector('[data-f="__pin"]').value.trim(); if(pinv) p.pin=pinv;
+    const pg=b.querySelector('[data-f="__pinGars"]').value.trim(); if(pg) p.pinGars=pg;
+    const pp=b.querySelector('[data-f="__pinPatron"]').value.trim(); if(pp) p.pinPatron=pp;
     b.querySelectorAll('[data-n1]').forEach(i=>{ p.n1[i.dataset.n1]=num(i.value); });
     persistEvents(); closeSheets(); renderCal();
   });
@@ -2806,5 +2856,5 @@ setView((function(){ try{ return localStorage.getItem('lido-view')||'plage'; }ca
 initFirebase();
 </script>
 </body>
-<!-- v22 rentabilite-devis (agenda prive) -->
+<!-- v23 rentabilite-3niveaux (equipe/gars-verdict/patron) -->
 </html>
