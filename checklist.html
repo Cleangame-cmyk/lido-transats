@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1f4e5f">
+<title>Le Lido — Checklists</title>
+<style>
+:root{--ink:#1c2b33;--mut:#5c6f78;--line:#dde5e9;--bg:#f4f7f8;--card:#fff;--blue:#1f4e5f;--ok:#1e7e4b;--okbg:#e3f4ea;--bad:#c0392b;--badbg:#fdeceb;--warn:#9a6700;--warnbg:#fff3d6;--gold:#b39059}
+*{box-sizing:border-box} body{margin:0;font:16px/1.4 -apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);padding-bottom:40px}
+header{position:sticky;top:0;z-index:5;background:var(--blue);color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;flex:1}
+header select,header input{font:inherit;border:1px solid #fff4;border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px 0;-webkit-overflow-scrolling:touch}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab small{opacity:.75;font-weight:400}
+main{padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.item{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.item:last-child{border-bottom:none}
+.box{width:30px;height:30px;border:2px solid var(--blue);border-radius:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.item.done .box{background:var(--ok);border-color:var(--ok)}
+.item .t{flex:1;font-size:16px}
+.item.done .t{color:var(--mut);text-decoration:line-through}
+.item .w{font-size:12px;color:var(--mut);text-align:right;white-space:nowrap}
+.prog{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 10px}
+.prog i{display:block;height:100%;background:var(--ok)}
+.hdr{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hdr h2{margin:0;font-size:17px}
+.hdr .pct{font-weight:700;color:var(--ok)} .hdr .pct.bad{color:var(--bad)}
+button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px;min-height:60px}
+.muted{color:var(--mut);font-size:13px}
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+#lock .card{max-width:360px;width:100%;text-align:center}
+#lock input{width:100%;font-size:18px;padding:10px;border:1px solid var(--line);border-radius:8px;margin:10px 0}
+.who{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.who button{flex:1 1 40%;padding:14px;font-size:17px;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 5px;text-align:center}
+th{background:#eef3f6} td.l{text-align:left;font-weight:600}
+.c-ok{background:var(--okbg);color:var(--ok);font-weight:700} .c-mid{background:var(--warnbg);color:var(--warn);font-weight:700} .c-bad{background:var(--badbg);color:var(--bad);font-weight:700} .c-none{color:#c6ced2}
+.detail{font-size:13px} .detail div{padding:4px 0;border-bottom:1px dashed var(--line)}
+.edit input{width:100%;font:inherit;border:1px solid var(--line);border-radius:6px;padding:6px}
+.edit .row{display:flex;gap:6px;align-items:center;margin:4px 0}
+.badge{display:inline-block;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;background:var(--okbg);color:var(--ok)}
+.sync{font-size:11px;opacity:.8}
+</style>
+</head>
+<body>
+<div id="lock"><div class="card">
+  <h2 style="margin:0 0 6px">🏖️ Le Lido — Checklists</h2>
+  <div id="lockmsg" class="muted">Connexion…</div>
+  <form id="lockform" hidden onsubmit="return false">
+    <input type="password" id="pw1" placeholder="Mot de passe équipe" autocomplete="current-password">
+    <div id="pwerr" style="color:var(--bad);font-size:13px;min-height:18px"></div>
+    <button class="primary" id="pwgo" style="width:100%">Entrer</button>
+  </form>
+  <div id="whobox" hidden>
+    <p>Qui es-tu ?</p>
+    <div class="who" id="whobtns"></div>
+  </div>
+</div></div>
+
+<header>
+  <h1>✅ Checklists <span class="sync" id="sync"></span></h1>
+  <select id="who"></select>
+  <input type="date" id="date">
+  <button id="patronBtn" style="background:var(--gold);color:#fff;border-color:var(--gold)">Suivi</button>
+</header>
+<div class="tabs" id="tabs"></div>
+<main id="main"></main>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const FIREBASE_CONFIG={apiKey:"AIzaSyBsocdWNBUchsa9QDcuMmqyj34MbpJpzcw",authDomain:"lido-plage.firebaseapp.com",databaseURL:"https://lido-plage-default-rtdb.europe-west1.firebasedatabase.app",projectId:"lido-plage",storageBucket:"lido-plage.firebasestorage.app"};
+const TEAM_EMAIL='equipe@lelidodetoulon.com';
+const PEOPLE=["Dimo","Bilal","Enzo","Julien","Extra"];
+const DEFAULT_CONFIG={patronCode:"8300",lists:{
+ matin:{name:"Ouverture matin",order:1,items:[
+  {k:"m1",t:"Balayer l'allée"},{k:"m2",t:"Relancer le lave-verres"},{k:"m3",t:"Rincer la machine à café (faire couler l'eau)"},
+  {k:"m4",t:"Laver tables, comptoir, bar"},{k:"m5",t:"Faire couler l'eau du robinet avant le 1er verre"},{k:"m6",t:"Toilettes extérieures"},
+  {k:"m7",t:"Terrasse : tables et chaises en place, coussins sortis"},{k:"m8",t:"Caisse ouverte, fond de caisse vérifié"}]},
+ midi:{name:"Salle midi",order:2,items:[
+  {k:"d1",t:"Réservations du midi vérifiées (Zenchef + plan de salle)"},{k:"d2",t:"Tables dressées : couverts, serviettes, sel/poivre"},
+  {k:"d3",t:"Carafes, verres, menus/ardoise prêts"},{k:"d4",t:"Bar : réassort softs, bières, glaçons, citrons/menthe"},
+  {k:"d5",t:"Toilettes vérifiées (papier, savon, propreté)"},{k:"d6",t:"Musique et éclairage réglés"},
+  {k:"d7",t:"Fin de service : tables débarrassées et essuyées, sol balayé"},{k:"d8",t:"Poubelles vidées, lave-verres relancé"}]},
+ soir:{name:"Salle soir",order:3,items:[
+  {k:"s1",t:"Réservations du soir vérifiées (Zenchef + plan de salle)"},{k:"s2",t:"Tables dressées, bougies/éclairage d'ambiance"},
+  {k:"s3",t:"Bar : réassort complet (softs, bières, spiritueux, glaçons, fruits)"},{k:"s4",t:"Chauffage terrasse / parasols chauffants vérifiés"},
+  {k:"s5",t:"Toilettes vérifiées"},{k:"s6",t:"Lave-verres relancé, verrerie propre en nombre"},
+  {k:"s7",t:"Fin de service : tables débarrassées, chaises rangées"}]},
+ fermeture:{name:"Fermeture soir",order:4,items:[
+  {k:"f1",t:"Caisse clôturée (rapport de fin de caisse envoyé)"},{k:"f2",t:"Tiroir-caisse vidé et rangé"},
+  {k:"f3",t:"Bar essuyé, bouteilles rebouchées, bac à glaçons vidé"},{k:"f4",t:"Lave-verres vidé, filtre nettoyé, porte ouverte"},
+  {k:"f5",t:"Machine à café purgée et nettoyée"},{k:"f6",t:"Poubelles sorties, sacs neufs"},{k:"f7",t:"Terrasse rentrée : coussins, menus, parasols fermés"},
+  {k:"f8",t:"Frigos fermés, gaz/chauffage coupés"},{k:"f9",t:"Lumières éteintes, portes verrouillées, alarme"}]}
+}};
+const todayISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
+let fdb=null, cfg=null, day=todayISO(), data={}, cur=null, who=localStorage.getItem("ck-who")||"", patron=sessionStorage.getItem("ck-patron")==="1", dataRef=null;
+
+function lists(){ return Object.entries(cfg.lists).map(([id,l])=>({id,...l})).sort((a,b)=>(a.order||0)-(b.order||0)); }
+function fmtT(ts){ const d=new Date(ts); return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
+function pct(listId, d){ const l=cfg.lists[listId]; if(!l||!l.items.length) return 0; const dd=(d||data)[listId]||{}; const n=l.items.filter(i=>dd[i.k]).length; return Math.round(100*n/l.items.length); }
+
+function renderTabs(){
+  const L=lists(); if(!cur||!cfg.lists[cur]) cur=L[0]?L[0].id:null;
+  $("#tabs").innerHTML=L.map(l=>`<div class="tab ${l.id===cur?"on":""}" onclick="cur='${l.id}';render()">${l.name} <small>${pct(l.id)} %</small></div>`).join("")+(patron?`<div class="tab ${cur==="__suivi"?"on":""}" style="border-color:var(--gold);color:${cur==="__suivi"?"#fff":"var(--gold)"};background:${cur==="__suivi"?"var(--gold)":"#fff"}" onclick="cur='__suivi';render()">📊 Suivi</div><div class="tab ${cur==="__edit"?"on":""}" onclick="cur='__edit';render()">✏️ Listes</div>`:"");
+}
+function render(){
+  if(!cfg) return; renderTabs(); $("#who").value=who; $("#date").value=day;
+  if(cur==="__suivi") return renderSuivi();
+  if(cur==="__edit") return renderEdit();
+  const l=cfg.lists[cur]; if(!l){ $("#main").innerHTML=""; return; }
+  const dd=data[cur]||{}; const p=pct(cur); const done=l.items.filter(i=>dd[i.k]).length;
+  const note=(data[cur]&&data[cur].__note)||{};
+  $("#main").innerHTML=`<div class="card">
+    <div class="hdr"><h2>${l.name} — ${new Date(day+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</h2><span class="pct ${p<100?"bad":""}">${done}/${l.items.length}</span></div>
+    <div class="prog"><i style="width:${p}%"></i></div>
+    ${l.items.map(i=>{const v=dd[i.k];return `<div class="item ${v?"done":""}" onclick="toggle('${cur}','${i.k}')"><div class="box">${v?"✓":""}</div><div class="t">${i.t}</div><div class="w">${v?`${v.by}<br>${fmtT(v.ts)}`:""}</div></div>`;}).join("")}
+    <div style="margin-top:10px"><div class="muted">Remarque (manque, casse, problème) :</div>
+      <textarea id="note" placeholder="ex. plus de papier toilette, lave-verres en panne…">${note.t||""}</textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="muted">${note.t?`${note.by} · ${fmtT(note.ts)}`:""}</span><button onclick="saveNote()">Enregistrer la remarque</button></div></div>
+  </div>
+  <div class="muted">Coche au fur et à mesure : chaque coche est horodatée avec ton nom et visible par la direction en temps réel.</div>`;
+}
+function toggle(listId,k){
+  if(!who){ alert("Choisis ton prénom en haut d'abord."); return; }
+  const ref=fdb.child("checklists/"+day+"/"+listId+"/"+k);
+  const v=(data[listId]||{})[k];
+  if(v) ref.remove(); else ref.set({by:who,ts:Date.now()});
+}
+function saveNote(){ if(!who){alert("Choisis ton prénom en haut d'abord.");return;} const t=$("#note").value.trim(); const ref=fdb.child("checklists/"+day+"/"+cur+"/__note"); if(t) ref.set({t,by:who,ts:Date.now()}); else ref.remove(); }
+
+// ---- Suivi (patron) ----
+let hist={};
+function renderSuivi(){
+  const days=[]; for(let i=0;i<14;i++){ const d=new Date(day+"T12:00:00"); d.setDate(d.getDate()-i); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); days.push(d.toISOString().slice(0,10)); }
+  const L=lists();
+  const cls=p=>p>=100?"c-ok":p>=50?"c-mid":p>0?"c-bad":"c-none";
+  let html=`<div class="card"><div class="hdr"><h2>Suivi 14 jours — % de cases cochées</h2><button onclick="sessionStorage.removeItem('ck-patron');patron=false;cur=null;render()">Quitter le mode patron</button></div>
+  <div style="overflow-x:auto"><table><tr><th>Jour</th>${L.map(l=>`<th>${l.name}</th>`).join("")}</tr>`;
+  for(const d of days){ const dd=hist[d]||{}; html+=`<tr><td class="l">${new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit"})}</td>`+L.map(l=>{const p=pct(l.id,dd);const n=dd[l.id]?Object.keys(dd[l.id]).filter(k=>k!=="__note").length:0;return `<td class="${cls(p)}" onclick="showDay('${d}','${l.id}')" style="cursor:pointer">${n?p+" %":"·"}${dd[l.id]&&dd[l.id].__note?" 📝":""}</td>`;}).join("")+"</tr>"; }
+  html+=`</table></div><div class="muted" style="margin-top:6px">Clique une case pour voir qui a coché quoi et à quelle heure. 📝 = une remarque a été laissée.</div></div><div id="dayDetail"></div>`;
+  $("#main").innerHTML=html;
+}
+function showDay(d,listId){
+  const l=cfg.lists[listId]; const dd=(hist[d]||{})[listId]||{};
+  $("#dayDetail").innerHTML=`<div class="card detail"><div class="hdr"><h2>${l.name} — ${new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</h2><span class="pct">${pct(listId,hist[d]||{})} %</span></div>
+  ${l.items.map(i=>{const v=dd[i.k];return `<div>${v?"✅":"❌"} ${i.t} ${v?`<span class="badge">${v.by} · ${fmtT(v.ts)}</span>`:""}</div>`;}).join("")}
+  ${dd.__note?`<div>📝 <b>${dd.__note.by}</b> (${fmtT(dd.__note.ts)}) : ${dd.__note.t}</div>`:""}</div>`;
+}
+// ---- Édition des listes (patron) ----
+function renderEdit(){
+  const L=lists();
+  $("#main").innerHTML=`<div class="card edit"><h2 style="margin:0 0 8px">Modifier les listes</h2><div class="muted" style="margin-bottom:10px">Les changements sont immédiats pour toute l'équipe. Ne supprime pas une case en cours de journée si tu veux garder son historique.</div>
+  ${L.map(l=>`<div class="card" style="margin:8px 0"><div class="row"><input value="${l.name.replace(/"/g,'&quot;')}" onchange="cfg.lists['${l.id}'].name=this.value;saveCfg()" style="font-weight:700"><input type="number" value="${l.order||0}" style="width:60px" title="ordre" onchange="cfg.lists['${l.id}'].order=+this.value;saveCfg()"><button onclick="if(confirm('Supprimer cette liste ?')){delete cfg.lists['${l.id}'];saveCfg()}">✕</button></div>
+    ${l.items.map((i,n)=>`<div class="row"><span class="muted" style="width:22px">${n+1}.</span><input value="${i.t.replace(/"/g,'&quot;')}" onchange="cfg.lists['${l.id}'].items[${n}].t=this.value;saveCfg()"><button onclick="moveItem('${l.id}',${n},-1)">↑</button><button onclick="moveItem('${l.id}',${n},1)">↓</button><button onclick="cfg.lists['${l.id}'].items.splice(${n},1);saveCfg()">✕</button></div>`).join("")}
+    <div class="row"><button onclick="addItem('${l.id}')">+ Ajouter une case</button></div></div>`).join("")}
+  <div class="row"><button class="primary" onclick="addList()">+ Nouvelle liste</button></div>
+  <div class="row" style="margin-top:14px"><span class="muted">Code patron :</span><input type="text" value="${cfg.patronCode||""}" style="width:110px" onchange="cfg.patronCode=this.value;saveCfg()"></div></div>`;
+}
+function addItem(listId){ const t=prompt("Texte de la case :"); if(!t) return; cfg.lists[listId].items.push({k:"i"+Date.now().toString(36),t}); saveCfg(); }
+function moveItem(listId,n,dir){ const a=cfg.lists[listId].items; const m=n+dir; if(m<0||m>=a.length) return; [a[n],a[m]]=[a[m],a[n]]; saveCfg(); }
+function addList(){ const name=prompt("Nom de la liste :"); if(!name) return; const id="l"+Date.now().toString(36); cfg.lists[id]={name,order:lists().length+1,items:[]}; cur=id; saveCfg(); }
+function saveCfg(){ fdb.child("checklists_config").set(cfg); }
+
+// ---- Firebase ----
+function subscribeDay(){
+  if(dataRef) dataRef.off();
+  dataRef=fdb.child("checklists/"+day);
+  dataRef.on("value",s=>{ data=s.val()||{}; $("#sync").textContent="● synchronisé"; render(); });
+}
+function subscribeHist(){
+  fdb.child("checklists").orderByKey().limitToLast(20).on("value",s=>{ hist=s.val()||{}; if(cur==="__suivi") render(); });
+}
+function askPatron(){
+  if(patron){ cur="__suivi"; render(); return; }
+  const c=prompt("Code patron :"); if(c&&c===String(cfg.patronCode)){ patron=true; sessionStorage.setItem("ck-patron","1"); cur="__suivi"; render(); } else if(c!==null) alert("Code incorrect.");
+}
+function unlockUI(){
+  $("#lockform").hidden=true;
+  if(!who){ $("#whobox").hidden=false; $("#whobtns").innerHTML=PEOPLE.map(p=>`<button onclick="setWho('${p}')">${p}</button>`).join(""); $("#lockmsg").textContent=""; }
+  else $("#lock").style.display="none";
+}
+function setWho(p){ who=p; localStorage.setItem("ck-who",p); $("#lock").style.display="none"; render(); }
+$("#who").innerHTML=`<option value="">Qui ?</option>`+PEOPLE.map(p=>`<option>${p}</option>`).join("");
+$("#who").onchange=e=>{ who=e.target.value; localStorage.setItem("ck-who",who); render(); };
+$("#date").value=day; $("#date").onchange=e=>{ day=e.target.value||todayISO(); subscribeDay(); };
+$("#patronBtn").onclick=askPatron;
+
+(function(){
+  const msg=$('#lockmsg'),form=$('#lockform'),pw1=$('#pw1'),err=$('#pwerr'),go=$('#pwgo');
+  const load=src=>new Promise((ok,ko)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=ko;document.body.appendChild(s);});
+  const V='https://www.gstatic.com/firebasejs/10.14.1/';
+  load(V+'firebase-app-compat.js').then(()=>load(V+'firebase-auth-compat.js')).then(()=>load(V+'firebase-database-compat.js')).then(()=>{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().onAuthStateChanged(u=>{
+      if(u){
+        fdb=firebase.database().ref('lido-transats');
+        fdb.child("checklists_config").once("value").then(s=>{
+          cfg=s.val(); if(!cfg||!cfg.lists){ cfg=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); fdb.child("checklists_config").set(cfg); }
+          fdb.child("checklists_config").on("value",s2=>{ const c=s2.val(); if(c&&c.lists){ cfg=c; render(); } });
+          subscribeDay(); subscribeHist(); unlockUI(); render();
+        });
+      } else { $('#lock').style.display='flex'; form.hidden=false; msg.textContent='Entre le mot de passe de l’équipe (le même que les autres outils).'; }
+    });
+    go.onclick=()=>{ err.textContent=''; firebase.auth().signInWithEmailAndPassword(TEAM_EMAIL, pw1.value).catch(e=>{ err.textContent='Mot de passe incorrect.'; }); };
+  }).catch(()=>{ msg.textContent='Connexion impossible (réseau ?). Réessaie.'; });
+})();
+</script>
+</body>
+</html>
